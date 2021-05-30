@@ -170,6 +170,10 @@ impl Lexer {
                 current_non_databind = String::new();
             }
 
+            if self.current_char == '\n' {
+                tokens.push(Token::NewLine);
+            }
+
             last_char = self.current_char;
             self.next_char();
         }
