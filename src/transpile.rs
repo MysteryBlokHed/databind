@@ -91,6 +91,28 @@ pub fn transpile(tokens: Vec<Token>, settings: Settings) -> String {
                             );
                         }
                     }
+                    Token::VarSet => {
+                        if settings.randomize_var_names {
+                            if var_map.contains_key(&current_var) {
+                                transpiled.push_str(
+                                    &format!(
+                                        "scoreboard players set --databind {} {}",
+                                        var_map[&current_var], int
+                                    )[..],
+                                );
+                            } else {
+                                println!("[ERROR] Attempted set of non-existant variable");
+                                std::process::exit(1);
+                            }
+                        } else {
+                            transpiled.push_str(
+                                &format!(
+                                    "scoreboard players set --databind {} {}",
+                                    &current_var, int
+                                )[..],
+                            );
+                        }
+                    }
                     Token::VarAdd => {
                         if settings.randomize_var_names {
                             if var_map.contains_key(&current_var) {

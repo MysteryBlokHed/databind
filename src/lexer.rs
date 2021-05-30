@@ -42,7 +42,6 @@ impl Lexer {
         let mut current_non_databind = String::new();
 
         while self.current_char != '\u{0}' {
-            println!("CURRENT NON DATABIND: |{}|", current_non_databind);
             if !building_keyword && last_char.is_whitespace() && self.current_char == ':' {
                 building_keyword = true;
                 if current_non_databind.len() > 0 {
