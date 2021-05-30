@@ -1,4 +1,12 @@
 use crate::settings::Settings;
+use std::collections::HashMap;
+
+pub enum TranspileReturn {
+    SingleContents(String),
+    SingleContentsAndMap(String, HashMap<String, String>),
+    MultiFile(Vec<String>, HashMap<String, usize>),
+    MultiFileAndMap(Vec<String>, HashMap<String, usize>, HashMap<String, String>),
+}
 
 pub struct Transpiler<'a> {
     chars: Vec<char>,
