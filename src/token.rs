@@ -30,5 +30,7 @@ pub enum Token {
     LeftParen,
     /// Right parenthesis
     RightParen,
+    /// Commands, etc. that are not by databind
+    NonDatabind(String),
     None,
 }

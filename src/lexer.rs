@@ -1,5 +1,7 @@
 use crate::settings::Settings;
 use crate::token::Token;
+use rand::{distributions::Alphanumeric, Rng};
+use std::collections::HashMap;
 
 const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
@@ -40,10 +42,16 @@ impl Lexer {
         let mut building_token = Token::None;
         let mut remaining_params = 0;
         let mut first_whitespace = false;
+        let mut current_non_databind = String::new();
 
         while self.current_char != '\u{0}' {
+            println!("CURRENT NON DATABIND: |{}|", current_non_databind);
             if !building_keyword && last_char.is_whitespace() && self.current_char == ':' {
                 building_keyword = true;
+                if current_non_databind.len() > 0 {
+                    tokens.push(Token::NonDatabind(current_non_databind));
+                    current_non_databind = String::new();
+                }
             } else if building_keyword && building_token == Token::None {
                 current_keyword.push(self.current_char);
                 let mut keyword_found = true;
@@ -70,8 +78,8 @@ impl Lexer {
                     }
                     "tvar" => {
                         tokens.push(Token::TestVar);
-                        building_token = Token::Var;
-                        remaining_params = 1;
+                        building_token = Token::TestVar;
+                        // remaining_params = 1;
                     }
                     "func" => tokens.push(Token::DefineFunc),
                     "endfunc" => tokens.push(Token::EndFunc),
@@ -145,16 +153,119 @@ impl Lexer {
                             }
                         }
                     }
+                    Token::TestVar => {
+                        if self.current_char.is_whitespace() {
+                            tokens.push(Token::VarName(current_keyword));
+                            building_keyword = false;
+                            building_token = Token::None;
+                            current_keyword = String::new();
+                            first_whitespace = false;
+                        } else {
+                            current_keyword.push(self.current_char);
+                        }
+                    }
                     _ => {}
                 }
-            } else if !self.current_char.is_whitespace() {
-                println!("[ERROR] Unrecognized character {}", self.current_char);
+            } else if !['\r', '\n'].contains(&self.current_char) {
+                current_non_databind.push(self.current_char);
+            } else if current_non_databind.len() > 0 {
+                tokens.push(Token::NonDatabind(current_non_databind));
+                current_non_databind = String::new();
             }
 
             last_char = self.current_char;
             self.next_char();
         }
 
+        if current_non_databind.len() > 0 {
+            tokens.push(Token::NonDatabind(current_non_databind));
+        }
+
         tokens
+    }
+
+    pub fn transpile(&self, tokens: Vec<Token>, settings: Settings) -> String {
+        let mut transpiled = String::new();
+
+        let mut var_map: HashMap<String, String> = HashMap::new();
+
+        let mut active_token = Token::None;
+
+        // For variable-related tokens
+        let mut current_var = String::new();
+        let mut assignment_operator = Token::None;
+
+        for token in tokens.iter() {
+            match token {
+                Token::Var => active_token = Token::Var,
+                Token::VarName(var) => {
+                    current_var = var.clone();
+                }
+                Token::InitialSet => assignment_operator = Token::InitialSet,
+                Token::Int(int) => {
+                    match assignment_operator {
+                        Token::InitialSet => {
+                            if settings.randomize_var_names {
+                                if !var_map.contains_key(&current_var) {
+                                    let mut random_name = current_var.clone();
+                                    let extension: String = rand::thread_rng()
+                                        .sample_iter(&Alphanumeric)
+                                        .take(4)
+                                        .map(char::from)
+                                        .collect();
+                                    random_name.push('-');
+                                    random_name.push_str(&extension[..]);
+
+                                    var_map.insert(current_var.clone(), random_name);
+                                    if settings.var_display_name {
+                                        transpiled.push_str(
+                                        &format!(
+                                            "scoreboard objectives add {} dummy {{\"text\":\"{}\"}}",
+                                            var_map[&current_var], current_var
+                                        )[..],
+                                    );
+                                    } else {
+                                        transpiled.push_str(
+                                            &format!(
+                                                "scoreboard objectives add {} dummy",
+                                                var_map[&current_var]
+                                            )[..],
+                                        );
+                                    }
+                                    transpiled.push_str(
+                                        &format!(
+                                            "scoreboard players set --databind {} {}",
+                                            var_map[&current_var], int
+                                        )[..],
+                                    );
+                                } else {
+                                    println!(
+                                        "[ERROR] Attempted creation of already-existing variable."
+                                    );
+                                    std::process::exit(1);
+                                }
+                            } else {
+                                transpiled.push_str(
+                                    &format!("scoreboard objectives add {} dummy", current_var)[..],
+                                );
+                                transpiled.push_str(&format!(
+                                    "scoreboard players set --databind {} {}",
+                                    current_var, int
+                                ));
+                            }
+                        }
+                        _ => {}
+                    }
+                    active_token = Token::None;
+                    assignment_operator = Token::None;
+                }
+                Token::NonDatabind(string) => {
+                    transpiled.push_str(string);
+                }
+                _ => {}
+            }
+        }
+
+        transpiled
     }
 }
