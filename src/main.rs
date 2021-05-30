@@ -1,7 +1,6 @@
 mod lexer;
 mod settings;
 mod token;
-mod transpile;
 
 fn main() {
     let transpile_settings = settings::Settings {
@@ -24,6 +23,6 @@ execute if :tvar example matches 3 run say example setting worked\r\n",
     let tokens = lex.tokenize();
     println!("{:?}", tokens);
 
-    let transpiled = transpile::transpile(tokens, transpile_settings);
+    let transpiled = lexer::Lexer::transpile(tokens, transpile_settings);
     println!("{}", transpiled);
 }
