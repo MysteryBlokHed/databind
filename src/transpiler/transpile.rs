@@ -1,10 +1,10 @@
-use super::Lexer;
+use super::Transpiler;
 use crate::settings::Settings;
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 use std::collections::HashMap;
 
-impl Lexer {
+impl Transpiler {
     pub fn transpile(tokens: Vec<Token>, settings: Settings) -> String {
         let mut transpiled = String::new();
 

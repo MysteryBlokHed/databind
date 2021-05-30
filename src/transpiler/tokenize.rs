@@ -1,9 +1,9 @@
-use super::Lexer;
+use super::Transpiler;
 use crate::token::Token;
 
 const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-impl Lexer {
+impl Transpiler {
     pub fn tokenize(&mut self) -> Vec<Token> {
         let mut tokens: Vec<Token> = Vec::new();
 

@@ -1,6 +1,6 @@
-mod lexer;
 mod settings;
 mod token;
+mod transpiler;
 
 fn main() {
     let transpile_settings = settings::Settings {
@@ -19,10 +19,10 @@ execute if :tvar newVar matches 1 run say newVar subtraction worked\r\n\
 execute if :tvar example matches 3 run say example setting worked\r\n",
     );
 
-    let mut lex = lexer::Lexer::new(totally_real_file);
-    let tokens = lex.tokenize();
+    let mut transpile = transpiler::Transpiler::new(totally_real_file);
+    let tokens = transpile.tokenize();
     println!("{:?}", tokens);
 
-    let transpiled = lexer::Lexer::transpile(tokens, transpile_settings);
+    let transpiled = transpiler::Transpiler::transpile(tokens, transpile_settings);
     println!("{}", transpiled);
 }

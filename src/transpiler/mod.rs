@@ -1,14 +1,14 @@
-pub struct Lexer {
+pub struct Transpiler {
     chars: Vec<char>,
     position: usize,
     current_char: char,
 }
 
-impl Lexer {
-    pub fn new(text: String) -> Lexer {
+impl Transpiler {
+    pub fn new(text: String) -> Transpiler {
         let first_char = text.chars().nth(0).unwrap();
 
-        Lexer {
+        Transpiler {
             chars: text.chars().collect(),
             position: 0,
             current_char: first_char,
