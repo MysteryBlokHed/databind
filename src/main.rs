@@ -1,6 +1,7 @@
 mod lexer;
 mod settings;
 mod token;
+mod transpile;
 
 fn main() {
     let transpile_settings = settings::Settings {
@@ -16,6 +17,6 @@ fn main() {
     let tokens = lex.tokenize();
     println!("{:?}", tokens);
 
-    let transpiled = lex.transpile(tokens, transpile_settings);
+    let transpiled = transpile::transpile(tokens, transpile_settings);
     println!("{}", transpiled);
 }
