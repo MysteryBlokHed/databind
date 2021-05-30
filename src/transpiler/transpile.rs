@@ -1,11 +1,11 @@
 use super::Transpiler;
-use crate::settings::Settings;
+
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 use std::collections::HashMap;
 
 impl Transpiler {
-    pub fn transpile(tokens: Vec<Token>, settings: Settings) -> String {
+    pub fn transpile(&self, tokens: Vec<Token>) -> String {
         let mut transpiled = String::new();
 
         let mut var_map: HashMap<String, String> = HashMap::new();
@@ -23,7 +23,7 @@ impl Transpiler {
                 Token::VarName(var) => {
                     current_var = var.clone();
                     if active_token == Token::TestVar {
-                        if settings.randomize_var_names {
+                        if self.settings.randomize_var_names {
                             if var_map.contains_key(var) {
                                 transpiled
                                     .push_str(&format!("score --databind {} ", var_map[var])[..]);
@@ -43,7 +43,7 @@ impl Transpiler {
                 Token::Int(int) => {
                     match assignment_operator {
                         Token::InitialSet => {
-                            if settings.randomize_var_names {
+                            if self.settings.randomize_var_names {
                                 if !var_map.contains_key(&current_var) {
                                     let mut random_name = current_var.clone();
                                     let extension: String = rand::thread_rng()
@@ -55,7 +55,7 @@ impl Transpiler {
                                     random_name.push_str(&extension[..]);
 
                                     var_map.insert(current_var.clone(), random_name);
-                                    if settings.var_display_name {
+                                    if self.settings.var_display_name {
                                         transpiled.push_str(
                                             &format!(
                                         "scoreboard objectives add {} dummy {{\"text\":\"{}\"}}\n",
@@ -95,7 +95,7 @@ impl Transpiler {
                             }
                         }
                         Token::VarSet => {
-                            if settings.randomize_var_names {
+                            if self.settings.randomize_var_names {
                                 if var_map.contains_key(&current_var) {
                                     transpiled.push_str(
                                         &format!(
@@ -117,7 +117,7 @@ impl Transpiler {
                             }
                         }
                         Token::VarAdd => {
-                            if settings.randomize_var_names {
+                            if self.settings.randomize_var_names {
                                 if var_map.contains_key(&current_var) {
                                     transpiled.push_str(
                                         &format!(
@@ -139,7 +139,7 @@ impl Transpiler {
                             }
                         }
                         Token::VarSub => {
-                            if settings.randomize_var_names {
+                            if self.settings.randomize_var_names {
                                 if var_map.contains_key(&current_var) {
                                     transpiled.push_str(
                                         &format!(

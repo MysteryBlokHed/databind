@@ -3,7 +3,7 @@ mod token;
 mod transpiler;
 
 fn main() {
-    let transpile_settings = settings::Settings {
+    let transpiler_settings = settings::Settings {
         randomize_var_names: true,
         var_display_name: true,
     };
@@ -19,10 +19,10 @@ execute if :tvar newVar matches 1 run say newVar subtraction worked\r\n\
 execute if :tvar example matches 3 run say example setting worked\r\n",
     );
 
-    let mut transpile = transpiler::Transpiler::new(totally_real_file);
+    let mut transpile = transpiler::Transpiler::new(totally_real_file, transpiler_settings);
     let tokens = transpile.tokenize();
     println!("{:?}", tokens);
 
-    let transpiled = transpiler::Transpiler::transpile(tokens, transpile_settings);
+    let transpiled = transpile.transpile(tokens);
     println!("{}", transpiled);
 }
