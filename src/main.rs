@@ -40,7 +40,6 @@ fn main() {
 
     let mut transpile = transpiler::Transpiler::new(content, transpiler_settings);
     let tokens = transpile.tokenize();
-    println!("{:?}", tokens);
 
     let transpiled = transpile.transpile(tokens);
     println!("{}", transpiled);
