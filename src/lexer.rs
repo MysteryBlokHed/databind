@@ -40,8 +40,16 @@ impl Lexer {
         let mut remaining_params = 0;
         let mut first_whitespace = false;
         let mut current_non_databind = String::new();
+        let mut comment = false;
 
         while self.current_char != '\u{0}' {
+            while comment {
+                self.next_char();
+                if self.current_char == '\n' {
+                    comment = false;
+                }
+            }
+
             if !building_keyword && last_char.is_whitespace() && self.current_char == ':' {
                 building_keyword = true;
                 if current_non_databind.len() > 0 {
@@ -162,6 +170,9 @@ impl Lexer {
                     }
                     _ => {}
                 }
+            } else if self.current_char == '#' && tokens.last().unwrap() == &Token::NewLine {
+                comment = true;
+                continue;
             } else if !['\r', '\n'].contains(&self.current_char) {
                 current_non_databind.push(self.current_char);
             } else if current_non_databind.len() > 0 {

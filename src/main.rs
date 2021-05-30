@@ -15,6 +15,7 @@ fn main() {
 :var example += 5\r\n\
 :var example = 3\r\n\
 :var newVar -= 2\r\n\
+# Test if things worked
 execute if :tvar newVar matches 1 run say newVar subtraction worked\r\n\
 execute if :tvar example matches 3 run say example setting worked\r\n",
     );
