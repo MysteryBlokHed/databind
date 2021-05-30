@@ -1,21 +1,21 @@
 use crate::settings::Settings;
 
-pub struct Transpiler {
+pub struct Transpiler<'a> {
     chars: Vec<char>,
     position: usize,
     current_char: char,
-    settings: Settings,
+    settings: &'a Settings,
 }
 
-impl Transpiler {
-    pub fn new(text: String, settings: Settings) -> Transpiler {
+impl Transpiler<'_> {
+    pub fn new<'a>(text: String, settings: &'a Settings) -> Transpiler<'a> {
         let first_char = text.chars().nth(0).unwrap();
 
         Transpiler {
             chars: text.chars().collect(),
             position: 0,
             current_char: first_char,
-            settings: settings,
+            settings: &settings,
         }
     }
 

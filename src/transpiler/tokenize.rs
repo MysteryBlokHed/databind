@@ -3,7 +3,7 @@ use crate::token::Token;
 
 const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-impl Transpiler {
+impl Transpiler<'_> {
     pub fn tokenize(&mut self) -> Vec<Token> {
         let mut tokens: Vec<Token> = Vec::new();
 
@@ -61,7 +61,10 @@ impl Transpiler {
                         building_token = Token::TestVar;
                         // remaining_params = 1;
                     }
-                    "func" => tokens.push(Token::DefineFunc),
+                    "func" => {
+                        tokens.push(Token::DefineFunc);
+                        building_token = Token::DefineFunc;
+                    }
                     "endfunc" => tokens.push(Token::EndFunc),
                     "call" => tokens.push(Token::CallFunc),
                     _ => keyword_found = false,
@@ -144,9 +147,23 @@ impl Transpiler {
                             current_keyword.push(self.current_char);
                         }
                     }
+                    Token::DefineFunc => {
+                        if self.current_char.is_whitespace() {
+                            tokens.push(Token::FuncName(current_keyword));
+                            building_keyword = false;
+                            building_token = Token::None;
+                            current_keyword = String::new();
+                            first_whitespace = false;
+                        } else {
+                            current_keyword.push(self.current_char);
+                        }
+                    }
                     _ => {}
                 }
-            } else if self.current_char == '#' && tokens.last().unwrap() == &Token::NewLine {
+            } else if self.current_char == '#'
+                && tokens.last().ok_or(Token::None).is_ok()
+                && tokens.last().unwrap() == &Token::NewLine
+            {
                 comment = true;
                 continue;
             } else if !['\r', '\n'].contains(&self.current_char) {

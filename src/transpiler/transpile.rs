@@ -4,11 +4,21 @@ use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 use std::collections::HashMap;
 
-impl Transpiler {
-    pub fn transpile(&self, tokens: Vec<Token>) -> String {
+impl Transpiler<'_> {
+    pub fn transpile(
+        &self,
+        tokens: Vec<Token>,
+        existing_var_map: Option<&HashMap<String, String>>,
+        return_var_map: bool,
+    ) -> (String, Option<HashMap<String, String>>) {
         let mut transpiled = String::new();
+        let mut var_map: HashMap<String, String>;
 
-        let mut var_map: HashMap<String, String> = HashMap::new();
+        if let Some(_) = existing_var_map {
+            var_map = existing_var_map.unwrap().clone();
+        } else {
+            var_map = HashMap::new();
+        }
 
         let mut active_token = Token::None;
 
@@ -173,6 +183,10 @@ impl Transpiler {
             }
         }
 
-        transpiled
+        if return_var_map {
+            (transpiled, Some(var_map))
+        } else {
+            (transpiled, None)
+        }
     }
 }

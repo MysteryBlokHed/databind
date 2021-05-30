@@ -8,6 +8,7 @@ pub enum Token {
     Objective,
     TestVar,
     DefineFunc,
+    FuncName(String),
     EndFunc,
     CallFunc,
     /// The created def
@@ -17,7 +18,7 @@ pub enum Token {
     /// Get a replacement
     DefName(String),
     ObjectiveName(String),
-    /// Set the initial value of a variable (`:=`)
+    /// Set the initial value of a variable (`.=`)
     InitialSet,
     /// Set the value of a variable (`=`)
     VarSet,
