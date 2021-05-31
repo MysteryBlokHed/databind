@@ -8,8 +8,8 @@ mod settings;
 mod token;
 mod transpiler;
 
-fn create_func_json(functions_path: &Path, func_name: &str) -> String {
-    // Get namespace (name of folder containing /functions)
+/// Get namespace (name of folder containing `/functions`)
+fn get_namespace(functions_path: &Path) -> &str {
     let namespace_folder = functions_path
         .parent()
         .unwrap()
@@ -26,7 +26,15 @@ fn create_func_json(functions_path: &Path, func_name: &str) -> String {
         namespace = namespace_folder.split('\\').last().unwrap();
     }
 
-    format!("{{\"values\": [\"{}:{}\"]}}", namespace, func_name)
+    namespace
+}
+
+fn create_func_json(functions_path: &Path, func_name: &str) -> String {
+    format!(
+        "{{\"values\": [\"{}:{}\"]}}",
+        get_namespace(functions_path),
+        func_name
+    )
 }
 
 fn main() -> std::io::Result<()> {
@@ -92,7 +100,13 @@ fn main() -> std::io::Result<()> {
                         .expect(&format!("Failed to read file {}", entry.path().display())[..]);
                     let mut transpile = transpiler::Transpiler::new(content, &transpiler_settings);
                     let tokens = transpile.tokenize();
-                    let transpiled = transpile.transpile(tokens, Some(&var_map), true, true);
+                    let transpiled = transpile.transpile(
+                        tokens,
+                        Some(get_namespace(entry.path())),
+                        Some(&var_map),
+                        true,
+                        true,
+                    );
 
                     if let transpiler::TranspileReturn::MultiFileAndMap(
                         files,
@@ -171,7 +185,7 @@ fn main() -> std::io::Result<()> {
             println!("Cannot use functions in a lone file.");
             std::process::exit(1);
         }
-        let transpiled = transpile.transpile(tokens, None, false, false);
+        let transpiled = transpile.transpile(tokens, None, None, false, false);
 
         if let transpiler::TranspileReturn::SingleContents(contents) = transpiled {
             fs::write("databind-out.mcfunction", contents)?;

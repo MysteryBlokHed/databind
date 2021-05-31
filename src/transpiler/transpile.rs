@@ -8,6 +8,7 @@ impl Transpiler<'_> {
     pub fn transpile(
         &self,
         tokens: Vec<Token>,
+        namespace: Option<&str>,
         existing_var_map: Option<&HashMap<String, String>>,
         return_var_map: bool,
         return_multi_file: bool,
@@ -35,6 +36,7 @@ impl Transpiler<'_> {
         // For functions
         let mut in_function = false;
         let mut current_function = String::new();
+        let mut calling_function = false;
         // For objective-related tokens
         let mut current_objective = String::new();
         let mut objective_target = String::new();
@@ -78,11 +80,43 @@ impl Transpiler<'_> {
                 Token::VarAdd => assignment_operator = Token::VarAdd,
                 Token::VarSub => assignment_operator = Token::VarSub,
                 Token::FuncName(name) => {
-                    files.push(String::new());
-                    filename_to_index.insert(name.clone(), files.len() - 1);
-                    in_function = true;
-                    current_function = name.clone();
+                    // Function definition
+                    if !calling_function {
+                        files.push(String::new());
+                        filename_to_index.insert(name.clone(), files.len() - 1);
+                        current_function = name.clone();
+                    // Function call
+                    } else {
+                        // Function contains namespace
+                        let has_namespace = name.contains(':');
+
+                        if has_namespace {
+                            let to_add = format!("function {}", name);
+                            if !in_function {
+                                files[0].push_str(&to_add[..]);
+                            } else {
+                                files[filename_to_index[&current_function]].push_str(&to_add[..]);
+                            }
+                        } else {
+                            if let Some(ns) = namespace {
+                                let to_add = format!("function {}:{}", ns, name);
+                                if !in_function {
+                                    files[0].push_str(&to_add[..]);
+                                } else {
+                                    files[filename_to_index[&current_function]]
+                                        .push_str(&to_add[..]);
+                                }
+                            } else {
+                                println!("No namespace provided for function call.");
+                                std::process::exit(2);
+                            }
+                        }
+
+                        calling_function = false;
+                    }
                 }
+                Token::CallFunc => calling_function = true,
+                Token::DefineFunc => in_function = true,
                 Token::EndFunc => in_function = false,
                 Token::ObjectiveName(name) => current_objective = name.clone(),
                 // An objective type will always be the last part of a new objective
