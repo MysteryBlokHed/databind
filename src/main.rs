@@ -1,11 +1,33 @@
 use clap::{App, Arg};
 use std::collections::HashMap;
 use std::fs;
+use std::path::Path;
 use walkdir::WalkDir;
 
 mod settings;
 mod token;
 mod transpiler;
+
+fn create_func_json(functions_path: &Path, func_name: &str) -> String {
+    // Get namespace (name of folder containing /functions)
+    let namespace_folder = functions_path
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .to_str()
+        .unwrap();
+
+    let namespace: &str;
+
+    if namespace_folder.contains("/") {
+        namespace = namespace_folder.split('/').last().unwrap();
+    } else {
+        namespace = namespace_folder.split('\\').last().unwrap();
+    }
+
+    format!("{{\"values\": [\"{}:{}\"]}}", namespace, func_name)
+}
 
 fn main() -> std::io::Result<()> {
     let matches = App::new("Databind")
@@ -48,8 +70,23 @@ fn main() -> std::io::Result<()> {
         let mut target_folder = datapack.to_string();
         target_folder.push_str(".databind");
 
+        if fs::metadata(&target_folder).is_ok() {
+            println!("Deleting old databind folder...");
+            fs::remove_dir_all(&target_folder)?;
+            println!("Done.");
+        }
+
         for entry in WalkDir::new(&datapack).into_iter().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
+                let new_path_str = entry.path().to_str().unwrap().replace(datapack, "");
+                let path = Path::new(&new_path_str);
+
+                let mut target_path: String = target_folder.to_string();
+                target_path.push('/');
+                target_path.push_str(&format!("{}", path.parent().unwrap().to_str().unwrap())[..]);
+
+                fs::create_dir_all(&target_path)?;
+
                 if entry.path().extension().unwrap() == "databind" {
                     let content = fs::read_to_string(entry.path())
                         .expect(&format!("Failed to read file {}", entry.path().display())[..]);
@@ -64,29 +101,67 @@ fn main() -> std::io::Result<()> {
                     ) = transpiled
                     {
                         var_map = vars;
-                        let mut target_dir: String = target_folder.to_string();
-                        target_dir.push('/');
-                        target_dir
-                            .push_str(&format!("{}", entry.path().parent().unwrap().display())[..]);
-
-                        fs::create_dir_all(&target_dir)?;
 
                         for (key, value) in filename_to_index.iter() {
                             if key == "" {
-                                let filename = entry.path().file_stem().unwrap().to_str().unwrap();
-                                let full_path = format!("{}/{}.mcfunction", target_dir, filename);
-                                println!("main full path {}", full_path);
+                                let filename_no_ext = path.file_stem().unwrap().to_str().unwrap();
+                                let full_path =
+                                    format!("{}/{}.mcfunction", target_path, filename_no_ext);
+
+                                let json_path_str = format!(
+                                    "{}/data/minecraft/tags/functions/{}.json",
+                                    datapack, filename_no_ext
+                                );
+                                let json_path = Path::new(&json_path_str);
+
+                                // Create <function>.json if it does not exist
+                                if !json_path.exists() {
+                                    let new_json_path_str = format!(
+                                        "{}/data/minecraft/tags/functions/{}.json",
+                                        target_folder, filename_no_ext
+                                    );
+                                    let new_json_path = Path::new(&new_json_path_str);
+
+                                    fs::create_dir_all(&new_json_path.parent().unwrap())?;
+
+                                    fs::write(
+                                        new_json_path,
+                                        create_func_json(path, filename_no_ext),
+                                    )?;
+                                }
 
                                 fs::write(full_path, &files[0])?;
                                 continue;
                             }
 
-                            let full_path = format!("{}/{}.mcfunction", target_dir, key);
-                            println!("func full path {}", full_path);
+                            let full_path = format!("{}/{}.mcfunction", target_path, key);
+
+                            let json_path_str =
+                                format!("{}/data/minecraft/tags/functions/{}.json", datapack, key);
+                            let json_path = Path::new(&json_path_str);
+
+                            // Create <function>.json if it does not exist
+                            if !json_path.exists() {
+                                println!("Not real");
+                                let new_json_path_str = format!(
+                                    "{}/data/minecraft/tags/functions/{}.json",
+                                    target_folder, key,
+                                );
+                                let new_json_path = Path::new(&new_json_path_str);
+
+                                println!("new json whatever tf: {}", new_json_path_str);
+
+                                fs::create_dir_all(&new_json_path.parent().unwrap())?;
+                                fs::write(new_json_path, create_func_json(path, key))?;
+                            }
 
                             fs::write(full_path, &files[*value])?;
                         }
                     }
+                } else {
+                    let filename = path.file_name().unwrap().to_str().unwrap();
+                    let full_path = format!("{}/{}", target_path, filename);
+                    fs::copy(entry.path(), full_path)?;
                 }
             }
         }
