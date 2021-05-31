@@ -1,15 +1,14 @@
 <h1 align="center">Databind</h1>
 <!-- Shields.io -->
 <p align="center">
-  <a href="/releases">
+  <a href="https://github.com/MysteryBlokHed/databind/releases">
     <img src="https://img.shields.io/github/v/release/MysteryBlokHed/databind" />
   </a>
   <a href="#license">
     <img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green"/>
   </a>
 </p>
-
-Expand the functionality of Minecraft Datapacks.
+<p align="center">Expand the functionality of Minecraft Datapacks.</p>
 
 ## Use
 
@@ -26,7 +25,13 @@ To view a help menu, run `cargo run` without any arguments or run
 `cargo run -- -h`. To pass arguments to Databind, add arguments
 after `cargo run --` (including the two dashes).
 
-## Language Reference
+Extra information is available
+[on the Wiki](https://github.com/MysteryBlokHed/databind/wiki/Databind-CLI).
+
+## Syntax and Examples
+
+Syntax and examples are available
+[on the Wiki](https://github.com/MysteryBlokHed/databind/wiki).
 
 ## License
 
