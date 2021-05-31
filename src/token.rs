@@ -1,23 +1,28 @@
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
-    /// Define a variable (`:var`)
+    /// Used before a mention of a variable (`Token::VarName`)
     Var,
     /// Define a replacement (`:def`)
     CreateDef,
     GetDef,
+    /// Used before an objective definition
     Objective,
+    /// Used before an objective modification
     SetObjective,
+    /// Used before a variable (`Token::VarName`) to test
     TestVar,
+    /// Define a function
     DefineFunc,
+    /// The name of a function
     FuncName(String),
+    /// End a function definition
     EndFunc,
     CallFunc,
-    /// The created def
-    CreatedDef([String; 2]),
-    /// Get a variable
+    // /// The created def
+    // CreatedDef([String; 2]),
     VarName(String),
-    /// Get a replacement
-    DefName(String),
+    // /// Get a replacement
+    // DefName(String),
     ObjectiveName(String),
     ObjectiveType(String),
     Target(String),
@@ -30,11 +35,8 @@ pub enum Token {
     /// Subtract from the value of a variable (`-=`)
     VarSub,
     Int(i32),
-    /// Left parenthesis
-    LeftParen,
-    /// Right parenthesis
-    RightParen,
     /// Commands, etc. that are not by databind
+    /// (eg. `execute if `)
     NonDatabind(String),
     NewLine,
     None,
