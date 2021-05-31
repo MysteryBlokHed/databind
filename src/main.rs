@@ -33,7 +33,7 @@ fn main() -> std::io::Result<()> {
     let matches = App::new("Databind")
         .version("0.1.0")
         .author("Adam Thompson-Sharpe <adamthompsonsharpe@gmail.com>")
-        .about("A superset of mcfunctions for Minecraft Datapacks.")
+        .about("Expand the functionality of Minecraft Datapacks.")
         .arg(
             Arg::with_name("DATAPACK")
                 .help("The datapack (or file) to transpile")

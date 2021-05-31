@@ -9,7 +9,24 @@
   </a>
 </p>
 
-A superset of mcfunctions for Minecraft Datapacks.
+Expand the functionality of Minecraft Datapacks.
+
+## Use
+
+This project requires [cargo](https://www.rust-lang.org/learn/get-started).
+
+### Building/Running
+
+To build the project, run `cargo build` in the root directory.
+To run the project, run `cargo run`.
+
+### CLI Help
+
+To view a help menu, run `cargo run` without any arguments or run
+`cargo run -- -h`. To pass arguments to Databind, add arguments
+after `cargo run --` (including the two dashes).
+
+## Language Reference
 
 ## License
 
