@@ -68,8 +68,11 @@ impl Transpiler<'_> {
                         tokens.push(Token::DefineFunc);
                         building_token = Token::DefineFunc;
                     }
-                    "endfunc" => tokens.push(Token::EndFunc),
-                    "call" => tokens.push(Token::CallFunc),
+                    "endfunc" => {
+                        tokens.push(Token::EndFunc);
+                        building_keyword = false;
+                    }
+                    // "call" => tokens.push(Token::CallFunc),
                     _ => keyword_found = false,
                 }
 
@@ -151,6 +154,7 @@ impl Transpiler<'_> {
                     Token::DefineFunc => {
                         if self.current_char.is_whitespace() {
                             tokens.push(Token::FuncName(current_keyword));
+
                             building_keyword = false;
                             building_token = Token::None;
                             current_keyword = String::new();
