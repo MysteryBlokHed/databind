@@ -32,15 +32,20 @@ impl Transpiler<'_> {
         // For variable-related tokens
         let mut current_var = String::new();
         let mut assignment_operator = Token::None;
-
         // For functions
         let mut in_function = false;
         let mut current_function = String::new();
+        // For objective-related tokens
+        let mut current_objective = String::new();
+        let mut objective_target = String::new();
 
         for token in tokens.iter() {
             match token {
                 Token::Var => active_token = Token::Var,
                 Token::TestVar => active_token = Token::TestVar,
+                Token::Objective => active_token = Token::Objective,
+                Token::SetObjective => active_token = Token::SetObjective,
+                Token::Target(target) => objective_target = target.clone(),
                 Token::VarName(var) => {
                     current_var = var.clone();
                     if active_token == Token::TestVar {
@@ -79,26 +84,109 @@ impl Transpiler<'_> {
                     current_function = name.clone();
                 }
                 Token::EndFunc => in_function = false,
-                // An int will always be the last part of a variable assignment
-                Token::Int(int) => {
-                    match assignment_operator {
-                        Token::InitialSet => {
-                            if self.settings.randomize_var_names {
-                                if !var_map.contains_key(&current_var) {
-                                    let mut random_name = current_var.clone();
-                                    let extension: String = rand::thread_rng()
-                                        .sample_iter(&Alphanumeric)
-                                        .take(4)
-                                        .map(char::from)
-                                        .collect();
-                                    random_name.push('-');
-                                    random_name.push_str(&extension[..]);
+                Token::ObjectiveName(name) => current_objective = name.clone(),
+                // An objective type will always be the last part of a new objective
+                Token::ObjectiveType(objective) => {
+                    if self.settings.randomize_var_names {
+                        if !var_map.contains_key(&current_objective) {
+                            let mut random_name = current_objective.clone();
+                            let extension: String = rand::thread_rng()
+                                .sample_iter(&Alphanumeric)
+                                .take(4)
+                                .map(char::from)
+                                .collect();
+                            random_name.push('-');
+                            random_name.push_str(&extension[..]);
 
-                                    var_map.insert(current_var.clone(), random_name);
-                                    if self.settings.var_display_name {
+                            var_map.insert(current_objective.clone(), random_name);
+                            if self.settings.var_display_name {
+                                let to_add = format!(
+                                    "scoreboard objectives add {} {} {{\"text\":\"{}\"}}\n",
+                                    var_map[&current_objective], objective, current_objective
+                                );
+
+                                if !in_function {
+                                    files[0].push_str(&to_add[..]);
+                                } else {
+                                    files[filename_to_index[&current_function]]
+                                        .push_str(&to_add[..]);
+                                }
+                            } else {
+                                let to_add = format!(
+                                    "scoreboard objectives add {} {}\n",
+                                    var_map[&current_objective], objective
+                                );
+
+                                if !in_function {
+                                    files[0].push_str(&to_add[..]);
+                                } else {
+                                    files[filename_to_index[&current_function]]
+                                        .push_str(&to_add[..]);
+                                }
+                            }
+                        } else {
+                            println!("[ERROR] Attempted creation of already-existing objective.");
+                            std::process::exit(1);
+                        }
+                    } else {
+                        let to_add = format!(
+                            "scoreboard objectives add {} {}\n",
+                            current_objective, objective
+                        );
+
+                        if !in_function {
+                            files[0].push_str(&to_add[..]);
+                        } else {
+                            files[filename_to_index[&current_function]].push_str(&to_add[..]);
+                        }
+                    }
+                    active_token = Token::None;
+                }
+                // An int will always be the last part of a variable or objective assignment
+                Token::Int(int) => {
+                    if active_token == Token::Var {
+                        match assignment_operator {
+                            Token::InitialSet => {
+                                if self.settings.randomize_var_names {
+                                    if !var_map.contains_key(&current_var) {
+                                        let mut random_name = current_var.clone();
+                                        let extension: String = rand::thread_rng()
+                                            .sample_iter(&Alphanumeric)
+                                            .take(4)
+                                            .map(char::from)
+                                            .collect();
+                                        random_name.push('-');
+                                        random_name.push_str(&extension[..]);
+
+                                        var_map.insert(current_var.clone(), random_name);
+                                        if self.settings.var_display_name {
+                                            let to_add = format!(
+                                                "scoreboard objectives add {} dummy {{\"text\":\"{}\"}}\n",
+                                                var_map[&current_var], current_var
+                                            );
+
+                                            if !in_function {
+                                                files[0].push_str(&to_add[..]);
+                                            } else {
+                                                files[filename_to_index[&current_function]]
+                                                    .push_str(&to_add[..]);
+                                            }
+                                        } else {
+                                            let to_add = format!(
+                                                "scoreboard objectives add {} dummy\n",
+                                                var_map[&current_var]
+                                            );
+
+                                            if !in_function {
+                                                files[0].push_str(&to_add[..]);
+                                            } else {
+                                                files[filename_to_index[&current_function]]
+                                                    .push_str(&to_add[..]);
+                                            }
+                                        }
                                         let to_add = format!(
-                                            "scoreboard objectives add {} dummy {{\"text\":\"{}\"}}\n",
-                                            var_map[&current_var], current_var
+                                            "scoreboard players set --databind {} {}",
+                                            var_map[&current_var], int
                                         );
 
                                         if !in_function {
@@ -108,21 +196,27 @@ impl Transpiler<'_> {
                                                 .push_str(&to_add[..]);
                                         }
                                     } else {
-                                        let to_add = format!(
-                                            "scoreboard objectives add {} dummy\n",
-                                            var_map[&current_var]
+                                        println!(
+                                            "[ERROR] Attempted creation of already-existing variable."
                                         );
-
-                                        if !in_function {
-                                            files[0].push_str(&to_add[..]);
-                                        } else {
-                                            files[filename_to_index[&current_function]]
-                                                .push_str(&to_add[..]);
-                                        }
+                                        std::process::exit(1);
                                     }
+                                } else {
+                                    let to_add = format!(
+                                        "scoreboard objectives add {} dummy\n",
+                                        current_var
+                                    );
+
+                                    if !in_function {
+                                        files[0].push_str(&to_add[..]);
+                                    } else {
+                                        files[filename_to_index[&current_function]]
+                                            .push_str(&to_add[..]);
+                                    }
+
                                     let to_add = format!(
                                         "scoreboard players set --databind {} {}",
-                                        var_map[&current_var], int
+                                        current_var, int
                                     );
 
                                     if !in_function {
@@ -131,48 +225,39 @@ impl Transpiler<'_> {
                                         files[filename_to_index[&current_function]]
                                             .push_str(&to_add[..]);
                                     }
-                                } else {
-                                    println!(
-                                        "[ERROR] Attempted creation of already-existing variable."
-                                    );
-                                    std::process::exit(1);
-                                }
-                            } else {
-                                let to_add =
-                                    format!("scoreboard objectives add {} dummy\n", current_var);
-
-                                if !in_function {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_function]]
-                                        .push_str(&to_add[..]);
-                                }
-
-                                let to_add = format!(
-                                    "scoreboard players set --databind {} {}",
-                                    current_var, int
-                                );
-
-                                if !in_function {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_function]]
-                                        .push_str(&to_add[..]);
                                 }
                             }
-                        }
-                        Token::VarAdd | Token::VarSub | Token::VarSet => {
-                            let action = match assignment_operator {
-                                Token::VarAdd => "add",
-                                Token::VarSub => "remove",
-                                _ => "set",
-                            };
+                            Token::VarAdd | Token::VarSub | Token::VarSet => {
+                                let action = match assignment_operator {
+                                    Token::VarAdd => "add",
+                                    Token::VarSub => "remove",
+                                    _ => "set",
+                                };
 
-                            if self.settings.randomize_var_names {
-                                if var_map.contains_key(&current_var) {
+                                if self.settings.randomize_var_names {
+                                    if var_map.contains_key(&current_var) {
+                                        let to_add = format!(
+                                            "scoreboard players {} --databind {} {}",
+                                            action, var_map[&current_var], int
+                                        );
+
+                                        if !in_function {
+                                            files[0].push_str(&to_add[..]);
+                                        } else {
+                                            files[filename_to_index[&current_function]]
+                                                .push_str(&to_add[..]);
+                                        }
+                                    } else {
+                                        println!(
+                                            "[ERROR] Attempted {} of non-existant variable",
+                                            action
+                                        );
+                                        std::process::exit(1);
+                                    }
+                                } else {
                                     let to_add = format!(
                                         "scoreboard players {} --databind {} {}",
-                                        action, var_map[&current_var], int
+                                        action, &current_var, int
                                     );
 
                                     if !in_function {
@@ -181,28 +266,61 @@ impl Transpiler<'_> {
                                         files[filename_to_index[&current_function]]
                                             .push_str(&to_add[..]);
                                     }
-                                } else {
-                                    println!(
-                                        "[ERROR] Attempted {} of non-existant variable",
-                                        action
-                                    );
-                                    std::process::exit(1);
-                                }
-                            } else {
-                                let to_add = format!(
-                                    "scoreboard players {} --databind {} {}",
-                                    action, &current_var, int
-                                );
-
-                                if !in_function {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_function]]
-                                        .push_str(&to_add[..]);
                                 }
                             }
+                            _ => {}
                         }
-                        _ => {}
+                    } else if active_token == Token::SetObjective {
+                        match assignment_operator {
+                            Token::VarSet => {
+                                let action = match assignment_operator {
+                                    Token::VarAdd => "add",
+                                    Token::VarSub => "remove",
+                                    _ => "set",
+                                };
+
+                                if self.settings.randomize_var_names {
+                                    if var_map.contains_key(&current_objective) {
+                                        let to_add = format!(
+                                            "scoreboard players {} {} {} {}",
+                                            action,
+                                            objective_target,
+                                            var_map[&current_objective],
+                                            int
+                                        );
+
+                                        if !in_function {
+                                            files[0].push_str(&to_add[..]);
+                                        } else {
+                                            files[filename_to_index[&current_function]]
+                                                .push_str(&to_add[..]);
+                                        }
+                                    } else {
+                                        println!(
+                                            "[ERROR] Attempted {} of non-existant variable",
+                                            action
+                                        );
+                                        std::process::exit(1);
+                                    }
+                                } else {
+                                    let to_add = format!(
+                                        "scoreboard players {} {} {} {}",
+                                        action, objective_target, &current_objective, int
+                                    );
+
+                                    if !in_function {
+                                        files[0].push_str(&to_add[..]);
+                                    } else {
+                                        files[filename_to_index[&current_function]]
+                                            .push_str(&to_add[..]);
+                                    }
+                                }
+                            }
+                            _ => {
+                                println!(".= operator was mistakenly tokenized for objective");
+                                std::process::exit(2);
+                            }
+                        }
                     }
                     active_token = Token::None;
                     assignment_operator = Token::None;

@@ -6,6 +6,7 @@ pub enum Token {
     CreateDef,
     GetDef,
     Objective,
+    SetObjective,
     TestVar,
     DefineFunc,
     FuncName(String),
@@ -18,6 +19,8 @@ pub enum Token {
     /// Get a replacement
     DefName(String),
     ObjectiveName(String),
+    ObjectiveType(String),
+    Target(String),
     /// Set the initial value of a variable (`.=`)
     InitialSet,
     /// Set the value of a variable (`=`)

@@ -49,17 +49,20 @@ impl Transpiler<'_> {
                     "gdef" => {
                         tokens.push(Token::GetDef);
                         building_token = Token::CreateDef;
-                        remaining_params = 1;
                     }
                     "obj" => {
                         tokens.push(Token::Objective);
                         building_token = Token::Objective;
                         remaining_params = 2;
                     }
+                    "sobj" => {
+                        tokens.push(Token::SetObjective);
+                        building_token = Token::SetObjective;
+                        remaining_params = 4;
+                    }
                     "tvar" => {
                         tokens.push(Token::TestVar);
                         building_token = Token::TestVar;
-                        // remaining_params = 1;
                     }
                     "func" => {
                         tokens.push(Token::DefineFunc);
@@ -116,23 +119,21 @@ impl Transpiler<'_> {
                                 }
                             }
                             // Value
-                            1 => {
+                            _ => {
                                 if self.current_char.is_whitespace() {
                                     let var_value: i32 = current_keyword.parse().unwrap();
                                     tokens.push(Token::Int(var_value));
-                                    remaining_params -= 1;
+
+                                    building_keyword = false;
+                                    building_token = Token::None;
+                                    current_keyword = String::new();
+                                    first_whitespace = false;
                                 } else if DIGITS.contains(&self.current_char) {
                                     current_keyword.push(self.current_char);
                                 } else {
-                                    println!("[ERROR] Variables can only contain integers.");
+                                    println!("[ERROR] Variables can only store integers.");
                                     std::process::exit(1);
                                 }
-                            }
-                            _ => {
-                                building_keyword = false;
-                                building_token = Token::None;
-                                current_keyword = String::new();
-                                first_whitespace = false;
                             }
                         }
                     }
@@ -158,6 +159,89 @@ impl Transpiler<'_> {
                             current_keyword.push(self.current_char);
                         }
                     }
+                    Token::Objective => match remaining_params {
+                        2 => {
+                            if self.current_char.is_whitespace() {
+                                tokens.push(Token::ObjectiveName(current_keyword));
+                                current_keyword = String::new();
+                                remaining_params -= 1;
+                            } else {
+                                current_keyword.push(self.current_char);
+                            }
+                        }
+                        _ => {
+                            if self.current_char.is_whitespace() {
+                                tokens.push(Token::ObjectiveType(current_keyword));
+                                building_keyword = false;
+                                building_token = Token::None;
+                                current_keyword = String::new();
+                                first_whitespace = false;
+                            } else {
+                                current_keyword.push(self.current_char);
+                            }
+                        }
+                    },
+                    Token::SetObjective => match remaining_params {
+                        4 => {
+                            if self.current_char.is_whitespace() {
+                                tokens.push(Token::ObjectiveName(current_keyword));
+                                current_keyword = String::new();
+                                remaining_params -= 1;
+                            } else {
+                                current_keyword.push(self.current_char);
+                            }
+                        }
+                        3 => {
+                            if self.current_char.is_whitespace() {
+                                tokens.push(Token::Target(current_keyword));
+                                current_keyword = String::new();
+                                remaining_params -= 1;
+                            } else {
+                                current_keyword.push(self.current_char);
+                            }
+                        }
+                        2 => {
+                            if self.current_char.is_whitespace() {
+                                if assignment_operators.contains(&&current_keyword[..]) {
+                                    match &current_keyword[..] {
+                                        ".=" => {
+                                            println!(
+                                                "The .= operator is not valid for objectives."
+                                            );
+                                            std::process::exit(1);
+                                        }
+                                        "=" => tokens.push(Token::VarSet),
+                                        "+=" => tokens.push(Token::VarAdd),
+                                        "-=" => tokens.push(Token::VarSub),
+                                        _ => {
+                                            println!("[ERROR] Someone didn't update the assignment operator match!");
+                                            std::process::exit(2);
+                                        }
+                                    }
+                                    current_keyword = String::new();
+                                    remaining_params -= 1;
+                                }
+                            } else {
+                                current_keyword.push(self.current_char);
+                            }
+                        }
+                        _ => {
+                            if self.current_char.is_whitespace() {
+                                let var_value: i32 = current_keyword.parse().unwrap();
+                                tokens.push(Token::Int(var_value));
+
+                                building_keyword = false;
+                                building_token = Token::None;
+                                current_keyword = String::new();
+                                first_whitespace = false;
+                            } else if DIGITS.contains(&self.current_char) {
+                                current_keyword.push(self.current_char);
+                            } else {
+                                println!("[ERROR] Objectives can only store integers.");
+                                std::process::exit(1);
+                            }
+                        }
+                    },
                     _ => {}
                 }
             } else if self.current_char == '#'
