@@ -225,6 +225,11 @@ impl Transpiler<'_> {
             }
         }
 
+        // Remove leading/trailing whitespace from files
+        for file in files.iter_mut() {
+            *file = file.trim().to_string();
+        }
+
         if return_var_map && return_multi_file {
             TranspileReturn::MultiFileAndMap(files, filename_to_index, var_map)
         } else if !return_var_map && !return_multi_file {

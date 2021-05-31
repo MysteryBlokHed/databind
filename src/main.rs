@@ -142,14 +142,11 @@ fn main() -> std::io::Result<()> {
 
                             // Create <function>.json if it does not exist
                             if !json_path.exists() {
-                                println!("Not real");
                                 let new_json_path_str = format!(
                                     "{}/data/minecraft/tags/functions/{}.json",
                                     target_folder, key,
                                 );
                                 let new_json_path = Path::new(&new_json_path_str);
-
-                                println!("new json whatever tf: {}", new_json_path_str);
 
                                 fs::create_dir_all(&new_json_path.parent().unwrap())?;
                                 fs::write(new_json_path, create_func_json(path, key))?;
