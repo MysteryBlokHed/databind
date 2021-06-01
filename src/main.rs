@@ -48,6 +48,18 @@ fn main() -> std::io::Result<()> {
                 .required(true),
         )
         .arg(
+            Arg::with_name("config")
+                .short("c")
+                .long("config")
+                .help("Configuration for the transpiler.")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("generate-func-json")
+                .long("generate-func-json")
+                .help("Generate JSON files for functions in minecraft/tags/functions"),
+        )
+        .arg(
             Arg::with_name("random-var-names")
                 .long("random-var-names")
                 .help(
@@ -65,10 +77,49 @@ fn main() -> std::io::Result<()> {
         )
         .get_matches();
 
-    let transpiler_settings = settings::Settings {
-        randomize_var_names: matches.is_present("random-var-names"),
-        var_display_name: matches.is_present("var-display-names"),
-    };
+    let config_path_str: String;
+
+    if matches.is_present("config") {
+        config_path_str = matches.value_of("config").unwrap().to_string();
+
+        if fs::metadata(&config_path_str).is_err() {
+            println!("Non-existant config file specified.");
+            std::process::exit(1);
+        }
+    } else {
+        config_path_str = String::from("databind.toml");
+    }
+
+    let config_path = Path::new(&config_path_str);
+    if config_path.is_dir() {
+        println!("Directory provided for config file.");
+        std::process::exit(1);
+    }
+
+    let mut transpiler_settings: settings::Settings;
+
+    if config_path.exists() {
+        let config_contents = fs::read_to_string(&config_path)?;
+        transpiler_settings = toml::from_str(&config_contents[..]).unwrap();
+
+        // Override config settings with CLI arguments if passed
+        if matches.is_present("random-var-names") {
+            transpiler_settings.random_var_names = true;
+        }
+        if matches.is_present("var-display-names") {
+            transpiler_settings.var_display_names = true;
+        }
+        if matches.is_present("generate-func-json") {
+            transpiler_settings.generate_func_json = true;
+        }
+    } else {
+        transpiler_settings = settings::Settings {
+            random_var_names: matches.is_present("random-var-names"),
+            var_display_names: matches.is_present("var-display-names"),
+            generate_func_json: matches.is_present("generate-func-json"),
+            func_json_exclusions: Vec::new(),
+        }
+    }
 
     let datapack = matches.value_of("DATAPACK").unwrap();
     let datapack_is_dir = fs::metadata(datapack)?.is_dir();

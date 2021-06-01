@@ -51,7 +51,7 @@ impl Transpiler<'_> {
                 Token::VarName(var) => {
                     current_var = var.clone();
                     if active_token == Token::TestVar {
-                        if self.settings.randomize_var_names {
+                        if self.settings.random_var_names {
                             if var_map.contains_key(var) {
                                 let to_add = format!("score --databind {} ", var_map[var]);
 
@@ -121,7 +121,7 @@ impl Transpiler<'_> {
                 Token::ObjectiveName(name) => current_objective = name.clone(),
                 // An objective type will always be the last part of a new objective
                 Token::ObjectiveType(objective) => {
-                    if self.settings.randomize_var_names {
+                    if self.settings.random_var_names {
                         if !var_map.contains_key(&current_objective) {
                             let mut random_name = current_objective.clone();
                             let extension: String = rand::thread_rng()
@@ -133,7 +133,7 @@ impl Transpiler<'_> {
                             random_name.push_str(&extension[..]);
 
                             var_map.insert(current_objective.clone(), random_name);
-                            if self.settings.var_display_name {
+                            if self.settings.var_display_names {
                                 let to_add = format!(
                                     "scoreboard objectives add {} {} {{\"text\":\"{}\"}}\n",
                                     var_map[&current_objective], objective, current_objective
@@ -181,7 +181,7 @@ impl Transpiler<'_> {
                     if active_token == Token::Var {
                         match assignment_operator {
                             Token::InitialSet => {
-                                if self.settings.randomize_var_names {
+                                if self.settings.random_var_names {
                                     if !var_map.contains_key(&current_var) {
                                         let mut random_name = current_var.clone();
                                         let extension: String = rand::thread_rng()
@@ -193,7 +193,7 @@ impl Transpiler<'_> {
                                         random_name.push_str(&extension[..]);
 
                                         var_map.insert(current_var.clone(), random_name);
-                                        if self.settings.var_display_name {
+                                        if self.settings.var_display_names {
                                             let to_add = format!(
                                                 "scoreboard objectives add {} dummy {{\"text\":\"{}\"}}\n",
                                                 var_map[&current_var], current_var
@@ -268,7 +268,7 @@ impl Transpiler<'_> {
                                     _ => "set",
                                 };
 
-                                if self.settings.randomize_var_names {
+                                if self.settings.random_var_names {
                                     if var_map.contains_key(&current_var) {
                                         let to_add = format!(
                                             "scoreboard players {} --databind {} {}",
@@ -313,7 +313,7 @@ impl Transpiler<'_> {
                                     _ => "set",
                                 };
 
-                                if self.settings.randomize_var_names {
+                                if self.settings.random_var_names {
                                     if var_map.contains_key(&current_objective) {
                                         let to_add = format!(
                                             "scoreboard players {} {} {} {}",
