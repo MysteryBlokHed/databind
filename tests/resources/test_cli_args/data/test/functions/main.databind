@@ -1,0 +1,3 @@
+:func a_function
+say Hello, World!
+:endfunc

@@ -1,0 +1,7 @@
+:func should_be_made
+say Hello, World!
+:endfunc
+
+:func should_not_be_made
+say Hello, World!
+:endfunc
