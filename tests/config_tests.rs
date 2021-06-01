@@ -138,7 +138,10 @@ fn test_cli_args_generate_json() {
     for file in expected_funcs.iter() {
         path.push(format!("{}.mcfunction", file));
         assert!(fs::metadata(&path).is_ok());
-        println!("test_cli_args_no_json: Function {}.mcfunction exists", file);
+        println!(
+            "test_cli_args_generate_json: Function {}.mcfunction exists",
+            file
+        );
         path.pop();
     }
 
@@ -150,7 +153,7 @@ fn test_cli_args_generate_json() {
     for file in expected_json.iter() {
         path.push(format!("{}.json", file));
         assert!(fs::metadata(&path).is_ok());
-        println!("test_config: JSON {}.json exists", file);
+        println!("test_cli_args_generate_json: JSON {}.json exists", file);
         path.pop();
     }
 
