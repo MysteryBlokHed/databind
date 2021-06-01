@@ -173,26 +173,31 @@ fn main() -> std::io::Result<()> {
                                 let full_path =
                                     format!("{}/{}.mcfunction", target_path, filename_no_ext);
 
-                                let json_path_str = format!(
-                                    "{}/data/minecraft/tags/functions/{}.json",
-                                    datapack, filename_no_ext
-                                );
-                                let json_path = Path::new(&json_path_str);
-
-                                // Create <function>.json if it does not exist
-                                if !json_path.exists() {
-                                    let new_json_path_str = format!(
+                                // Create <function>.json if it does not exist and if it is not in exclusions
+                                if transpiler_settings.generate_func_json
+                                    && !transpiler_settings
+                                        .func_json_exclusions
+                                        .contains(&filename_no_ext.to_string())
+                                {
+                                    let json_path_str = format!(
                                         "{}/data/minecraft/tags/functions/{}.json",
-                                        target_folder, filename_no_ext
+                                        datapack, filename_no_ext
                                     );
-                                    let new_json_path = Path::new(&new_json_path_str);
+                                    let json_path = Path::new(&json_path_str);
 
-                                    fs::create_dir_all(&new_json_path.parent().unwrap())?;
+                                    if !json_path.exists() {
+                                        let new_json_path_str = format!(
+                                            "{}/data/minecraft/tags/functions/{}.json",
+                                            target_folder, filename_no_ext
+                                        );
+                                        let new_json_path = Path::new(&new_json_path_str);
 
-                                    fs::write(
-                                        new_json_path,
-                                        create_func_json(path, filename_no_ext),
-                                    )?;
+                                        fs::create_dir_all(&new_json_path.parent().unwrap())?;
+                                        fs::write(
+                                            new_json_path,
+                                            create_func_json(path, filename_no_ext),
+                                        )?;
+                                    }
                                 }
 
                                 fs::write(full_path, &files[0])?;
@@ -201,20 +206,27 @@ fn main() -> std::io::Result<()> {
 
                             let full_path = format!("{}/{}.mcfunction", target_path, key);
 
-                            let json_path_str =
-                                format!("{}/data/minecraft/tags/functions/{}.json", datapack, key);
-                            let json_path = Path::new(&json_path_str);
-
-                            // Create <function>.json if it does not exist
-                            if !json_path.exists() {
-                                let new_json_path_str = format!(
+                            // Create <function>.json if it does not exist and if it is not in exclusions
+                            if transpiler_settings.generate_func_json
+                                && !transpiler_settings.func_json_exclusions.contains(key)
+                            {
+                                let json_path_str = format!(
                                     "{}/data/minecraft/tags/functions/{}.json",
-                                    target_folder, key,
+                                    datapack, key
                                 );
-                                let new_json_path = Path::new(&new_json_path_str);
+                                let json_path = Path::new(&json_path_str);
 
-                                fs::create_dir_all(&new_json_path.parent().unwrap())?;
-                                fs::write(new_json_path, create_func_json(path, key))?;
+                                // Create <function>.json if it does not exist
+                                if !json_path.exists() {
+                                    let new_json_path_str = format!(
+                                        "{}/data/minecraft/tags/functions/{}.json",
+                                        target_folder, key,
+                                    );
+                                    let new_json_path = Path::new(&new_json_path_str);
+
+                                    fs::create_dir_all(&new_json_path.parent().unwrap())?;
+                                    fs::write(new_json_path, create_func_json(path, key))?;
+                                }
                             }
 
                             fs::write(full_path, &files[*value])?;
