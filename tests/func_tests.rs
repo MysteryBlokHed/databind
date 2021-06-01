@@ -18,7 +18,7 @@ fn test_file_structure() {
     path.push("test_file_structure.databind/data");
 
     // Check if function files are correctly placed
-    path.push(format!("test/functions"));
+    path.push("test/functions");
     for file in expected_files.iter() {
         path.push(format!("{}.mcfunction", file));
         println!("testing exists @: {}", path.display());
@@ -30,7 +30,7 @@ fn test_file_structure() {
     path.pop();
 
     // Check if json files are correctly placed
-    path.push(format!("minecraft/tags/functions"));
+    path.push("minecraft/tags/functions");
     for file in expected_files.iter() {
         path.push(format!("{}.json", file));
         assert!(fs::metadata(&path).is_ok());
@@ -40,5 +40,5 @@ fn test_file_structure() {
     // Delete generated folder
     let mut out_path = tests::resources();
     out_path.push("test_file_structure.databind");
-    fs::remove_dir_all(out_path);
+    fs::remove_dir_all(out_path).unwrap();
 }
