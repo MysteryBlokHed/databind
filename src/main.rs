@@ -51,8 +51,13 @@ fn main() -> std::io::Result<()> {
             Arg::with_name("config")
                 .short("c")
                 .long("config")
-                .help("Configuration for the transpiler.")
+                .help("Configuration for the transpiler")
                 .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("ignore-config")
+                .long("ignore-config")
+                .help("Ignore the config file. Used for testing"),
         )
         .arg(
             Arg::with_name("generate-func-json")
@@ -64,7 +69,7 @@ fn main() -> std::io::Result<()> {
                 .long("random-var-names")
                 .help(
                     "Add characters to the end of variable names. \
-                    Does not work when using variables across multiple files.",
+                    Does not work when using variables across multiple files",
                 ),
         )
         .arg(
@@ -98,7 +103,7 @@ fn main() -> std::io::Result<()> {
 
     let mut transpiler_settings: settings::Settings;
 
-    if config_path.exists() {
+    if config_path.exists() && !matches.is_present("ignore-config") {
         let config_contents = fs::read_to_string(&config_path)?;
         transpiler_settings = toml::from_str(&config_contents[..]).unwrap();
 
