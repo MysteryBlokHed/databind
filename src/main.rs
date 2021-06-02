@@ -1,6 +1,8 @@
+use glob::glob;
+use same_file::is_same_file;
 use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 mod cli;
@@ -35,6 +37,24 @@ fn create_func_json(functions_path: &Path, func_name: &str) -> String {
         get_namespace(functions_path),
         func_name
     )
+}
+
+fn to_transpile(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
+    let mut to_transpile: Vec<PathBuf> = Vec::new();
+
+    for files_glob in globs.iter() {
+        let relative_files_glob = format!("{}/{}", prefix, files_glob);
+
+        println!("{}", relative_files_glob);
+
+        let mut files: Vec<PathBuf> = glob(&relative_files_glob)
+            .expect(&format!("Failed to parse glob {}", files_glob)[..])
+            .filter_map(Result::ok)
+            .collect();
+        to_transpile.append(&mut files);
+    }
+
+    to_transpile
 }
 
 fn main() -> std::io::Result<()> {
@@ -81,6 +101,7 @@ fn main() -> std::io::Result<()> {
             var_display_names: matches.is_present("var-display-names"),
             generate_func_json: matches.is_present("generate-func-json"),
             func_json_exclusions: Vec::new(),
+            to_transpile: vec![String::from("**/*.databind")],
         }
     }
 
@@ -98,6 +119,8 @@ fn main() -> std::io::Result<()> {
             println!("Done.");
         }
 
+        let to_transpile = to_transpile(&transpiler_settings.to_transpile, datapack);
+
         for entry in WalkDir::new(&datapack).into_iter().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
                 let new_path_str = entry.path().to_str().unwrap().replace(datapack, "");
@@ -109,7 +132,15 @@ fn main() -> std::io::Result<()> {
 
                 fs::create_dir_all(&target_path)?;
 
-                if entry.path().extension().unwrap() == "databind" {
+                let mut transpile = false;
+
+                for file in to_transpile.iter() {
+                    if is_same_file(file, entry.path()).expect("Failed to check file paths") {
+                        transpile = true;
+                    }
+                }
+
+                if transpile {
                     let content = fs::read_to_string(entry.path())
                         .expect(&format!("Failed to read file {}", entry.path().display())[..]);
                     let mut transpile = transpiler::Transpiler::new(content, &transpiler_settings);

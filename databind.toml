@@ -6,3 +6,5 @@ var_display_names = false
 generate_func_json = true
 # Functions not to generate JSON for
 func_json_exclusions = []
+# Files to transpile
+to_transpile = ["**/*.databind"]

@@ -6,4 +6,5 @@ pub struct Settings {
     pub var_display_names: bool,
     pub generate_func_json: bool,
     pub func_json_exclusions: Vec<String>,
+    pub to_transpile: Vec<String>,
 }
