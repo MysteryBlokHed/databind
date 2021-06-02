@@ -1,18 +1,19 @@
-name: test
+name: build_and_test
 on:
   - push
   - pull_request
 
 jobs:
-  test:
-    name: Test
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-features
+
+      - name: Build
+        run: cargo build --release --all-features
+
+      - name: Test
+        run: cargo test --all-features
