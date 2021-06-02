@@ -1,9 +1,9 @@
-use clap::{App, Arg};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use walkdir::WalkDir;
 
+mod cli;
 mod settings;
 mod token;
 mod transpiler;
@@ -38,49 +38,7 @@ fn create_func_json(functions_path: &Path, func_name: &str) -> String {
 }
 
 fn main() -> std::io::Result<()> {
-    let matches = App::new("Databind")
-        .version("0.1.0")
-        .author("Adam Thompson-Sharpe <adamthompsonsharpe@gmail.com>")
-        .about("Expand the functionality of Minecraft Datapacks.")
-        .arg(
-            Arg::with_name("DATAPACK")
-                .help("The datapack (or file) to transpile")
-                .required(true),
-        )
-        .arg(
-            Arg::with_name("config")
-                .short("c")
-                .long("config")
-                .help("Configuration for the transpiler")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("ignore-config")
-                .long("ignore-config")
-                .help("Ignore the config file. Used for testing"),
-        )
-        .arg(
-            Arg::with_name("generate-func-json")
-                .long("generate-func-json")
-                .help("Generate JSON files for functions in minecraft/tags/functions"),
-        )
-        .arg(
-            Arg::with_name("random-var-names")
-                .long("random-var-names")
-                .help(
-                    "Add characters to the end of variable names. \
-                    Does not work when using variables across multiple files",
-                ),
-        )
-        .arg(
-            Arg::with_name("var-display-names")
-                .long("var-display-names")
-                .help(
-                    "Change the display name of variables in-game to hide extra characters. \
-                    Only relevant with --random-var-names",
-                ),
-        )
-        .get_matches();
+    let matches = cli::get_cli_matches();
 
     let config_path_str: String;
 
