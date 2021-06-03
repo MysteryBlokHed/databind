@@ -1,5 +1,5 @@
 random_var_names = false
 var_display_names = false
-generate_func_json = true
-func_json_exclusions = ["should_not_be_made"]
+generate_func_tags = true
+func_tag_inclusions = ["main", "should_be_made"]
 to_transpile = ["**/*.databind"]

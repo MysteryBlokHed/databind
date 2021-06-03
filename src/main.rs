@@ -92,15 +92,15 @@ fn main() -> std::io::Result<()> {
         if matches.is_present("var-display-names") {
             transpiler_settings.var_display_names = true;
         }
-        if matches.is_present("generate-func-json") {
-            transpiler_settings.generate_func_json = true;
+        if matches.is_present("generate-func-tags") {
+            transpiler_settings.generate_func_tags = true;
         }
     } else {
         transpiler_settings = settings::Settings {
             random_var_names: matches.is_present("random-var-names"),
             var_display_names: matches.is_present("var-display-names"),
-            generate_func_json: matches.is_present("generate-func-json"),
-            func_json_exclusions: Vec::new(),
+            generate_func_tags: matches.is_present("generate-func-tags"),
+            func_tag_inclusions: vec![String::from("tick"), String::from("load")],
             to_transpile: vec![String::from("**/*.databind")],
         }
     }
@@ -167,10 +167,10 @@ fn main() -> std::io::Result<()> {
                                 let full_path =
                                     format!("{}/{}.mcfunction", target_path, filename_no_ext);
 
-                                // Create <function>.json if it does not exist and if it is not in exclusions
-                                if transpiler_settings.generate_func_json
-                                    && !transpiler_settings
-                                        .func_json_exclusions
+                                // Create <function>.json if it does not exist and if it is in the inclusions list
+                                if transpiler_settings.generate_func_tags
+                                    && transpiler_settings
+                                        .func_tag_inclusions
                                         .contains(&filename_no_ext.to_string())
                                 {
                                     let json_path_str = format!(
@@ -200,9 +200,9 @@ fn main() -> std::io::Result<()> {
 
                             let full_path = format!("{}/{}.mcfunction", target_path, key);
 
-                            // Create <function>.json if it does not exist and if it is not in exclusions
-                            if transpiler_settings.generate_func_json
-                                && !transpiler_settings.func_json_exclusions.contains(key)
+                            // Create <function>.json if it does not exist and if it is in the inclusions list
+                            if transpiler_settings.generate_func_tags
+                                && transpiler_settings.func_tag_inclusions.contains(key)
                             {
                                 let json_path_str = format!(
                                     "{}/data/minecraft/tags/functions/{}.json",

@@ -2,9 +2,9 @@
 random_var_names = false
 # Change the display name of randomized vars
 var_display_names = false
-# Whether to auto-generate function JSON in minecraft/tags/functions
-generate_func_json = true
-# Functions not to generate JSON for
-func_json_exclusions = []
+# Whether to generate function tags in minecraft/tags/functions
+generate_func_tags = true
+# Functions to generate tags for
+func_tag_inclusions = ["tick", "load"]
 # Files to transpile
 to_transpile = ["**/*.databind"]

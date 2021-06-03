@@ -23,9 +23,9 @@ pub fn get_cli_matches<'a>() -> clap::ArgMatches<'a> {
                 .help("Ignore the config file. Used for testing"),
         )
         .arg(
-            Arg::with_name("generate-func-json")
-                .long("generate-func-json")
-                .help("Generate JSON files for functions in minecraft/tags/functions"),
+            Arg::with_name("generate-func-tags")
+                .long("generate-func-tags")
+                .help("Generate tags for functions in minecraft/tags/functions"),
         )
         .arg(
             Arg::with_name("random-var-names")

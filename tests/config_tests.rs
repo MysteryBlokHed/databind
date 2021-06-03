@@ -9,20 +9,25 @@ fn test_config() {
     path.push("test_config");
     let path_str = path.to_str().unwrap();
 
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path_str,
-            "--config",
-            &format!("{}/databind.toml", path_str)[..],
-        ],
+    println!("{}", path_str);
+
+    println!(
+        "{}",
+        tests::run_with_args(
+            "cargo",
+            &[
+                "run",
+                "--",
+                path_str,
+                "--config",
+                &format!("{}/databind.toml", path_str)[..],
+            ],
+        )
     );
 
     let expected_funcs = ["main", "should_be_made", "should_not_be_made"];
-    let expected_json = ["main", "should_be_made"];
-    let unexpected_json = ["should_not_be_made"];
+    let expected_tags = ["main", "should_be_made"];
+    let unexpected_tags = ["should_not_be_made"];
 
     path.pop();
     path.push("test_config.databind/data");
@@ -39,21 +44,21 @@ fn test_config() {
     path.pop();
     path.pop();
 
-    // Check if JSON files are correctly placed
+    // Check if tag files are correctly placed
     path.push("minecraft/tags/functions");
-    for file in expected_json.iter() {
-        path.push(format!("{}.json", file));
+    for file in expected_tags.iter() {
+        path.push(format!("{}.tags", file));
         assert!(fs::metadata(&path).is_ok());
-        println!("test_config: JSON {}.json exists", file);
+        println!("test_config: Tag {}.tags exists", file);
         path.pop();
     }
 
-    // Ensure unexpected JSON files do not exist
-    for file in unexpected_json.iter() {
-        path.push(format!("{}.json", file));
+    // Ensure unexpected tag files do not exist
+    for file in unexpected_tags.iter() {
+        path.push(format!("{}.tags", file));
         assert!(fs::metadata(&path).is_err());
         println!(
-            "test_config: JSON {}.json doesn't (and shouldn't) exist",
+            "test_config: Tag {}.tags doesn't (and shouldn't) exist",
             file
         );
         path.pop();
@@ -67,15 +72,15 @@ fn test_config() {
 
 /// Test that CLI options are properly followed
 #[test]
-fn test_cli_args_no_json() {
+fn test_cli_args_no_tags() {
     let mut path = tests::resources();
     path.push("test_cli_args");
     let path_str = path.to_str().unwrap();
 
     tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
 
-    let expected_funcs = ["main", "a_function"];
-    let unexpected_json = ["main", "a_function"];
+    let expected_funcs = ["tick", "a_function"];
+    let unexpected_tags = ["tick", "a_function"];
 
     path.pop();
     path.push("test_cli_args.databind/data");
@@ -85,20 +90,20 @@ fn test_cli_args_no_json() {
     for file in expected_funcs.iter() {
         path.push(format!("{}.mcfunction", file));
         assert!(fs::metadata(&path).is_ok());
-        println!("test_cli_args_no_json: Function {}.mcfunction exists", file);
+        println!("test_cli_args_no_tags: Function {}.mcfunction exists", file);
         path.pop();
     }
 
     path.pop();
     path.pop();
 
-    // Ensure unexpected JSON files do not exist
+    // Ensure unexpected tag files do not exist
     path.push("minecraft/tags/functions");
-    for file in unexpected_json.iter() {
-        path.push(format!("{}.json", file));
+    for file in unexpected_tags.iter() {
+        path.push(format!("{}.tags", file));
         assert!(fs::metadata(&path).is_err());
         println!(
-            "test_cli_args_no_json: JSON {}.json doesn't (and shouldn't) exist",
+            "test_cli_args_no_tags: Tag {}.tags doesn't (and shouldn't) exist",
             file
         );
         path.pop();
@@ -111,7 +116,7 @@ fn test_cli_args_no_json() {
 }
 
 #[test]
-fn test_cli_args_generate_json() {
+fn test_cli_args_generate_tags() {
     let mut path = tests::resources();
     path.push("test_cli_args");
     let path_str = path.to_str().unwrap();
@@ -123,12 +128,13 @@ fn test_cli_args_generate_json() {
             "--",
             path_str,
             "--ignore-config",
-            "--generate-func-json",
+            "--generate-func-tags",
         ],
     );
 
-    let expected_funcs = ["main", "a_function"];
-    let expected_json = ["main", "a_function"];
+    let expected_funcs = ["tick", "a_function"];
+    let expected_tags = ["tick"];
+    let unexpected_tags = ["a_function"];
 
     path.pop();
     path.push("test_cli_args.databind/data");
@@ -139,7 +145,7 @@ fn test_cli_args_generate_json() {
         path.push(format!("{}.mcfunction", file));
         assert!(fs::metadata(&path).is_ok());
         println!(
-            "test_cli_args_generate_json: Function {}.mcfunction exists",
+            "test_cli_args_generate_tags: Function {}.mcfunction exists",
             file
         );
         path.pop();
@@ -148,12 +154,24 @@ fn test_cli_args_generate_json() {
     path.pop();
     path.pop();
 
-    // Check if JSON files are correctly placed
+    // Check if tag files are correctly placed
     path.push("minecraft/tags/functions");
-    for file in expected_json.iter() {
-        path.push(format!("{}.json", file));
+    for file in expected_tags.iter() {
+        path.push(format!("{}.tags", file));
         assert!(fs::metadata(&path).is_ok());
-        println!("test_cli_args_generate_json: JSON {}.json exists", file);
+        println!("test_cli_args_generate_tags: Tag {}.tags exists", file);
+        path.pop();
+    }
+
+    // Ensure unexpected tag files do not exist
+    path.push("minecraft/tags/functions");
+    for file in unexpected_tags.iter() {
+        path.push(format!("{}.tags", file));
+        assert!(fs::metadata(&path).is_err());
+        println!(
+            "test_cli_args_generate_tags: Tag {}.tags doesn't (and shouldn't) exist",
+            file
+        );
         path.pop();
     }
 
