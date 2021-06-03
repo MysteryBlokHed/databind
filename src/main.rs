@@ -123,7 +123,7 @@ fn main() -> std::io::Result<()> {
 
         for entry in WalkDir::new(&datapack).into_iter().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
-                let new_path_str = entry.path().to_str().unwrap().replace(datapack, "");
+                let new_path_str = entry.path().to_str().unwrap().replacen(datapack, "", 1);
                 let path = Path::new(&new_path_str);
 
                 let mut target_path: String = target_folder.to_string();
