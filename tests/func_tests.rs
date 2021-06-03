@@ -10,32 +10,58 @@ fn test_file_structure() {
     let mut path = tests::resources();
     path.push("test_file_structure");
     let path_str = path.to_str().unwrap();
-    tests::run_with_args("cargo", &["run", "--", path_str]);
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path_str,
+            "--generate-func-tags",
+            "--ignore-config",
+        ],
+    );
 
-    let expected_files = ["load", "tick", "first_func", "second_func"];
+    let expected_funcs = ["load", "tick", "first_func", "second_func"];
+    let expected_tags = ["load", "tick"];
+    let unexpected_tags = ["first_func", "second_func"];
 
     path.pop();
     path.push("test_file_structure.databind/data");
 
     // Check if function files are correctly placed
     path.push("test/functions");
-    for file in expected_files.iter() {
+    for file in expected_funcs.iter() {
         path.push(format!("{}.mcfunction", file));
-        println!("testing exists @: {}", path.display());
         assert!(fs::metadata(&path).is_ok());
+        println!("test_file_structure: Function {}.mcfunction exists", file);
         path.pop();
     }
 
     path.pop();
     path.pop();
 
-    // Check if json files are correctly placed
+    // Check if tag files are correctly placed
     path.push("minecraft/tags/functions");
-    for file in expected_files.iter() {
+    for file in expected_tags.iter() {
         path.push(format!("{}.json", file));
         assert!(fs::metadata(&path).is_ok());
+        println!("test_file_structure: Tag {}.json exists", file);
         path.pop();
     }
+
+    // Ensure unexpected tag files do not exist
+    for file in unexpected_tags.iter() {
+        path.push(format!("{}.json", file));
+        assert!(fs::metadata(&path).is_err());
+        println!(
+            "test_file_structure: Tag {}.json doesn't (and shouldn't) exist",
+            file
+        );
+        path.pop();
+    }
+
+    path.pop();
+    path.push("test_file_structure.databind/data");
 
     // Delete generated folder
     let mut out_path = tests::resources();

@@ -47,9 +47,9 @@ fn test_config() {
     // Check if tag files are correctly placed
     path.push("minecraft/tags/functions");
     for file in expected_tags.iter() {
-        path.push(format!("{}.tags", file));
+        path.push(format!("{}.json", file));
         assert!(fs::metadata(&path).is_ok());
-        println!("test_config: Tag {}.tags exists", file);
+        println!("test_config: Tag {}.json exists", file);
         path.pop();
     }
 
@@ -100,10 +100,10 @@ fn test_cli_args_no_tags() {
     // Ensure unexpected tag files do not exist
     path.push("minecraft/tags/functions");
     for file in unexpected_tags.iter() {
-        path.push(format!("{}.tags", file));
+        path.push(format!("{}.json", file));
         assert!(fs::metadata(&path).is_err());
         println!(
-            "test_cli_args_no_tags: Tag {}.tags doesn't (and shouldn't) exist",
+            "test_cli_args_no_tags: Tag {}.json doesn't (and shouldn't) exist",
             file
         );
         path.pop();
@@ -157,19 +157,18 @@ fn test_cli_args_generate_tags() {
     // Check if tag files are correctly placed
     path.push("minecraft/tags/functions");
     for file in expected_tags.iter() {
-        path.push(format!("{}.tags", file));
+        path.push(format!("{}.json", file));
         assert!(fs::metadata(&path).is_ok());
-        println!("test_cli_args_generate_tags: Tag {}.tags exists", file);
+        println!("test_cli_args_generate_tags: Tag {}.json exists", file);
         path.pop();
     }
 
     // Ensure unexpected tag files do not exist
-    path.push("minecraft/tags/functions");
     for file in unexpected_tags.iter() {
-        path.push(format!("{}.tags", file));
+        path.push(format!("{}.json", file));
         assert!(fs::metadata(&path).is_err());
         println!(
-            "test_cli_args_generate_tags: Tag {}.tags doesn't (and shouldn't) exist",
+            "test_cli_args_generate_tags: Tag {}.json doesn't (and shouldn't) exist",
             file
         );
         path.pop();
