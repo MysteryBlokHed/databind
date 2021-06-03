@@ -2,3 +2,4 @@ random_var_names = false
 var_display_names = false
 generate_func_json = true
 func_json_exclusions = ["should_not_be_made"]
+to_transpile = ["**/*.databind"]
