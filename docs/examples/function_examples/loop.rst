@@ -33,17 +33,17 @@ Transpiled
    scoreboard objectives add counter dummy
    scoreboard players set --databind counter 5
 
-``loop_example.databind/data/loop/functions/main.mcfunction``
+``loop_example.databind/data/loop/functions/loop_main.mcfunction``
 
 .. code-block:: mcfunction
 
    execute if score --databind counter matches ..0 run tellraw @a "Counter has reached 0"
-   execute if score --databind counter matches 1.. run function loop:counter_above
+   execute if score --databind counter matches 1.. run function loop:loop_above_0
 
-``loop_example.databind/data/loop/functions/counter_above.mcfunction``
+``loop_example.databind/data/loop/functions/loop_above_0.mcfunction``
 
 .. code-block:: mcfunction
 
    tellraw @a "Counter is 1 or higher"
    scoreboard players remove --databind counter 1
-   function loop:main
+   function loop:loop_main
