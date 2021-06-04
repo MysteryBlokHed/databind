@@ -2,9 +2,6 @@
 pub enum Token {
     /// Used before a mention of a variable (`Token::VarName`)
     Var,
-    /// Define a replacement (`:def`)
-    CreateDef,
-    GetDef,
     /// Used before an objective definition
     Objective,
     /// Used before an objective modification
@@ -17,27 +14,32 @@ pub enum Token {
     FuncName(String),
     /// End a function definition
     EndFunc,
+    /// Call a funcition
     CallFunc,
-    // /// The created def
-    // CreatedDef([String; 2]),
+    /// A variable's name
     VarName(String),
-    // /// Get a replacement
-    // DefName(String),
+    /// An objective's name
     ObjectiveName(String),
+    /// An objective's type (eg. deathCount)
     ObjectiveType(String),
+    /// A targeted entity (eg. `Username` or `@a`)
     Target(String),
-    /// Set the initial value of a variable (`.=`)
+    /// Set the initial value of a variable
     InitialSet,
-    /// Set the value of a variable (`=`)
+    /// Set the value of a variable or objective
     VarSet,
-    /// Add to the value of a variable (`+=`)
+    /// Add to the value of a variable or objective
     VarAdd,
-    /// Subtract from the value of a variable (`-=`)
+    /// Subtract from the value of a variable or objective
     VarSub,
+    /// An integer
     Int(i32),
     /// Commands, etc. that are not by databind
-    /// (eg. `execute if `)
+    ///
+    /// In the command `execute if :tvar variable #etc`
+    /// `execute if ` would be tokenized as NonDatabind.
     NonDatabind(String),
+    /// A new line
     NewLine,
     None,
 }

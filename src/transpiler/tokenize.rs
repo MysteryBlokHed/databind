@@ -4,6 +4,7 @@ use crate::token::Token;
 const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 impl Transpiler<'_> {
+    /// Convert the provided file contents into a list of tokens
     pub fn tokenize(&mut self) -> Vec<Token> {
         let mut tokens: Vec<Token> = Vec::new();
 
@@ -40,15 +41,6 @@ impl Transpiler<'_> {
                         tokens.push(Token::Var);
                         building_token = Token::Var;
                         remaining_params = 3;
-                    }
-                    "def" => {
-                        tokens.push(Token::CreateDef);
-                        building_token = Token::CreateDef;
-                        remaining_params = 3;
-                    }
-                    "gdef" => {
-                        tokens.push(Token::GetDef);
-                        building_token = Token::CreateDef;
                     }
                     "obj" => {
                         tokens.push(Token::Objective);

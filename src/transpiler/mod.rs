@@ -1,10 +1,37 @@
 use crate::settings::Settings;
 use std::collections::HashMap;
 
+/// Returns from the transpiler
 pub enum TranspileReturn {
+    /// The contents of a single file
+    ///
+    /// # Arguments
+    ///
+    /// - `String` - The contents of the file
     SingleContents(String),
+    /// The contents of a single file as well as a variable name map
+    ///
+    /// # Arguments
+    ///
+    /// - `String` - The contents of the file
+    /// - `HashMap<String, usize>` - A map of filenames to indexes
     SingleContentsAndMap(String, HashMap<String, String>),
+    /// The contents of multiple files
+    ///
+    /// # Arguments
+    ///
+    /// - `Vec<String>` - A list of file contents
+    /// - `HashMap<String, usize>` - A map of filenames to indexes
+    ///    The first key will always be `""`, which is the main file transpiled
     MultiFile(Vec<String>, HashMap<String, usize>),
+    /// The contents of multiple files as well as a variable map
+    ///
+    /// # Arguments
+    ///
+    /// - `Vec<String>` - A list of file contents
+    /// - `HashMap<String, usize>` - A map of filenames to indexes
+    ///    The first key will always be `""`, which is the main file transpiled
+    /// - `HashMap<String, String>` - A map of variable names used in files to randomized names
     MultiFileAndMap(Vec<String>, HashMap<String, usize>, HashMap<String, String>),
 }
 
@@ -16,6 +43,12 @@ pub struct Transpiler<'a> {
 }
 
 impl Transpiler<'_> {
+    /// Create a new Transpiler.
+    ///
+    /// # Arguments
+    ///
+    /// - `text` - The contents of the file to transpile
+    /// - `settings` - The settings for the transpiler
     pub fn new<'a>(text: String, settings: &'a Settings) -> Transpiler<'a> {
         let first_char = text.chars().nth(0).unwrap();
 
@@ -27,6 +60,7 @@ impl Transpiler<'_> {
         }
     }
 
+    /// Go to the next character in the char list
     fn next_char(&mut self) {
         self.position += 1;
         if self.position < self.chars.len() {

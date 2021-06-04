@@ -5,6 +5,15 @@ use rand::{distributions::Alphanumeric, Rng};
 use std::collections::HashMap;
 
 impl Transpiler<'_> {
+    /// Convert tokens to a transpiled file or files
+    ///
+    /// # Arguments
+    ///
+    /// - `tokens` - A list of tokens
+    /// - `namespace` - The namespace to use for functions, if relevant
+    /// - `existing_var_map` - An existing map of variables to randomized names
+    /// - `return_var_map` - Whether to return the var map used
+    /// - `return_multi_file` - Whether to return multiple files
     pub fn transpile(
         &self,
         tokens: Vec<Token>,

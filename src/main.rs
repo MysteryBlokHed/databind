@@ -31,6 +31,7 @@ fn get_namespace(functions_path: &Path) -> &str {
     namespace
 }
 
+/// Return the value of a tag file for a function
 fn create_func_json(functions_path: &Path, func_name: &str) -> String {
     format!(
         "{{\"values\": [\"{}:{}\"]}}",
@@ -39,6 +40,7 @@ fn create_func_json(functions_path: &Path, func_name: &str) -> String {
     )
 }
 
+/// Convert multiple globs into a `Vec<PathBuf>`
 fn to_transpile(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
     let mut to_transpile: Vec<PathBuf> = Vec::new();
 
@@ -57,6 +59,9 @@ fn to_transpile(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
     to_transpile
 }
 
+/// The main function
+///
+/// Transpiles provided files and folders to normal `.mcfunction` files
 fn main() -> std::io::Result<()> {
     let matches = cli::get_cli_matches();
 

@@ -1,5 +1,6 @@
 use clap::{App, Arg};
 
+/// Set up Clap CLI and get arguments
 pub fn get_cli_matches<'a>() -> clap::ArgMatches<'a> {
     App::new("Databind")
         .version("0.1.0")

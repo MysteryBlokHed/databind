@@ -1,5 +1,6 @@
 use serde_derive::Deserialize;
 
+/// Settings for the transpiler
 #[derive(Debug, Deserialize)]
 pub struct Settings {
     pub random_var_names: bool,
