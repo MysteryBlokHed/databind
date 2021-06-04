@@ -47,8 +47,6 @@ fn to_transpile(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
     for files_glob in globs.iter() {
         let relative_files_glob = format!("{}/{}", prefix, files_glob);
 
-        println!("{}", relative_files_glob);
-
         let mut files: Vec<PathBuf> = glob(&relative_files_glob)
             .expect(&format!("Failed to parse glob {}", files_glob)[..])
             .filter_map(Result::ok)

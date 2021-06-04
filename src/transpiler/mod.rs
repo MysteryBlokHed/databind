@@ -50,7 +50,11 @@ impl Transpiler<'_> {
     /// - `text` - The contents of the file to transpile
     /// - `settings` - The settings for the transpiler
     pub fn new<'a>(text: String, settings: &'a Settings) -> Transpiler<'a> {
-        let first_char = text.chars().nth(0).unwrap();
+        let first_char = if text.len() > 0 {
+            text.chars().nth(0).unwrap()
+        } else {
+            '\u{0}'
+        };
 
         Transpiler {
             chars: text.chars().collect(),
