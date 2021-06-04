@@ -3,8 +3,13 @@ name = "databind"
 version = "0.1.0"
 authors = ["Adam Thompson-Sharpe <adamthompsonsharpe@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Expand the functionality of Minecraft Datapacks."
+documentation = "https://github.com/MysteryBlokHed/databind/wiki"
+readme = "README.md"
+repository = "https://github.com/MysteryBlokHed/databind"
+license = "MIT OR Apache-2.0"
+keywords = ["minecraft", "datapacks"]
+categories = ["compilers"]
 
 [dependencies]
 clap = "2.33"
