@@ -114,6 +114,10 @@ fn main() -> std::io::Result<()> {
     if datapack_is_dir {
         let mut var_map: HashMap<String, String> = HashMap::new();
         let mut target_folder = datapack.to_string();
+        target_folder = target_folder
+            .trim_end_matches('/')
+            .trim_end_matches('\\')
+            .to_string();
         target_folder.push_str(".databind");
 
         if fs::metadata(&target_folder).is_ok() {
