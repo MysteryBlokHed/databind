@@ -46,7 +46,11 @@ Syntax and examples are available
 
 ## License
 
-Databind is licensed under the terms of both the MIT License
-and the Apache License (Version 2.0).
+Databind is licensed under either of
 
-See [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT) for details.
+- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
+  <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or
+  <http://opensource.org/licenses/MIT>)
+
+at your option.
