@@ -13,26 +13,36 @@
 </p>
 <p align="center">Expand the functionality of Minecraft Datapacks.</p>
 
+## Features
+
+- Multiple function definitions in a single file
+- Shorthand to call functions without namespace prefix (`func_1` instead of `namespace:func_1`)
+- Transpile single files or entire folders
+- Variable definitions via scoreboards
+- Shorthand for objective creation
+- Shorthand for testing variables in `if` commands
+- Configuration options
+
 ## Building and Running
 
 This project requires [cargo](https://www.rust-lang.org/learn/get-started).
 
-### Building
-
 To build the project, clone the repo and run `cargo build` in the root directory.
 To build for release, run `cargo build --release`.
 
-### Running
-
-#### After `cargo build`
-
 To run Databind after building it with `cargo build`, use `cargo run`.
 
-#### From crates.io
+## Installation
+
+### From crates.io
 
 To download Databind from crates.io, run `cargo install databind`. If Rust is
 [in your PATH](https://www.rust-lang.org/tools/install#installation-notes),
 then running `databind` from a command line will work.
+
+### Locally
+
+To install Databind from a cloned repository, run `cargo install --path .` in the root directory.
 
 ## Documentation
 
