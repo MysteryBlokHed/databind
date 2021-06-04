@@ -1,11 +1,11 @@
 <h1 align="center">Databind</h1>
-<!-- Shields.io -->
+<!-- Badges -->
 <p align="center">
   <a href="https://crates.io/crates/databind">
     <img src="https://img.shields.io/crates/v/databind" />
   </a>
-  <a href="https://docs.rs/databind/">
-    <img src="https://img.shields.io/docsrs/databind?color=blue" />
+  <a href="https://databind.readthedocs.io/en/latest/">
+    <img src="https://readthedocs.org/projects/databind/badge/?version=latest" />
   </a>
   <a href="#license">
     <img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green"/>
@@ -34,15 +34,19 @@ To download Databind from crates.io, run `cargo install databind`. If Rust is
 [in your PATH](https://www.rust-lang.org/tools/install#installation-notes),
 then running `databind` from a command line will work.
 
-## CLI Use
+## Documentation
 
-CLI information is available
-[on the Wiki](https://github.com/MysteryBlokHed/databind/wiki/Databind-CLI).
+Documentation is build using reStructuredText and Sphinx. Requires Python.
+Built documentation is hosted on [Read The Docs](https://databind.readthedocs.io/en/latest/).
 
-## Syntax and Examples
+### Building Docs
 
-Syntax and examples are available
-[on the Wiki](https://github.com/MysteryBlokHed/databind/wiki).
+To build the documentation, go to the /docs folder and run `pip install -r requirements.txt`.
+Then run `make.bat html` or `make html`, depending on platform.
+
+### Viewing Docs
+
+To view the documentation, open the `index.html` file generated in /docs/\_build/html.
 
 ## License
 
