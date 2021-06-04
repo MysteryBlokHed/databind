@@ -130,6 +130,11 @@ fn main() -> std::io::Result<()> {
 
         for entry in WalkDir::new(&datapack).into_iter().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
+                // Do not add config file to output folder
+                if config_path.exists() && is_same_file(entry.path(), config_path).unwrap() {
+                    continue;
+                }
+
                 let new_path_str = entry.path().to_str().unwrap().replacen(datapack, "", 1);
                 let path = Path::new(&new_path_str);
 
