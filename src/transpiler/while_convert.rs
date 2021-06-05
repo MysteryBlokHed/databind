@@ -3,6 +3,19 @@ use crate::settings::Settings;
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 
+fn get_chars() -> String {
+    let chars = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(4)
+        .map(char::from)
+        .collect::<String>()
+        .to_lowercase();
+
+    println!("{}", chars);
+
+    chars
+}
+
 impl Transpiler<'_> {
     /// Replace while loops with databind function definitions
     ///
@@ -16,11 +29,7 @@ impl Transpiler<'_> {
         let mut index_offset: usize = 0;
         let mut looping = true;
         let mut new_contents = String::new();
-        let mut chars: String = rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(4)
-            .map(char::from)
-            .collect();
+        let mut chars = get_chars();
 
         for i in 0..tokens.len() {
             let token = tokens.get(i).unwrap();
@@ -47,11 +56,7 @@ impl Transpiler<'_> {
                     ),
                     Token::EndWhileLoop => {
                         new_contents.push_str(&format!(":call while_{}\n", chars)[..]);
-                        chars = rand::thread_rng()
-                            .sample_iter(&Alphanumeric)
-                            .take(4)
-                            .map(char::from)
-                            .collect();
+                        chars = get_chars();
 
                         // Tokenize new contents
                         let tks = Transpiler::new(
