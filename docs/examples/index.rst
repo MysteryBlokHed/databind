@@ -11,3 +11,4 @@ Contents:
    variable_examples/index.rst
    objective_examples/index.rst
    function_examples/index.rst
+   while_examples/index.rst

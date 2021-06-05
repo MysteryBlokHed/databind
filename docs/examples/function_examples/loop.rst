@@ -1,6 +1,8 @@
 Loop
 ====
 
+**This example is no longer useful due to the addition of while loops.**
+
 Functions that loop until a counter reaches 0.
 
 Example
