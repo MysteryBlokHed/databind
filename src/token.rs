@@ -16,6 +16,14 @@ pub enum Token {
     EndFunc,
     /// Call a funcition
     CallFunc,
+    /// Start a while loop
+    WhileLoop,
+    /// The condition for a while loop
+    WhileCondition(String),
+    /// The string contents of a while loop
+    WhileContents(String),
+    /// Close a while loop
+    EndWhileLoop,
     /// A variable's name
     VarName(String),
     /// An objective's name

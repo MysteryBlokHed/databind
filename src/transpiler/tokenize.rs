@@ -14,6 +14,10 @@ impl Transpiler<'_> {
         let mut current_keyword = String::new();
         let mut building_keyword = false;
         let mut building_token = Token::None;
+        let mut building_while = false;
+        let mut while_line = String::new();
+        let mut while_lines: Vec<String> = Vec::new();
+        let mut building_condition = false;
         let mut remaining_params = 0;
         let mut first_whitespace = false;
         let mut current_non_databind = String::new();
@@ -24,6 +28,34 @@ impl Transpiler<'_> {
                 self.next_char();
                 if self.current_char == '\n' {
                     comment = false;
+                }
+            }
+
+            // When building a while loop, the contents are stored as a string for a token
+            // Later, in the transpile function, the while loop is converted to two databind
+            // functions.
+            if building_while {
+                if building_condition {
+                    if self.current_char == '\n' {
+                        tokens.push(Token::WhileCondition(current_keyword.trim().to_string()));
+                        current_keyword = String::new();
+                        building_condition = false;
+                    }
+                } else {
+                    while_line.push(self.current_char);
+                    if self.current_char == '\n' {
+                        current_keyword = String::new();
+                        while_lines.push(while_line.trim().to_string());
+                        while_line = String::new();
+                    }
+                }
+
+                if current_keyword.trim() == ":endwhile" {
+                    building_while = false;
+                    tokens.push(Token::WhileContents(while_lines.join("\n")));
+                    while_line = String::new();
+                    while_lines = Vec::new();
+                    tokens.push(Token::EndWhileLoop);
                 }
             }
 
@@ -67,6 +99,15 @@ impl Transpiler<'_> {
                     "call" => {
                         tokens.push(Token::CallFunc);
                         building_token = Token::CallFunc;
+                    }
+                    "while" => {
+                        tokens.push(Token::WhileLoop);
+                        building_while = true;
+                        building_condition = true;
+                    }
+                    "endwhile" => {
+                        tokens.push(Token::EndWhileLoop);
+                        building_keyword = false;
                     }
                     _ => keyword_found = false,
                 }
@@ -256,7 +297,7 @@ impl Transpiler<'_> {
                 current_non_databind = String::new();
             }
 
-            if self.current_char == '\n' {
+            if self.current_char == '\n' && !building_while {
                 tokens.push(Token::NewLine);
             }
 

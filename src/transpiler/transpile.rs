@@ -22,6 +22,8 @@ impl Transpiler<'_> {
         return_var_map: bool,
         return_multi_file: bool,
     ) -> TranspileReturn {
+        let tokens = self.while_convert(tokens);
+
         // let mut transpiled = String::new();
         let mut var_map: HashMap<String, String>;
 
