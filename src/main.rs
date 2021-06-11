@@ -87,22 +87,22 @@ fn main() -> std::io::Result<()> {
     if config_path.exists() && !matches.is_present("ignore-config") {
         let config_contents = fs::read_to_string(&config_path)?;
         transpiler_settings = toml::from_str(&config_contents[..]).unwrap();
-
-        // Override config settings with CLI arguments if passed
-        if matches.is_present("random-var-names") {
-            transpiler_settings.random_var_names = true;
-        }
-        if matches.is_present("var-display-names") {
-            transpiler_settings.var_display_names = true;
-        }
-        if matches.is_present("generate-func-tags") {
-            transpiler_settings.generate_func_tags = true;
-        }
-        if matches.is_present("output") {
-            transpiler_settings.output = Some(matches.value_of("output").unwrap().to_string());
-        }
     } else {
         transpiler_settings = settings::Settings::default();
+    }
+
+    // Override config settings with CLI arguments if passed
+    if matches.is_present("random-var-names") {
+        transpiler_settings.random_var_names = true;
+    }
+    if matches.is_present("var-display-names") {
+        transpiler_settings.var_display_names = true;
+    }
+    if matches.is_present("generate-func-tags") {
+        transpiler_settings.generate_func_tags = true;
+    }
+    if matches.is_present("output") {
+        transpiler_settings.output = Some(matches.value_of("output").unwrap().to_string());
     }
 
     let datapack = matches.value_of("DATAPACK").unwrap();

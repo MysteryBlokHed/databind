@@ -17,7 +17,7 @@ impl Default for Settings {
         Settings {
             random_var_names: false,
             var_display_names: false,
-            generate_func_tags: true,
+            generate_func_tags: false,
             func_tag_inclusions: vec![String::from("tick"), String::from("load")],
             to_transpile: vec![String::from("**/*.databind")],
             output: None,
