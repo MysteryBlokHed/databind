@@ -67,6 +67,7 @@ impl Transpiler<'_> {
                                 generate_func_tags: false,
                                 func_tag_inclusions: Vec::new(),
                                 to_transpile: Vec::new(),
+                                output: None,
                             },
                         )
                         .tokenize();
