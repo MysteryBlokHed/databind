@@ -98,14 +98,11 @@ fn main() -> std::io::Result<()> {
         if matches.is_present("generate-func-tags") {
             transpiler_settings.generate_func_tags = true;
         }
-    } else {
-        transpiler_settings = settings::Settings {
-            random_var_names: matches.is_present("random-var-names"),
-            var_display_names: matches.is_present("var-display-names"),
-            generate_func_tags: matches.is_present("generate-func-tags"),
-            func_tag_inclusions: vec![String::from("tick"), String::from("load")],
-            to_transpile: vec![String::from("**/*.databind")],
+        if matches.is_present("output") {
+            transpiler_settings.output = Some(matches.value_of("output").unwrap().to_string());
         }
+    } else {
+        transpiler_settings = settings::Settings::default();
     }
 
     let datapack = matches.value_of("DATAPACK").unwrap();
@@ -113,12 +110,18 @@ fn main() -> std::io::Result<()> {
 
     if datapack_is_dir {
         let mut var_map: HashMap<String, String> = HashMap::new();
-        let mut target_folder = datapack.to_string();
-        target_folder = target_folder
-            .trim_end_matches('/')
-            .trim_end_matches('\\')
-            .to_string();
-        target_folder.push_str(".databind");
+        let mut target_folder: String;
+
+        if let Some(output) = &transpiler_settings.output {
+            target_folder = output.clone();
+        } else {
+            target_folder = datapack.to_string();
+            target_folder = target_folder
+                .trim_end_matches('/')
+                .trim_end_matches('\\')
+                .to_string();
+            target_folder.push_str(".databind");
+        }
 
         if fs::metadata(&target_folder).is_ok() {
             println!("Deleting old databind folder...");
@@ -247,6 +250,13 @@ fn main() -> std::io::Result<()> {
         }
     } else {
         let content = fs::read_to_string(datapack).unwrap();
+        let out: String;
+
+        if &transpiler_settings.output == &None {
+            out = String::from("databind-out.mcfunction");
+        } else {
+            out = transpiler_settings.output.as_ref().unwrap().clone();
+        }
 
         let mut transpile = transpiler::Transpiler::new(content, &transpiler_settings);
         let tokens = transpile.tokenize();
@@ -257,7 +267,7 @@ fn main() -> std::io::Result<()> {
         let transpiled = transpile.transpile(tokens, None, None, false, false);
 
         if let transpiler::TranspileReturn::SingleContents(contents) = transpiled {
-            fs::write("databind-out.mcfunction", contents)?;
+            fs::write(out, contents)?;
         } else {
             panic!("transpile() returned an incorrect enum");
         }
