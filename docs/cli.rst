@@ -20,8 +20,8 @@ From an installation
 ^^^^^^^^^^^^^^^^^^^^
 
 To transpile a single file, run ``databind file.databind``. A file called
-`databind-out.mcfunction` will be generated. To transpile a datapack folder,
-run `databind path/to/datapack`.  
+``databind-out.mcfunction`` will be generated. To transpile a datapack folder,
+run ``databind path/to/datapack``.  
 
 With ``cargo run``
 ^^^^^^^^^^^^^^^^^^
