@@ -13,7 +13,7 @@ fn test_tag_generation() {
 
     tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
 
-    let expected_funcs = ["main", "load", "tick", "func3"];
+    let expected_funcs = ["load", "tick", "func3"];
     let expected_tags = ["load", "tick", "second_tag", "func3"];
     let unexpected_tags = ["main"];
 
@@ -72,7 +72,7 @@ fn test_tag_syntax() {
 
     tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
 
-    let expected_funcs = ["main", "func1", "func2", "func3"];
+    let expected_funcs = ["func1", "func2", "func3"];
     let expected_tags = ["func1_tag", "func2_tag", "func3_tag", "all_tag"];
     let unexpected_tags = ["main"];
 

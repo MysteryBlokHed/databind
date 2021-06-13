@@ -10,9 +10,12 @@ fn test_file_structure() {
     let mut path = tests::resources();
     path.push("test_file_structure");
     let path_str = path.to_str().unwrap();
-    tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
+    println!(
+        "{}",
+        tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"])
+    );
 
-    let expected_funcs = ["main", "load", "tick", "first_func", "second_func"];
+    let expected_funcs = ["load", "tick", "first_func", "second_func"];
     let expected_tags = ["load", "tick"];
     let unexpected_tags = ["main", "first_func", "second_func"];
 

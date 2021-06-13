@@ -25,7 +25,14 @@ fn test_config() {
         )
     );
 
-    let expected_funcs = ["different_extension", "should_be_made", "func1", "func2"];
+    let expected_funcs = [
+        "different_extension",
+        "should_be_made",
+        "func1",
+        "func2",
+        "func3",
+    ];
+    let unexpected_funcs = ["should_not_be_made"];
 
     path.pop();
     path.push("test_config.databind/data");
@@ -36,6 +43,17 @@ fn test_config() {
         path.push(format!("{}.mcfunction", file));
         assert!(fs::metadata(&path).is_ok());
         println!("test_config: Function {}.mcfunction exists", file);
+        path.pop();
+    }
+
+    // Ensure excluded files are not generated
+    for file in unexpected_funcs.iter() {
+        path.push(format!("{}.mcfunction", file));
+        assert!(fs::metadata(&path).is_err());
+        println!(
+            "test_config: Function {}.mcfunction doesn't (and shouldn't) exist",
+            file
+        );
         path.pop();
     }
 
@@ -70,7 +88,7 @@ fn test_no_config_out() {
 
     let expected_funcs = ["tick"];
     let expected_toml = ["should_be_made"];
-    let unexepected_toml = ["should_not_be_made"];
+    let unexpected_toml = ["should_not_be_made"];
 
     path.pop();
     path.push("test_no_config_out.databind/data");
@@ -97,7 +115,7 @@ fn test_no_config_out() {
     }
 
     // Ensure config toml file is not outputted
-    for file in unexepected_toml.iter() {
+    for file in unexpected_toml.iter() {
         path.push(format!("{}.toml", file));
         assert!(fs::metadata(&path).is_err());
         println!(

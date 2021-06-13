@@ -1,3 +1,4 @@
 random_var_names = false
 var_display_names = false
-to_transpile = ["**/*.databind", "**/*.test"]
+inclusions = ["**/*.databind", "**/*.test"]
+exclusions = ["**/should_not_be_made.databind"]

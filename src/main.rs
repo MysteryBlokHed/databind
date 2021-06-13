@@ -20,20 +20,14 @@ fn get_namespace(functions_path: &Path) -> &str {
         .to_str()
         .unwrap();
 
-    let namespace: &str;
+    let folders = namespace_folder.split(&['/', '\\'][..]);
 
-    if namespace_folder.contains("/") {
-        namespace = namespace_folder.split('/').last().unwrap();
-    } else {
-        namespace = namespace_folder.split('\\').last().unwrap();
-    }
-
-    namespace
+    folders.last().unwrap()
 }
 
 /// Convert multiple globs into a `Vec<PathBuf>`
-fn to_transpile(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
-    let mut to_transpile: Vec<PathBuf> = Vec::new();
+fn merge_globs(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
+    let mut merged_globs: Vec<PathBuf> = Vec::new();
 
     for files_glob in globs.iter() {
         let relative_files_glob = format!("{}/{}", prefix, files_glob);
@@ -42,10 +36,10 @@ fn to_transpile(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
             .expect(&format!("Failed to parse glob {}", files_glob)[..])
             .filter_map(Result::ok)
             .collect();
-        to_transpile.append(&mut files);
+        merged_globs.append(&mut files);
     }
 
-    to_transpile
+    merged_globs
 }
 
 /// The main function
@@ -118,7 +112,8 @@ fn main() -> std::io::Result<()> {
             println!("Done.");
         }
 
-        let to_transpile = to_transpile(&transpiler_settings.to_transpile, datapack);
+        let inclusions = merge_globs(&transpiler_settings.inclusions, datapack);
+        let exclusions = merge_globs(&transpiler_settings.exclusions, datapack);
 
         for entry in WalkDir::new(&datapack).into_iter().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
@@ -137,10 +132,17 @@ fn main() -> std::io::Result<()> {
                 fs::create_dir_all(&target_path)?;
 
                 let mut transpile = false;
+                let mut create_file = true;
 
-                for file in to_transpile.iter() {
+                for file in inclusions.iter() {
                     if is_same_file(file, entry.path()).expect("Failed to check file paths") {
                         transpile = true;
+                    }
+                }
+
+                for file in exclusions.iter() {
+                    if is_same_file(file, entry.path()).expect("Failed to check file paths") {
+                        create_file = false;
                     }
                 }
 
@@ -168,6 +170,10 @@ fn main() -> std::io::Result<()> {
 
                         for (key, value) in filename_to_index.iter() {
                             if key == "" {
+                                if !create_file {
+                                    continue;
+                                }
+
                                 let filename_no_ext = path.file_stem().unwrap().to_str().unwrap();
                                 let full_path =
                                     format!("{}/{}.mcfunction", target_path, filename_no_ext);
@@ -181,6 +187,8 @@ fn main() -> std::io::Result<()> {
                             fs::write(full_path, &files[*value])?;
 
                             // Add namespace prefix to function in tag map
+                            println!("namespace 4 tag map: {}", get_namespace(entry.path()));
+
                             for (_, funcs) in tags.iter_mut() {
                                 if funcs.contains(key) {
                                     let i = funcs.iter().position(|x| x == key).unwrap();
@@ -191,7 +199,7 @@ fn main() -> std::io::Result<()> {
 
                         tag_map.extend(tags);
                     }
-                } else {
+                } else if create_file {
                     let filename = path.file_name().unwrap().to_str().unwrap();
                     let full_path = format!("{}/{}", target_path, filename);
                     fs::copy(entry.path(), full_path)?;
