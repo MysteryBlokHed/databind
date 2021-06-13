@@ -10,20 +10,24 @@ be passed with the `-c` or `--config` option.
 
 **Note: This table represents the default values of the options if no CLI arguments are passed.**
 
-+--------------------------------------------+---------------------------------------------------------------------------------------------------+
-| Option                                     | Notes                                                                                             |
-+============================================+===================================================================================================+
-| ``random_var_names = false``               | (Not well-supported) Whether to randomly add characters to the end of variable names              |
-+--------------------------------------------+---------------------------------------------------------------------------------------------------+
-| ``var_display_names = false``              | Whether to update scoreboard display names for randomized variables                               |
-+--------------------------------------------+---------------------------------------------------------------------------------------------------+
-| ``inclusions = ["**/*.databind"]``         | Specify what files to transpile using globs                                                       |
-+--------------------------------------------+---------------------------------------------------------------------------------------------------+
-| ``exclusions = ["**/main.databind"]``      | Specify what files to exclude using globs. If an exclusion is also included                       |
-|                                            | in an inclusions glob, it will be transpiled without its own ``.mcfunction`` file being generated |
-+--------------------------------------------+---------------------------------------------------------------------------------------------------+
-| ``output = String``                        | The output file or folder. If unspecified, creates new folder ending in ``.databind``             |
-+--------------------------------------------+---------------------------------------------------------------------------------------------------+
++---------------------------------------+---------------------------------------------------------------------+
+|                 Option                |                                Notes                                |
++=======================================+=====================================================================+
+| ``random_var_names = false``          | (Not well-supported) Whether to randomly add characters             |
+|                                       | to the end of variable names                                        |
++---------------------------------------+---------------------------------------------------------------------+
+| ``var_display_names = false``         | Whether to update scoreboard display names for randomized variables |
++---------------------------------------+---------------------------------------------------------------------+
+| ``inclusions = ["**/*.databind"]``    | Specify what files to transpile using globs                         |
++---------------------------------------+---------------------------------------------------------------------+
+|                                       | Specify what files to exclude using globs.                          |
+| ``exclusions = ["**/main.databind"]`` | If an exclusion is also included in an inclusions glob,             |
+|                                       | it will be transpiled without its own ``.mcfunction``               |
+|                                       | file being generated                                                |
++---------------------------------------+---------------------------------------------------------------------+
+| ``output = String``                   | The output file or folder. If unspecified,                          |
+|                                       | creates new folder ending in ``.databind``                          |
++---------------------------------------+---------------------------------------------------------------------+
 
 CLI arguments
 -------------
