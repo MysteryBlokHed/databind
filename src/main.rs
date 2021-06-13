@@ -187,8 +187,6 @@ fn main() -> std::io::Result<()> {
                             fs::write(full_path, &files[*value])?;
 
                             // Add namespace prefix to function in tag map
-                            println!("namespace 4 tag map: {}", get_namespace(entry.path()));
-
                             for (_, funcs) in tags.iter_mut() {
                                 if funcs.contains(key) {
                                     let i = funcs.iter().position(|x| x == key).unwrap();

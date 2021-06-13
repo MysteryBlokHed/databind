@@ -11,8 +11,6 @@ fn get_chars() -> String {
         .collect::<String>()
         .to_lowercase();
 
-    println!("{}", chars);
-
     chars
 }
 
