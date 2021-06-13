@@ -9,51 +9,27 @@ fn test_tag_generation() {
     path.push("test_tag_generation");
     let path_str = path.to_str().unwrap();
 
-    println!("{}", path_str);
-
     tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
 
-    let expected_funcs = ["load", "tick", "func3"];
-    let expected_tags = ["load", "tick", "second_tag", "func3"];
-    let unexpected_tags = ["main"];
+    let expected_funcs = ["load.mcfunction", "tick.mcfunction", "func3.mcfunction"];
+    let expected_tags = ["load.json", "tick.json", "second_tag.json", "func3.json"];
+    let unexpected_tags = ["main.json"];
 
     path.pop();
     path.push("test_tag_generation.databind/data");
 
     // Check if function files are correctly placed
     path.push("test/functions");
-    for file in expected_funcs.iter() {
-        path.push(format!("{}.mcfunction", file));
-        assert!(fs::metadata(&path).is_ok());
-        println!("test_tag_generation: Function {}.mcfunction exists", file);
-        path.pop();
-    }
-
+    tests::check_files_exist(&path, &expected_funcs, "test_tag_generation");
     path.pop();
     path.pop();
 
     // Check if tag files are correctly placed
     path.push("minecraft/tags/functions");
-    for file in expected_tags.iter() {
-        path.push(format!("{}.json", file));
-        assert!(fs::metadata(&path).is_ok());
-        println!("test_tag_generation: Tag {}.json exists", file);
-        path.pop();
-    }
+    tests::check_files_exist(&path, &expected_tags, "test_tag_generation");
 
     // Ensure unexpected tag files do not exist
-    for file in unexpected_tags.iter() {
-        path.push(format!("{}.json", file));
-        assert!(fs::metadata(&path).is_err());
-        println!(
-            "test_tag_generation: Tag {}.json doesn't (and shouldn't) exist",
-            file
-        );
-        path.pop();
-    }
-
-    path.pop();
-    path.pop();
+    tests::check_files_dont_exist(&path, &unexpected_tags, "test_tag_generation");
 
     // Delete generated folder
     let mut out_path = tests::resources();
@@ -68,51 +44,32 @@ fn test_tag_syntax() {
     path.push("test_tag_syntax");
     let path_str = path.to_str().unwrap();
 
-    println!("{}", path_str);
-
     tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
 
-    let expected_funcs = ["func1", "func2", "func3"];
-    let expected_tags = ["func1_tag", "func2_tag", "func3_tag", "all_tag"];
-    let unexpected_tags = ["main"];
+    let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
+    let expected_tags = [
+        "func1_tag.json",
+        "func2_tag.json",
+        "func3_tag.json",
+        "all_tag.json",
+    ];
+    let unexpected_tags = ["main.json"];
 
     path.pop();
     path.push("test_tag_syntax.databind/data");
 
     // Check if function files are correctly placed
     path.push("test/functions");
-    for file in expected_funcs.iter() {
-        path.push(format!("{}.mcfunction", file));
-        assert!(fs::metadata(&path).is_ok());
-        println!("test_tag_syntax: Function {}.mcfunction exists", file);
-        path.pop();
-    }
-
+    tests::check_files_exist(&path, &expected_funcs, "test_tag_syntax");
     path.pop();
     path.pop();
 
     // Check if tag files are correctly placed
     path.push("minecraft/tags/functions");
-    for file in expected_tags.iter() {
-        path.push(format!("{}.json", file));
-        assert!(fs::metadata(&path).is_ok());
-        println!("test_tag_syntax: Tag {}.json exists", file);
-        path.pop();
-    }
+    tests::check_files_exist(&path, &expected_tags, "test_tag_syntax");
 
     // Ensure unexpected tag files do not exist
-    for file in unexpected_tags.iter() {
-        path.push(format!("{}.json", file));
-        assert!(fs::metadata(&path).is_err());
-        println!(
-            "test_tag_syntax: Tag {}.json doesn't (and shouldn't) exist",
-            file
-        );
-        path.pop();
-    }
-
-    path.pop();
-    path.pop();
+    tests::check_files_dont_exist(&path, &unexpected_tags, "test_tag_syntax");
 
     // Delete generated folder
     let mut out_path = tests::resources();
