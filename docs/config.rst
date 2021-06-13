@@ -21,9 +21,10 @@ be passed with the `-c` or `--config` option.
 | ``inclusions = ["**/*.databind"]``    | Specify what files to transpile using globs                         |
 +---------------------------------------+---------------------------------------------------------------------+
 |                                       | Specify what files to exclude using globs.                          |
-| ``exclusions = ["**/main.databind"]`` | If an exclusion is also included in an inclusions glob,             |
-|                                       | it will be transpiled without its own ``.mcfunction``               |
-|                                       | file being generated                                                |
+|                                       | If an exclusion is also included in an inclusions glob,             |
+| ``exclusions = ["**/main.databind"]`` | it will be transpiled without its own ``.mcfunction``               |
+|                                       | file being generated. ``main.databind`` is excluded by default      |
+|                                       | and can be used to contain only function definitions                |
 +---------------------------------------+---------------------------------------------------------------------+
 | ``output = String``                   | The output file or folder. If unspecified,                          |
 |                                       | creates new folder ending in ``.databind``                          |
