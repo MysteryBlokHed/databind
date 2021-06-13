@@ -1,6 +1,0 @@
-# Add random characters to var names. Experimental
-random_var_names = false
-# Change the display name of randomized vars
-var_display_names = false
-# Files to transpile
-to_transpile = ["**/*.databind"]
