@@ -89,9 +89,6 @@ fn main() -> std::io::Result<()> {
     if matches.is_present("var-display-names") {
         transpiler_settings.var_display_names = true;
     }
-    if matches.is_present("generate-func-tags") {
-        transpiler_settings.generate_func_tags = true;
-    }
     if matches.is_present("output") {
         transpiler_settings.output = Some(matches.value_of("output").unwrap().to_string());
     }

@@ -64,7 +64,6 @@ impl Transpiler<'_> {
                             &Settings {
                                 random_var_names: false,
                                 var_display_names: false,
-                                generate_func_tags: false,
                                 func_tag_inclusions: Vec::new(),
                                 to_transpile: Vec::new(),
                                 output: None,
