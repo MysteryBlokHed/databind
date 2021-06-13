@@ -1,0 +1,13 @@
+:func load
+:tag load
+:tag second_tag
+:endfunc
+
+:func tick
+:tag tick
+:tag second_tag
+:endfunc
+
+:func func3
+:tag func3
+:endfunc
