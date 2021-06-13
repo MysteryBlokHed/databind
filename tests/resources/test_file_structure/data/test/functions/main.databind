@@ -1,4 +1,12 @@
+:func load
+:tag load
 :var test .= 0
+:endfunc
+
+:func tick
+:tag tick
+execute if :tvar test matches 1 run say test is 1
+:endfunc
 
 :func first_func
 say first_func says hi

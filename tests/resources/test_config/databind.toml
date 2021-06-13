@@ -1,5 +1,3 @@
 random_var_names = false
 var_display_names = false
-generate_func_tags = true
-func_tag_inclusions = ["main", "should_be_made"]
-to_transpile = ["**/*.databind"]
+to_transpile = ["**/*.databind", "**/*.test"]

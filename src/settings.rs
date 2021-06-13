@@ -6,7 +6,6 @@ use serde_derive::Deserialize;
 pub struct Settings {
     pub random_var_names: bool,
     pub var_display_names: bool,
-    pub generate_func_tags: bool,
     pub func_tag_inclusions: Vec<String>,
     pub to_transpile: Vec<String>,
     pub output: Option<String>,
@@ -17,7 +16,6 @@ impl Default for Settings {
         Settings {
             random_var_names: false,
             var_display_names: false,
-            generate_func_tags: false,
             func_tag_inclusions: vec![String::from("tick"), String::from("load")],
             to_transpile: vec![String::from("**/*.databind")],
             output: None,

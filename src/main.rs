@@ -31,15 +31,6 @@ fn get_namespace(functions_path: &Path) -> &str {
     namespace
 }
 
-/// Return the value of a tag file for a function
-fn create_func_json(functions_path: &Path, func_name: &str) -> String {
-    format!(
-        "{{\"values\": [\"{}:{}\"]}}",
-        get_namespace(functions_path),
-        func_name
-    )
-}
-
 /// Convert multiple globs into a `Vec<PathBuf>`
 fn to_transpile(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
     let mut to_transpile: Vec<PathBuf> = Vec::new();
@@ -98,9 +89,6 @@ fn main() -> std::io::Result<()> {
     if matches.is_present("var-display-names") {
         transpiler_settings.var_display_names = true;
     }
-    if matches.is_present("generate-func-tags") {
-        transpiler_settings.generate_func_tags = true;
-    }
     if matches.is_present("output") {
         transpiler_settings.output = Some(matches.value_of("output").unwrap().to_string());
     }
@@ -110,6 +98,7 @@ fn main() -> std::io::Result<()> {
 
     if datapack_is_dir {
         let mut var_map: HashMap<String, String> = HashMap::new();
+        let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
         let mut target_folder: String;
 
         if let Some(output) = &transpiler_settings.output {
@@ -172,6 +161,7 @@ fn main() -> std::io::Result<()> {
                         files,
                         filename_to_index,
                         vars,
+                        mut tags,
                     ) = transpiled
                     {
                         var_map = vars;
@@ -182,64 +172,24 @@ fn main() -> std::io::Result<()> {
                                 let full_path =
                                     format!("{}/{}.mcfunction", target_path, filename_no_ext);
 
-                                // Create <function>.json if it does not exist and if it is in the inclusions list
-                                if transpiler_settings.generate_func_tags
-                                    && transpiler_settings
-                                        .func_tag_inclusions
-                                        .contains(&filename_no_ext.to_string())
-                                {
-                                    let json_path_str = format!(
-                                        "{}/data/minecraft/tags/functions/{}.json",
-                                        datapack, filename_no_ext
-                                    );
-                                    let json_path = Path::new(&json_path_str);
-
-                                    if !json_path.exists() {
-                                        let new_json_path_str = format!(
-                                            "{}/data/minecraft/tags/functions/{}.json",
-                                            target_folder, filename_no_ext
-                                        );
-                                        let new_json_path = Path::new(&new_json_path_str);
-
-                                        fs::create_dir_all(&new_json_path.parent().unwrap())?;
-                                        fs::write(
-                                            new_json_path,
-                                            create_func_json(path, filename_no_ext),
-                                        )?;
-                                    }
-                                }
-
                                 fs::write(full_path, &files[0])?;
                                 continue;
                             }
 
                             let full_path = format!("{}/{}.mcfunction", target_path, key);
 
-                            // Create <function>.json if it does not exist and if it is in the inclusions list
-                            if transpiler_settings.generate_func_tags
-                                && transpiler_settings.func_tag_inclusions.contains(key)
-                            {
-                                let json_path_str = format!(
-                                    "{}/data/minecraft/tags/functions/{}.json",
-                                    datapack, key
-                                );
-                                let json_path = Path::new(&json_path_str);
+                            fs::write(full_path, &files[*value])?;
 
-                                // Create <function>.json if it does not exist
-                                if !json_path.exists() {
-                                    let new_json_path_str = format!(
-                                        "{}/data/minecraft/tags/functions/{}.json",
-                                        target_folder, key,
-                                    );
-                                    let new_json_path = Path::new(&new_json_path_str);
-
-                                    fs::create_dir_all(&new_json_path.parent().unwrap())?;
-                                    fs::write(new_json_path, create_func_json(path, key))?;
+                            // Add namespace prefix to function in tag map
+                            for (_, funcs) in tags.iter_mut() {
+                                if funcs.contains(key) {
+                                    let i = funcs.iter().position(|x| x == key).unwrap();
+                                    funcs[i] = format!("{}:{}", get_namespace(entry.path()), key);
                                 }
                             }
-
-                            fs::write(full_path, &files[*value])?;
                         }
+
+                        tag_map.extend(tags);
                     }
                 } else {
                     let filename = path.file_name().unwrap().to_str().unwrap();
@@ -247,6 +197,35 @@ fn main() -> std::io::Result<()> {
                     fs::copy(entry.path(), full_path)?;
                 }
             }
+        }
+
+        // Write tag files
+        fs::create_dir_all(format!("{}/data/minecraft/tags/functions", target_folder))?;
+
+        for (tag, funcs) in tag_map.iter() {
+            let mut tag_file = String::from("{\n  \"values\": [");
+
+            let mut first_func = true;
+
+            for func in funcs.iter() {
+                if !first_func {
+                    tag_file.push(',');
+                } else {
+                    first_func = false;
+                }
+                tag_file.push_str(&format!("\n    \"{}\"", func)[..]);
+            }
+
+            tag_file.push_str("\n  ]\n}\n");
+
+            // Write tag file
+            fs::write(
+                format!(
+                    "{}/data/minecraft/tags/functions/{}.json",
+                    target_folder, tag
+                ),
+                tag_file,
+            )?;
         }
     } else {
         let content = fs::read_to_string(datapack).unwrap();

@@ -16,15 +16,20 @@ pub enum TranspileReturn {
     /// - `String` - The contents of the file
     /// - `HashMap<String, usize>` - A map of filenames to indexes
     SingleContentsAndMap(String, HashMap<String, String>),
-    /// The contents of multiple files
+    /// The contents of multiple files as well as a map of tags to functions
     ///
     /// # Arguments
     ///
     /// - `Vec<String>` - A list of file contents
     /// - `HashMap<String, usize>` - A map of filenames to indexes
     ///    The first key will always be `""`, which is the main file transpiled
-    MultiFile(Vec<String>, HashMap<String, usize>),
-    /// The contents of multiple files as well as a variable map
+    /// - `HashMap<String, Vec<String>>` - A map of tags to functions
+    MultiFile(
+        Vec<String>,
+        HashMap<String, usize>,
+        HashMap<String, Vec<String>>,
+    ),
+    /// The contents of multiple files as well as a variable map and a map of tags to functions
     ///
     /// # Arguments
     ///
@@ -32,7 +37,13 @@ pub enum TranspileReturn {
     /// - `HashMap<String, usize>` - A map of filenames to indexes
     ///    The first key will always be `""`, which is the main file transpiled
     /// - `HashMap<String, String>` - A map of variable names used in files to randomized names
-    MultiFileAndMap(Vec<String>, HashMap<String, usize>, HashMap<String, String>),
+    /// - `HashMap<String, Vec<String>>` - A map of tags to functions
+    MultiFileAndMap(
+        Vec<String>,
+        HashMap<String, usize>,
+        HashMap<String, String>,
+        HashMap<String, Vec<String>>,
+    ),
 }
 
 pub struct Transpiler<'a> {

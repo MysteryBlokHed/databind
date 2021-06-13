@@ -24,8 +24,8 @@ impl Transpiler<'_> {
     ) -> TranspileReturn {
         let tokens = self.while_convert(tokens);
 
-        // let mut transpiled = String::new();
         let mut var_map: HashMap<String, String>;
+        let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
 
         // A vector of file contents
         let mut files: Vec<String> = vec![String::new()];
@@ -129,6 +129,17 @@ impl Transpiler<'_> {
                 Token::CallFunc => calling_function = true,
                 Token::DefineFunc => in_function = true,
                 Token::EndFunc => in_function = false,
+                Token::TagName(tag) => {
+                    if !in_function {
+                        println!("Tag found outside of function.");
+                        std::process::exit(1);
+                    }
+
+                    tag_map
+                        .entry(tag.clone())
+                        .or_insert(Vec::new())
+                        .push(current_function.clone());
+                }
                 Token::ObjectiveName(name) => current_objective = name.clone(),
                 // An objective type will always be the last part of a new objective
                 Token::ObjectiveType(objective) => {
@@ -394,13 +405,13 @@ impl Transpiler<'_> {
         }
 
         if return_var_map && return_multi_file {
-            TranspileReturn::MultiFileAndMap(files, filename_to_index, var_map)
+            TranspileReturn::MultiFileAndMap(files, filename_to_index, var_map, tag_map)
         } else if !return_var_map && !return_multi_file {
             TranspileReturn::SingleContents(files[0].clone())
         } else if return_var_map && !return_multi_file {
             TranspileReturn::SingleContentsAndMap(files[0].clone(), var_map)
         } else {
-            TranspileReturn::MultiFile(files, filename_to_index)
+            TranspileReturn::MultiFile(files, filename_to_index, tag_map)
         }
     }
 }
