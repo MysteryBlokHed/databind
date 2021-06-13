@@ -31,15 +31,6 @@ fn get_namespace(functions_path: &Path) -> &str {
     namespace
 }
 
-// /// Return the value of a tag file for a function
-// fn create_func_json(functions_path: &Path, func_name: &str) -> String {
-//     format!(
-//         "{{\"values\": [\"{}:{}\"]}}",
-//         get_namespace(functions_path),
-//         func_name
-//     )
-// }
-
 /// Convert multiple globs into a `Vec<PathBuf>`
 fn to_transpile(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
     let mut to_transpile: Vec<PathBuf> = Vec::new();
@@ -184,61 +175,11 @@ fn main() -> std::io::Result<()> {
                                 let full_path =
                                     format!("{}/{}.mcfunction", target_path, filename_no_ext);
 
-                                // // Create <function>.json if it does not exist and if it is in the inclusions list
-                                // if transpiler_settings.generate_func_tags
-                                //     && transpiler_settings
-                                //         .func_tag_inclusions
-                                //         .contains(&filename_no_ext.to_string())
-                                // {
-                                //     let json_path_str = format!(
-                                //         "{}/data/minecraft/tags/functions/{}.json",
-                                //         datapack, filename_no_ext
-                                //     );
-                                //     let json_path = Path::new(&json_path_str);
-
-                                //     if !json_path.exists() {
-                                //         let new_json_path_str = format!(
-                                //             "{}/data/minecraft/tags/functions/{}.json",
-                                //             target_folder, filename_no_ext
-                                //         );
-                                //         let new_json_path = Path::new(&new_json_path_str);
-
-                                //         fs::create_dir_all(&new_json_path.parent().unwrap())?;
-                                //         fs::write(
-                                //             new_json_path,
-                                //             create_func_json(path, filename_no_ext),
-                                //         )?;
-                                //     }
-                                // }
-
                                 fs::write(full_path, &files[0])?;
                                 continue;
                             }
 
                             let full_path = format!("{}/{}.mcfunction", target_path, key);
-
-                            // // Create <function>.json if it does not exist and if it is in the inclusions list
-                            // if transpiler_settings.generate_func_tags
-                            //     && transpiler_settings.func_tag_inclusions.contains(key)
-                            // {
-                            //     let json_path_str = format!(
-                            //         "{}/data/minecraft/tags/functions/{}.json",
-                            //         datapack, key
-                            //     );
-                            //     let json_path = Path::new(&json_path_str);
-
-                            //     // Create <function>.json if it does not exist
-                            //     if !json_path.exists() {
-                            //         let new_json_path_str = format!(
-                            //             "{}/data/minecraft/tags/functions/{}.json",
-                            //             target_folder, key,
-                            //         );
-                            //         let new_json_path = Path::new(&new_json_path_str);
-
-                            //         fs::create_dir_all(&new_json_path.parent().unwrap())?;
-                            //         fs::write(new_json_path, create_func_json(path, key))?;
-                            //     }
-                            // }
 
                             fs::write(full_path, &files[*value])?;
 
