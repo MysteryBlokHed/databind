@@ -14,6 +14,10 @@ pub enum Token {
     FuncName(String),
     /// End a function definition
     EndFunc,
+    /// Add a tag to a function
+    Tag,
+    /// The name of a tag
+    TagName(String),
     /// Call a funcition
     CallFunc,
     /// Start a while loop

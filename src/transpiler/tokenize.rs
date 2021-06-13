@@ -96,6 +96,10 @@ impl Transpiler<'_> {
                         tokens.push(Token::EndFunc);
                         building_keyword = false;
                     }
+                    "tag" => {
+                        tokens.push(Token::Tag);
+                        building_token = Token::Tag;
+                    }
                     "call" => {
                         tokens.push(Token::CallFunc);
                         building_token = Token::CallFunc;
@@ -282,6 +286,17 @@ impl Transpiler<'_> {
                             }
                         }
                     },
+                    Token::Tag => {
+                        if self.current_char.is_whitespace() {
+                            tokens.push(Token::TagName(current_keyword));
+                            building_keyword = false;
+                            building_token = Token::None;
+                            current_keyword = String::new();
+                            first_whitespace = false;
+                        } else {
+                            current_keyword.push(self.current_char);
+                        }
+                    }
                     _ => {}
                 }
             } else if self.current_char == '#'
