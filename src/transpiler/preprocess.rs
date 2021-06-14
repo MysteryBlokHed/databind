@@ -35,9 +35,6 @@ impl Transpiler<'_> {
             }
         }
 
-        println!("replacement map: {:?}", replacement_map);
-        println!("replacement tokens: {:?}", replacement_tokens);
-
         // Replace text
         for (name, replacement) in replacement_map.iter() {
             new_contents = new_contents.replace(name, replacement);
