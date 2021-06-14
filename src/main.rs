@@ -112,8 +112,16 @@ fn main() -> std::io::Result<()> {
             println!("Done.");
         }
 
-        let inclusions = merge_globs(&transpiler_settings.inclusions, datapack);
+        let mut inclusions = merge_globs(&transpiler_settings.inclusions, datapack);
         let exclusions = merge_globs(&transpiler_settings.exclusions, datapack);
+        inclusions = inclusions
+            .iter()
+            .filter(|&x| !exclusions.contains(x))
+            .cloned()
+            .collect();
+
+        let function_out_exclusions =
+            merge_globs(&transpiler_settings.function_out_exclusions, datapack);
 
         for entry in WalkDir::new(&datapack).into_iter().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
@@ -133,16 +141,30 @@ fn main() -> std::io::Result<()> {
 
                 let mut transpile = false;
                 let mut create_file = true;
+                let mut continue_loop = false;
 
                 for file in inclusions.iter() {
                     if is_same_file(file, entry.path()).expect("Failed to check file paths") {
                         transpile = true;
+                        break;
                     }
                 }
 
                 for file in exclusions.iter() {
                     if is_same_file(file, entry.path()).expect("Failed to check file paths") {
+                        continue_loop = true;
+                        break;
+                    }
+                }
+
+                if continue_loop {
+                    continue;
+                }
+
+                for file in function_out_exclusions.iter() {
+                    if is_same_file(file, entry.path()).expect("Failed to check file paths") {
                         create_file = false;
+                        break;
                     }
                 }
 

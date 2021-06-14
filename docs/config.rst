@@ -20,14 +20,16 @@ be passed with the `-c` or `--config` option.
 +---------------------------------------+---------------------------------------------------------------------+
 | ``inclusions = ["**/*.databind"]``    | Specify what files to transpile using globs                         |
 +---------------------------------------+---------------------------------------------------------------------+
-|                                       | Specify what files to exclude using globs.                          |
-|                                       | If an exclusion is also included in an inclusions glob,             |
-| ``exclusions = ["**/main.databind"]`` | it will be transpiled without its own ``.mcfunction``               |
-|                                       | file being generated. ``main.databind`` is excluded by default      |
-|                                       | and can be used to contain only function definitions                |
+|                                       | Functions to transpile but not to generate an ``.mcfunction``       |
+| ``function_out_exclusions             | file for. Will only be used if it is also included in               |
+| = ["**/main.databind"]``              | the inclusions globs. Useful for files that only contain functions. |
+|                                       | it will be transpiled without its own ``.mcfunction``               |
 +---------------------------------------+---------------------------------------------------------------------+
-| ``output = String``                   | The output file or folder. If unspecified,                          |
-|                                       | creates new folder ending in ``.databind``                          |
+| ``exclusions = []``                   | Specify what files not to copy over/transpile using globs           |
++---------------------------------------+---------------------------------------------------------------------+
+|                                       | The output file or folder. If unspecified,                          |
+| ``output = String``                   | creates new folder ending in ``.databind`` or a file called         |
+|                                       | ``databind-out.mcfunction``                                         |
 +---------------------------------------+---------------------------------------------------------------------+
 
 CLI arguments
