@@ -6,17 +6,19 @@ A for loop-like while loop.
 Example
 -------
 
-``example/data/example/functions/load.databind``
+``example/data/example/functions/main.databind``
 
 .. code-block:: databind
 
+   :func load
+   :tag load
    :var i .= 10
-
    :while :tvar i matches 1..
    tellraw @a "Variable i is above 0"
    :var i -= 1
    :endwhile
    tellraw @a "Variable i is at 0"
+   :endfunc
 
 Transpiled
 ----------

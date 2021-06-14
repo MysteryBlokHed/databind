@@ -6,9 +6,15 @@ Example
 
 A function that increments a counter and logs when it's run.
 
+``example/data/example/functions/main.databind``
+
 .. code-block:: databind
 
+   :func load
+   :tag load
    :var counter .= 0
+   :endfunc
+   
    :func example
    tellraw @a "Example_function run"
    :var counter += 1
