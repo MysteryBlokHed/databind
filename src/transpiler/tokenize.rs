@@ -5,7 +5,7 @@ const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 impl Transpiler<'_> {
     /// Convert the provided file contents into a list of tokens
-    pub fn tokenize(&mut self) -> Vec<Token> {
+    pub fn tokenize(&mut self, get_definitions: bool) -> Vec<Token> {
         let mut tokens: Vec<Token> = Vec::new();
 
         let assignment_operators = [".=", "=", "+=", "-="];
@@ -28,6 +28,13 @@ impl Transpiler<'_> {
                 self.next_char();
                 if self.current_char == '\n' {
                     comment = false;
+                }
+            }
+
+            if get_definitions && tokens.len() > 0 {
+                match tokens.last().unwrap() {
+                    Token::DefineReplace | Token::ReplaceName(_) | Token::ReplaceContents(_) => {}
+                    _ => break,
                 }
             }
 
@@ -95,6 +102,11 @@ impl Transpiler<'_> {
                     "endfunc" => {
                         tokens.push(Token::EndFunc);
                         building_keyword = false;
+                    }
+                    "def" => {
+                        tokens.push(Token::DefineReplace);
+                        building_token = Token::DefineReplace;
+                        remaining_params = 2;
                     }
                     "tag" => {
                         tokens.push(Token::Tag);
@@ -297,6 +309,28 @@ impl Transpiler<'_> {
                             current_keyword.push(self.current_char);
                         }
                     }
+                    Token::DefineReplace => match remaining_params {
+                        2 => {
+                            if self.current_char.is_whitespace() {
+                                tokens.push(Token::ReplaceName(current_keyword));
+                                current_keyword = String::new();
+                                remaining_params -= 1;
+                            } else {
+                                current_keyword.push(self.current_char);
+                            }
+                        }
+                        _ => {
+                            if ['\r', '\n'].contains(&self.current_char) {
+                                tokens.push(Token::ReplaceContents(current_keyword));
+                                building_keyword = false;
+                                building_token = Token::None;
+                                current_keyword = String::new();
+                                first_whitespace = false;
+                            } else {
+                                current_keyword.push(self.current_char);
+                            }
+                        }
+                    },
                     _ => {}
                 }
             } else if self.current_char == '#'

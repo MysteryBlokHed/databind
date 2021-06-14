@@ -60,7 +60,14 @@ impl Transpiler<'_> {
     ///
     /// - `text` - The contents of the file to transpile
     /// - `settings` - The settings for the transpiler
-    pub fn new<'a>(text: String, settings: &'a Settings) -> Transpiler<'a> {
+    /// - `replacement` - Whether to replace :def's. Required to avoid stack overflow
+    pub fn new<'a>(text: String, settings: &'a Settings, replacement: bool) -> Transpiler<'a> {
+        let text = if replacement {
+            Transpiler::replace_definitions(&text)
+        } else {
+            text
+        };
+
         let first_char = if text.len() > 0 {
             text.chars().nth(0).unwrap()
         } else {
@@ -86,6 +93,6 @@ impl Transpiler<'_> {
     }
 }
 
+mod preprocess;
 mod tokenize;
 mod transpile;
-mod while_convert;
