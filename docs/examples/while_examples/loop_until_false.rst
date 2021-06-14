@@ -6,7 +6,7 @@ Use an integer as a boolean to loop until false.
 Example
 -------
 
-``example/data/example/functions/load.databind``
+``example/data/example/functions/main.databind``
 
 .. code-block:: databind
 
@@ -14,8 +14,6 @@ Example
    :while :tvar bool matches 1
    tellraw @a "Bool is true"
    :endwhile
-
-
    
 Transpiled
 ----------

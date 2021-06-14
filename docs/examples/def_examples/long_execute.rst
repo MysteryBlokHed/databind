@@ -23,7 +23,7 @@ Example
 Transpiled
 ----------
 
-``def_example.databind/data/loop/functions/load.mcfunction``
+``def_example.databind/data/loop/functions/tick.mcfunction``
 
 .. code-block:: mcfunction
 
