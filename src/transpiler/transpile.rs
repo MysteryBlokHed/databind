@@ -45,14 +45,17 @@ impl Transpiler<'_> {
         let mut current_var = String::new();
         let mut assignment_operator = Token::None;
         // For functions
-        let mut in_function = false;
-        let mut current_function = String::new();
+        let mut func_depth = 0;
+        let mut current_functions: Vec<String> = Vec::new();
         let mut calling_function = false;
         // For objective-related tokens
         let mut current_objective = String::new();
         let mut objective_target = String::new();
 
         for token in tokens.iter() {
+            println!("CURRENT FUNC DEPTH: {}", func_depth);
+            println!("CURRENT FUNCS: {:?}", current_functions);
+
             match token {
                 Token::Var => active_token = Token::Var,
                 Token::TestVar => active_token = Token::TestVar,
@@ -66,10 +69,10 @@ impl Transpiler<'_> {
                             if var_map.contains_key(var) {
                                 let to_add = format!("score --databind {} ", var_map[var]);
 
-                                if !in_function {
+                                if func_depth == 0 {
                                     files[0].push_str(&to_add[..]);
                                 } else {
-                                    files[filename_to_index[&current_function]]
+                                    files[filename_to_index[&current_functions[func_depth - 1]]]
                                         .push_str(&to_add[..]);
                                 }
                             } else {
@@ -78,10 +81,11 @@ impl Transpiler<'_> {
                             }
                         } else {
                             let to_add = format!("score --databind {} ", var);
-                            if !in_function {
+                            if func_depth == 0 {
                                 files[0].push_str(&to_add[..]);
                             } else {
-                                files[filename_to_index[&current_function]].push_str(&to_add[..]);
+                                files[filename_to_index[&current_functions[func_depth - 1]]]
+                                    .push_str(&to_add[..]);
                             }
                         }
                     }
@@ -95,7 +99,7 @@ impl Transpiler<'_> {
                     if !calling_function {
                         files.push(String::new());
                         filename_to_index.insert(name.clone(), files.len() - 1);
-                        current_function = name.clone();
+                        current_functions.push(name.clone());
                     // Function call
                     } else {
                         // Function contains namespace
@@ -103,18 +107,19 @@ impl Transpiler<'_> {
 
                         if has_namespace {
                             let to_add = format!("function {}", name);
-                            if !in_function {
+                            if func_depth == 0 {
                                 files[0].push_str(&to_add[..]);
                             } else {
-                                files[filename_to_index[&current_function]].push_str(&to_add[..]);
+                                files[filename_to_index[&current_functions[func_depth - 1]]]
+                                    .push_str(&to_add[..]);
                             }
                         } else {
                             if let Some(ns) = namespace {
                                 let to_add = format!("function {}:{}", ns, name);
-                                if !in_function {
+                                if func_depth == 0 {
                                     files[0].push_str(&to_add[..]);
                                 } else {
-                                    files[filename_to_index[&current_function]]
+                                    files[filename_to_index[&current_functions[func_depth - 1]]]
                                         .push_str(&to_add[..]);
                                 }
                             } else {
@@ -127,10 +132,13 @@ impl Transpiler<'_> {
                     }
                 }
                 Token::CallFunc => calling_function = true,
-                Token::DefineFunc => in_function = true,
-                Token::EndFunc => in_function = false,
+                Token::DefineFunc => func_depth += 1,
+                Token::EndFunc => {
+                    func_depth -= 1;
+                    current_functions.pop();
+                }
                 Token::TagName(tag) => {
-                    if !in_function {
+                    if func_depth == 0 {
                         println!("Tag found outside of function.");
                         std::process::exit(1);
                     }
@@ -138,7 +146,7 @@ impl Transpiler<'_> {
                     tag_map
                         .entry(tag.clone())
                         .or_insert(Vec::new())
-                        .push(current_function.clone());
+                        .push(current_functions[func_depth - 1].clone());
                 }
                 Token::ObjectiveName(name) => current_objective = name.clone(),
                 // An objective type will always be the last part of a new objective
@@ -161,10 +169,10 @@ impl Transpiler<'_> {
                                     var_map[&current_objective], objective, current_objective
                                 );
 
-                                if !in_function {
+                                if func_depth == 0 {
                                     files[0].push_str(&to_add[..]);
                                 } else {
-                                    files[filename_to_index[&current_function]]
+                                    files[filename_to_index[&current_functions[func_depth - 1]]]
                                         .push_str(&to_add[..]);
                                 }
                             } else {
@@ -173,10 +181,10 @@ impl Transpiler<'_> {
                                     var_map[&current_objective], objective
                                 );
 
-                                if !in_function {
+                                if func_depth == 0 {
                                     files[0].push_str(&to_add[..]);
                                 } else {
-                                    files[filename_to_index[&current_function]]
+                                    files[filename_to_index[&current_functions[func_depth - 1]]]
                                         .push_str(&to_add[..]);
                                 }
                             }
@@ -190,10 +198,11 @@ impl Transpiler<'_> {
                             current_objective, objective
                         );
 
-                        if !in_function {
+                        if func_depth == 0 {
                             files[0].push_str(&to_add[..]);
                         } else {
-                            files[filename_to_index[&current_function]].push_str(&to_add[..]);
+                            files[filename_to_index[&current_functions[func_depth - 1]]]
+                                .push_str(&to_add[..]);
                         }
                     }
                     active_token = Token::None;
@@ -221,10 +230,11 @@ impl Transpiler<'_> {
                                                 var_map[&current_var], current_var
                                             );
 
-                                            if !in_function {
+                                            if func_depth == 0 {
                                                 files[0].push_str(&to_add[..]);
                                             } else {
-                                                files[filename_to_index[&current_function]]
+                                                files[filename_to_index
+                                                    [&current_functions[func_depth - 1]]]
                                                     .push_str(&to_add[..]);
                                             }
                                         } else {
@@ -233,10 +243,11 @@ impl Transpiler<'_> {
                                                 var_map[&current_var]
                                             );
 
-                                            if !in_function {
+                                            if func_depth == 0 {
                                                 files[0].push_str(&to_add[..]);
                                             } else {
-                                                files[filename_to_index[&current_function]]
+                                                files[filename_to_index
+                                                    [&current_functions[func_depth - 1]]]
                                                     .push_str(&to_add[..]);
                                             }
                                         }
@@ -245,10 +256,11 @@ impl Transpiler<'_> {
                                             var_map[&current_var], int
                                         );
 
-                                        if !in_function {
+                                        if func_depth == 0 {
                                             files[0].push_str(&to_add[..]);
                                         } else {
-                                            files[filename_to_index[&current_function]]
+                                            files[filename_to_index
+                                                [&current_functions[func_depth - 1]]]
                                                 .push_str(&to_add[..]);
                                         }
                                     } else {
@@ -263,10 +275,11 @@ impl Transpiler<'_> {
                                         current_var
                                     );
 
-                                    if !in_function {
+                                    if func_depth == 0 {
                                         files[0].push_str(&to_add[..]);
                                     } else {
-                                        files[filename_to_index[&current_function]]
+                                        files
+                                            [filename_to_index[&current_functions[func_depth - 1]]]
                                             .push_str(&to_add[..]);
                                     }
 
@@ -275,10 +288,11 @@ impl Transpiler<'_> {
                                         current_var, int
                                     );
 
-                                    if !in_function {
+                                    if func_depth == 0 {
                                         files[0].push_str(&to_add[..]);
                                     } else {
-                                        files[filename_to_index[&current_function]]
+                                        files
+                                            [filename_to_index[&current_functions[func_depth - 1]]]
                                             .push_str(&to_add[..]);
                                     }
                                 }
@@ -297,10 +311,11 @@ impl Transpiler<'_> {
                                             action, var_map[&current_var], int
                                         );
 
-                                        if !in_function {
+                                        if func_depth == 0 {
                                             files[0].push_str(&to_add[..]);
                                         } else {
-                                            files[filename_to_index[&current_function]]
+                                            files[filename_to_index
+                                                [&current_functions[func_depth - 1]]]
                                                 .push_str(&to_add[..]);
                                         }
                                     } else {
@@ -316,10 +331,11 @@ impl Transpiler<'_> {
                                         action, &current_var, int
                                     );
 
-                                    if !in_function {
+                                    if func_depth == 0 {
                                         files[0].push_str(&to_add[..]);
                                     } else {
-                                        files[filename_to_index[&current_function]]
+                                        files
+                                            [filename_to_index[&current_functions[func_depth - 1]]]
                                             .push_str(&to_add[..]);
                                     }
                                 }
@@ -345,10 +361,11 @@ impl Transpiler<'_> {
                                             int
                                         );
 
-                                        if !in_function {
+                                        if func_depth == 0 {
                                             files[0].push_str(&to_add[..]);
                                         } else {
-                                            files[filename_to_index[&current_function]]
+                                            files[filename_to_index
+                                                [&current_functions[func_depth - 1]]]
                                                 .push_str(&to_add[..]);
                                         }
                                     } else {
@@ -364,10 +381,11 @@ impl Transpiler<'_> {
                                         action, objective_target, &current_objective, int
                                     );
 
-                                    if !in_function {
+                                    if func_depth == 0 {
                                         files[0].push_str(&to_add[..]);
                                     } else {
-                                        files[filename_to_index[&current_function]]
+                                        files
+                                            [filename_to_index[&current_functions[func_depth - 1]]]
                                             .push_str(&to_add[..]);
                                     }
                                 }
@@ -382,17 +400,18 @@ impl Transpiler<'_> {
                     assignment_operator = Token::None;
                 }
                 Token::NonDatabind(string) => {
-                    if !in_function {
+                    if func_depth == 0 {
                         files[0].push_str(string);
                     } else {
-                        files[filename_to_index[&current_function]].push_str(string);
+                        files[filename_to_index[&current_functions[func_depth - 1]]]
+                            .push_str(string);
                     }
                 }
                 Token::NewLine => {
-                    if !in_function {
+                    if func_depth == 0 {
                         files[0].push('\n');
                     } else {
-                        files[filename_to_index[&current_function]].push('\n');
+                        files[filename_to_index[&current_functions[func_depth - 1]]].push('\n');
                     }
                 }
                 _ => {}

@@ -43,3 +43,29 @@ fn test_file_structure() {
     out_path.push("test_file_structure.databind");
     fs::remove_dir_all(out_path).unwrap();
 }
+
+/// Test that nested functions are properly generated
+#[test]
+fn test_nested_funcs() {
+    let mut path = tests::resources();
+    path.push("test_nested_funcs");
+    let path_str = path.to_str().unwrap();
+
+    tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
+
+    let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
+
+    path.pop();
+    path.push("test_nested_funcs.databind/data");
+
+    // Check if function files are correctly placed
+    path.push("test/functions");
+    tests::check_files_exist(&path, &expected_funcs, "test_nested_funcs");
+    path.pop();
+    path.pop();
+
+    // Delete generated folder
+    let mut out_path = tests::resources();
+    out_path.push("test_nested_funcs.databind");
+    fs::remove_dir_all(out_path).unwrap();
+}
