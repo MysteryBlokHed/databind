@@ -53,9 +53,6 @@ impl Transpiler<'_> {
         let mut objective_target = String::new();
 
         for token in tokens.iter() {
-            println!("CURRENT FUNC DEPTH: {}", func_depth);
-            println!("CURRENT FUNCS: {:?}", current_functions);
-
             match token {
                 Token::Var => active_token = Token::Var,
                 Token::TestVar => active_token = Token::TestVar,

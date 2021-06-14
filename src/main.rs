@@ -1,5 +1,6 @@
 use glob::glob;
 use same_file::is_same_file;
+use serde_derive::Serialize;
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -9,6 +10,11 @@ mod cli;
 mod settings;
 mod token;
 mod transpiler;
+
+#[derive(Serialize)]
+struct TagFile<'a> {
+    values: &'a Vec<String>,
+}
 
 /// Get namespace (name of folder containing `/functions`)
 fn get_namespace(functions_path: &Path) -> &str {
@@ -232,20 +238,8 @@ fn main() -> std::io::Result<()> {
         fs::create_dir_all(format!("{}/data/minecraft/tags/functions", target_folder))?;
 
         for (tag, funcs) in tag_map.iter() {
-            let mut tag_file = String::from("{\n  \"values\": [");
-
-            let mut first_func = true;
-
-            for func in funcs.iter() {
-                if !first_func {
-                    tag_file.push(',');
-                } else {
-                    first_func = false;
-                }
-                tag_file.push_str(&format!("\n    \"{}\"", func)[..]);
-            }
-
-            tag_file.push_str("\n  ]\n}\n");
+            let tag_file = TagFile { values: funcs };
+            let json = serde_json::to_string(&tag_file)?;
 
             // Write tag file
             fs::write(
@@ -253,7 +247,7 @@ fn main() -> std::io::Result<()> {
                     "{}/data/minecraft/tags/functions/{}.json",
                     target_folder, tag
                 ),
-                tag_file,
+                json,
             )?;
         }
     } else {
