@@ -1,17 +1,6 @@
-<h1 align="center">Databind</h1>
-<!-- Badges -->
-<p align="center">
-  <a href="https://crates.io/crates/databind">
-    <img src="https://img.shields.io/crates/v/databind" />
-  </a>
-  <a href="https://databind.readthedocs.io/en/latest/">
-    <img src="https://readthedocs.org/projects/databind/badge/?version=latest" />
-  </a>
-  <a href="#license">
-    <img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green"/>
-  </a>
-</p>
-<p align="center">Expand the functionality of Minecraft Datapacks.</p>
+# Databind [![Crates.io Version](https://img.shields.io/crates/v/databind)](https://crates.io/crates/databind) [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green)](#license) [![Documentation](https://readthedocs.org/projects/databind/badge/?version=latest)](https://databind.readthedocs.io/en/latest/)
+
+Expand the functionality of Minecraft Datapacks.
 
 ## Features
 
