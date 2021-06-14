@@ -20,8 +20,8 @@ impl Default for Settings {
             var_display_names: false,
             func_tag_inclusions: vec![String::from("tick"), String::from("load")],
             inclusions: vec![String::from("**/*.databind")],
-            exclusions: vec![String::from("**/main.databind")],
-            function_out_exclusions: Vec::new(),
+            exclusions: Vec::new(),
+            function_out_exclusions: vec![String::from("**/main.databind")],
             output: None,
         }
     }
