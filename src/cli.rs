@@ -1,8 +1,9 @@
-use clap::{App, Arg};
+use clap::{App, Arg, SubCommand};
 
 /// Set up Clap CLI and get arguments
 pub fn get_cli_matches<'a>() -> clap::ArgMatches<'a> {
     App::new("Databind")
+        .setting(clap::AppSettings::SubcommandsNegateReqs)
         .version("0.1.0")
         .author("Adam Thompson-Sharpe <adamthompsonsharpe@gmail.com>")
         .about("Expand the functionality of Minecraft Datapacks.")
@@ -44,6 +45,32 @@ pub fn get_cli_matches<'a>() -> clap::ArgMatches<'a> {
                 .help(
                     "Change the display name of variables in-game to hide extra characters. \
                 Only relevant with --random-var-names",
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("create")
+                .about("Create a new project")
+                .arg(
+                    Arg::with_name("name")
+                        .help("The name of the project")
+                        .required(true)
+                        .value_name("NAME"),
+                )
+                .arg(
+                    Arg::with_name("description")
+                        .help("The pack description")
+                        .default_value("A databind pack")
+                        .long("description")
+                        .alias("desc")
+                        .takes_value(true)
+                        .value_name("DESCRIPTION"),
+                )
+                .arg(
+                    Arg::with_name("path")
+                        .help("The path to create the pack in")
+                        .long("path")
+                        .takes_value(true)
+                        .value_name("PATH"),
                 ),
         )
         .get_matches()
