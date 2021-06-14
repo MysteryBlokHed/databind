@@ -91,7 +91,7 @@ impl Transpiler<'_> {
                         // Tokenize new contents
                         let tks =
                             Transpiler::new(new_contents.clone(), &Settings::default(), false)
-                                .tokenize(true);
+                                .tokenize(false);
 
                         // When gettings indexes in the new tokens vector,
                         // the length and position of elements will have changed
