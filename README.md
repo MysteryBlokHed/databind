@@ -16,8 +16,11 @@
 ## Features
 
 - Multiple function definitions in a single file
+- Tagging functions in-code
 - Shorthand to call functions without namespace prefix (`func_1` instead of `namespace:func_1`)
 - Transpile single files or entire folders
+- Define text replacements for long and repeated lines of code
+- While loops
 - Variable definitions via scoreboards
 - Shorthand for objective creation
 - Shorthand for testing variables in `if` commands
