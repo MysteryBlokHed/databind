@@ -12,6 +12,8 @@ A table of the syntax for different operations.
 +--------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
 | ``:sobj objectiveName <objective> <target> <assignment operator> <int>`` | Set the value of an objective for a given target (eg. ``@a`` or ``PlayerName``)        |
 +--------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
+| ``:def defName <text replacement>``                                      | Define a text replacement for the preprocessor. See examples for more information      |
++--------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
 | ``:var varName <assignment operator> <int>``                             | Update the value of an existing variable                                               |
 +--------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
 | ``:tvar varName``                                                        | Used to test variables in ``if`` commands (eg. ``execute if :tvar varName matches 1``) |

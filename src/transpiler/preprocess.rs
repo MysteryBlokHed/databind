@@ -2,19 +2,51 @@ use super::Transpiler;
 use crate::settings::Settings;
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
-
-fn get_chars() -> String {
-    let chars = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(4)
-        .map(char::from)
-        .collect::<String>()
-        .to_lowercase();
-
-    chars
-}
+use regex::Regex;
+use std::collections::HashMap;
 
 impl Transpiler<'_> {
+    /// Get text replacement definitions and replace matches.
+    /// Definitions that are not at the top of the file will be ignored
+    /// and cause errors
+    ///
+    /// # Arguments
+    ///
+    /// - `content` - The contents of a file
+    pub fn replace_definitions(contents: &String) -> String {
+        let settings = &Settings::default();
+        let mut transpiler = Transpiler::new(contents.clone(), settings, false);
+        let mut new_contents = contents.clone();
+
+        let replacement_tokens = transpiler.tokenize(true);
+
+        let mut replacement_map: HashMap<String, String> = HashMap::new();
+        let mut current_name = &String::new();
+
+        for token in replacement_tokens.iter() {
+            match token {
+                Token::ReplaceName(name) => current_name = name,
+                Token::ReplaceContents(contents) => {
+                    replacement_map
+                        .entry(current_name.to_owned())
+                        .or_insert(contents.clone());
+                }
+                _ => {}
+            }
+        }
+
+        // Replace text
+        for (name, replacement) in replacement_map.iter() {
+            new_contents = new_contents.replace(name, replacement);
+        }
+
+        // Remove :def lines
+        let re = Regex::new(":def.*\n").unwrap();
+        new_contents = re.replace(&new_contents[..], "").to_string();
+
+        new_contents
+    }
+
     /// Replace while loops with databind function definitions
     ///
     /// # Arguments
@@ -27,7 +59,7 @@ impl Transpiler<'_> {
         let mut index_offset: usize = 0;
         let mut looping = true;
         let mut new_contents = String::new();
-        let mut chars = get_chars();
+        let mut chars = Transpiler::get_chars();
 
         for i in 0..tokens.len() {
             let token = tokens.get(i).unwrap();
@@ -54,11 +86,12 @@ impl Transpiler<'_> {
                     ),
                     Token::EndWhileLoop => {
                         new_contents.push_str(&format!(":call while_{}\n", chars)[..]);
-                        chars = get_chars();
+                        chars = Transpiler::get_chars();
 
                         // Tokenize new contents
                         let tks =
-                            Transpiler::new(new_contents.clone(), &Settings::default()).tokenize();
+                            Transpiler::new(new_contents.clone(), &Settings::default(), false)
+                                .tokenize(true);
 
                         // When gettings indexes in the new tokens vector,
                         // the length and position of elements will have changed
@@ -80,5 +113,16 @@ impl Transpiler<'_> {
         }
 
         new_tokens
+    }
+
+    /// Randomly generate characters
+    fn get_chars() -> String {
+        let chars = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(4)
+            .map(char::from)
+            .collect::<String>()
+            .to_lowercase();
+        chars
     }
 }

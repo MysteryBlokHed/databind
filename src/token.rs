@@ -8,6 +8,12 @@ pub enum Token {
     SetObjective,
     /// Used before a variable (`Token::VarName`) to test
     TestVar,
+    /// Define a text replacement
+    DefineReplace,
+    /// The name of a replacement
+    ReplaceName(String),
+    /// The contents of a replacement
+    ReplaceContents(String),
     /// Define a function
     DefineFunc,
     /// The name of a function

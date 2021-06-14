@@ -149,8 +149,9 @@ fn main() -> std::io::Result<()> {
                 if transpile {
                     let content = fs::read_to_string(entry.path())
                         .expect(&format!("Failed to read file {}", entry.path().display())[..]);
-                    let mut transpile = transpiler::Transpiler::new(content, &transpiler_settings);
-                    let tokens = transpile.tokenize();
+                    let mut transpile =
+                        transpiler::Transpiler::new(content, &transpiler_settings, true);
+                    let tokens = transpile.tokenize(false);
                     let transpiled = transpile.transpile(
                         tokens,
                         Some(get_namespace(entry.path())),
@@ -243,8 +244,8 @@ fn main() -> std::io::Result<()> {
             out = transpiler_settings.output.as_ref().unwrap().clone();
         }
 
-        let mut transpile = transpiler::Transpiler::new(content, &transpiler_settings);
-        let tokens = transpile.tokenize();
+        let mut transpile = transpiler::Transpiler::new(content, &transpiler_settings, true);
+        let tokens = transpile.tokenize(false);
         if tokens.contains(&token::Token::DefineFunc) {
             println!("Cannot use functions in a lone file.");
             std::process::exit(1);
