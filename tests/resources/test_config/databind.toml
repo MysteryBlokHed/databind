@@ -1,4 +1,2 @@
-random_var_names = false
-var_display_names = false
 inclusions = ["**/*.databind", "**/*.test"]
 function_out_exclusions = ["**/should_not_be_made.databind"]
