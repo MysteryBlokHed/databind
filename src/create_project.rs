@@ -34,7 +34,15 @@ fn dir_empty(path: &dyn AsRef<Path>) -> std::io::Result<bool> {
 ///
 /// - `args` - Matches from the create subcommand
 pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
+    let allowed_chars = "abcdefghijklmnopqrstuvwxyz0123456789_-.";
+
     let name = args.value_of("name").unwrap();
+
+    if name.chars().into_iter().any(|x| !allowed_chars.contains(x)) {
+        println!("Project name contains disallowed characters");
+        std::process::exit(1);
+    }
+
     let description = args.value_of("description").unwrap().to_string();
     let base_path = if args.is_present("path") {
         args.value_of("path").unwrap()
