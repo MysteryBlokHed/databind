@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 mod cli;
+mod create_project;
 mod settings;
 mod token;
 mod transpiler;
@@ -53,6 +54,11 @@ fn merge_globs(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
 /// Transpiles provided files and folders to normal `.mcfunction` files
 fn main() -> std::io::Result<()> {
     let matches = cli::get_cli_matches();
+
+    // Check if create command is used
+    if let Some(subcommand) = matches.subcommand {
+        return create_project::create_project(subcommand.matches);
+    }
 
     let config_path_str: String;
 
