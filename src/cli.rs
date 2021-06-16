@@ -9,7 +9,7 @@ pub fn get_cli_matches<'a>() -> clap::ArgMatches<'a> {
         .about("Expand the functionality of Minecraft Datapacks.")
         .arg(
             Arg::with_name("DATAPACK")
-                .help("The datapack (or file) to transpile")
+                .help("The Databind project to transpile")
                 .required(true),
         )
         .arg(

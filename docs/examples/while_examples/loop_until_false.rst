@@ -10,10 +10,13 @@ Example
 
 .. code-block:: databind
 
+   :func load
+   :tag load
    :var bool .= 1
    :while :tvar bool matches 1
    tellraw @a "Bool is true"
    :endwhile
+   :endfunc
    
 Transpiled
 ----------
