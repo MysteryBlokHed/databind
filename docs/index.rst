@@ -5,10 +5,12 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   :glob:
 
-   * 
-   examples/* 
+   getting_started.rst
+   syntax.rst
+   cli.rst
+   config.rst
+   examples/index.rst
 
 
 Indices and tables

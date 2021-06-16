@@ -1,6 +1,8 @@
 Databind Configuration
 ======================
 
+.. _Config File:
+
 Configuration file
 ------------------
 
