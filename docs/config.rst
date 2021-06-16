@@ -21,11 +21,6 @@ if no config changes are made.
 +---------------------------------------+---------------------------------------------------------------------+
 | ``inclusions = ["**/*.databind"]``    | Specify what files to transpile using globs                         |
 +---------------------------------------+---------------------------------------------------------------------+
-|                                       | Functions to transpile but not to generate an ``.mcfunction``       |
-| ``function_out_exclusions             | file for. Will only be used if it is also included in               |
-| = ["**/main.databind"]``              | the inclusions globs. Useful for files that only contain functions. |
-|                                       | it will be transpiled without its own ``.mcfunction``               |
-+---------------------------------------+---------------------------------------------------------------------+
 | ``exclusions = []``                   | Specify what files not to copy over/transpile using globs           |
 +---------------------------------------+---------------------------------------------------------------------+
 |                                       | The output file or folder. If unspecified,                          |
@@ -43,7 +38,6 @@ Below is a configuration file with all of the above settings.
    random_var_names = false
    var_display_names = false
    inclusions = ["**/*.databind"]
-   function_out_exclusions = ["**/main.databind"]
    exclusions = []
 
 (The output option is omitted to use the default folder of ``project_name.databind``)
@@ -51,11 +45,10 @@ Below is a configuration file with all of the above settings.
 CLI Arguments
 -------------
 
-Most options that can be set in the ``databind.toml`` file can
-also be set using CLI arguments. The CLI arguments use dashes
-instead of underscores (eg. ``--generate-func-tags`` instead
-of ``generate_func_tags``) and may have different names or
-shorthand.
+Most options that can be set in the ``databind.toml`` file
+can also be set using CLI arguments. The CLI arguments use dashes
+instead of underscores (eg. ``--random-var-names`` instead
+of ``random_var_names``) and may have different names or shorthand.
 
 Example use:
 

@@ -132,9 +132,6 @@ fn main() -> std::io::Result<()> {
             .cloned()
             .collect();
 
-        let function_out_exclusions =
-            merge_globs(&transpiler_settings.function_out_exclusions, datapack);
-
         for entry in WalkDir::new(&datapack).into_iter().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
                 // Do not add config file to output folder
@@ -152,7 +149,6 @@ fn main() -> std::io::Result<()> {
                 fs::create_dir_all(&target_path)?;
 
                 let mut transpile = false;
-                let mut create_file = true;
                 let mut continue_loop = false;
 
                 for file in inclusions.iter() {
@@ -171,13 +167,6 @@ fn main() -> std::io::Result<()> {
 
                 if continue_loop {
                     continue;
-                }
-
-                for file in function_out_exclusions.iter() {
-                    if is_same_file(file, entry.path()).expect("Failed to check file paths") {
-                        create_file = false;
-                        break;
-                    }
                 }
 
                 if transpile {
@@ -205,15 +194,6 @@ fn main() -> std::io::Result<()> {
 
                         for (key, value) in filename_to_index.iter() {
                             if key == "" {
-                                if !create_file {
-                                    continue;
-                                }
-
-                                let filename_no_ext = path.file_stem().unwrap().to_str().unwrap();
-                                let full_path =
-                                    format!("{}/{}.mcfunction", target_path, filename_no_ext);
-
-                                fs::write(full_path, &files[0])?;
                                 continue;
                             }
 
@@ -232,7 +212,7 @@ fn main() -> std::io::Result<()> {
 
                         tag_map.extend(tags);
                     }
-                } else if create_file {
+                } else {
                     let filename = path.file_name().unwrap().to_str().unwrap();
                     let full_path = format!("{}/{}", target_path, filename);
                     fs::copy(entry.path(), full_path)?;

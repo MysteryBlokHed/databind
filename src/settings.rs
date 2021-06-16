@@ -9,7 +9,6 @@ pub struct Settings {
     pub func_tag_inclusions: Vec<String>,
     pub inclusions: Vec<String>,
     pub exclusions: Vec<String>,
-    pub function_out_exclusions: Vec<String>,
     pub output: Option<String>,
 }
 
@@ -21,7 +20,6 @@ impl Default for Settings {
             func_tag_inclusions: vec![String::from("tick"), String::from("load")],
             inclusions: vec![String::from("**/*.databind")],
             exclusions: Vec::new(),
-            function_out_exclusions: vec![String::from("**/main.databind")],
             output: None,
         }
     }

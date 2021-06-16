@@ -88,12 +88,14 @@ You are able to create as many ``.databind`` files and as many namespaces as
 you'd like. You are also able to mix normal ``.mcfunction`` files with ``.databind``
 files, meaning you don't have to have a project that only uses Databind. This
 is helpful if you want to convert a normal datapack to a Databind project.
+Databind files cannot contain anything other than function definitions, so something
+such as this alone in a ``.databind`` file:
 
-If you name a file something other than ``main.databind``, a similarly named
-``.mcfunction`` file will be generated. Note that you cannot tag functions
-if they're created this way. If you want to have more files that work the same
-as ``main.databind`` (only being used to define other functions), add
-``**/*.databind`` to the :ref:`config file function_out_exclusions <Configuration File>`.
+.. code-block:: databind
+
+   say Hello, World!
+
+Would not generate any output.
 
 See Examples
 ------------
