@@ -257,28 +257,8 @@ fn main() -> std::io::Result<()> {
             )?;
         }
     } else {
-        let content = fs::read_to_string(datapack).unwrap();
-        let out: String;
-
-        if &transpiler_settings.output == &None {
-            out = String::from("databind-out.mcfunction");
-        } else {
-            out = transpiler_settings.output.as_ref().unwrap().clone();
-        }
-
-        let mut transpile = transpiler::Transpiler::new(content, &transpiler_settings, true);
-        let tokens = transpile.tokenize(false);
-        if tokens.contains(&token::Token::DefineFunc) {
-            println!("Cannot use functions in a lone file.");
-            std::process::exit(1);
-        }
-        let transpiled = transpile.transpile(tokens, None, None, false, false);
-
-        if let transpiler::TranspileReturn::SingleContents(contents) = transpiled {
-            fs::write(out, contents)?;
-        } else {
-            panic!("transpile() returned an incorrect enum");
-        }
+        println!("Databind does not support single-file compilation.");
+        std::process::exit(1);
     }
 
     Ok(())
