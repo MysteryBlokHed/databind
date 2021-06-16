@@ -5,14 +5,9 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   :glob:
 
-   * 
-   examples/* 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
+   getting_started.rst
+   syntax.rst
+   cli.rst
+   config.rst
+   examples.rst
