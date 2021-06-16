@@ -7,9 +7,6 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   :glob:
 
-   variable_examples/index.rst
-   objective_examples/index.rst
-   function_examples/index.rst
-   def_examples/index.rst
-   while_examples/index.rst
+   **/index

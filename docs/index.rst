@@ -11,10 +11,3 @@ Contents:
    cli.rst
    config.rst
    examples/index.rst
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
