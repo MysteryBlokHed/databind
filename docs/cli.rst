@@ -36,7 +36,7 @@ Using the CLI
       -o, --out <output>       The output file or directory
 
    ARGS:
-      <DATAPACK>    The datapack (or file) to transpile
+      <DATAPACK>    The Databind project to transpile
 
    SUBCOMMANDS:
       create    Create a new project
