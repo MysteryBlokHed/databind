@@ -45,11 +45,10 @@ Below is a configuration file with all of the above settings.
 CLI Arguments
 -------------
 
-Most options that can be set in the ``databind.toml`` file can
-also be set using CLI arguments. The CLI arguments use dashes
-instead of underscores (eg. ``--generate-func-tags`` instead
-of ``generate_func_tags``) and may have different names or
-shorthand.
+Most options that can be set in the ``databind.toml`` file
+can also be set using CLI arguments. The CLI arguments use dashes
+instead of underscores (eg. ``--random-var-names`` instead
+of ``random_var_names``) and may have different names or shorthand.
 
 Example use:
 
