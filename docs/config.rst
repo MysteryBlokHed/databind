@@ -8,7 +8,8 @@ Databind can be configured via a ``databind.toml`` file in the same
 directory as the binary is being run in. A config file can also
 be passed with the ``-c`` or ``--config`` option.
 
-**Note: This table represents the default values of the options if no CLI arguments are passed.**
+This table represents the default values of the options
+if no config changes are made.
 
 +---------------------------------------+---------------------------------------------------------------------+
 |                 Option                |                                Notes                                |

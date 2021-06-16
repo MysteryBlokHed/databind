@@ -9,4 +9,4 @@ Contents:
    :maxdepth: 2
    :glob:
 
-   **/index
+   examples/**/index

@@ -10,4 +10,4 @@ Contents:
    syntax.rst
    cli.rst
    config.rst
-   examples/index.rst
+   examples.rst

@@ -95,8 +95,8 @@ if they're created this way. If you want to have more files that work the same
 as ``main.databind`` (only being used to define other functions), add
 ``**/*.databind`` to the :ref:`config file function_out_exclusions <Configuration File>`.
 
-Examples
---------
+See Examples
+------------
 
-If you want to see some examples of language features, go to the :ref:`Examples Page <Examples>`.
+If you want to see some examples of language features, go to the :ref:`Examples`.
 Otherwise, you may continue to the next page.
