@@ -162,8 +162,7 @@ impl Transpiler<'_> {
                                             "+=" => tokens.push(Token::VarAdd),
                                             "-=" => tokens.push(Token::VarSub),
                                             _ => {
-                                                println!("[ERROR] Someone didn't update the assignment operator match!");
-                                                std::process::exit(2);
+                                                panic!("Someone didn't update the assignment operator match!");
                                             }
                                         }
                                         current_keyword = String::new();
@@ -270,8 +269,7 @@ impl Transpiler<'_> {
                                         "+=" => tokens.push(Token::VarAdd),
                                         "-=" => tokens.push(Token::VarSub),
                                         _ => {
-                                            println!("[ERROR] Someone didn't update the assignment operator match!");
-                                            std::process::exit(2);
+                                            panic!("Someone didn't update the assignment operator match!");
                                         }
                                     }
                                     current_keyword = String::new();

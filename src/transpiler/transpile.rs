@@ -120,8 +120,7 @@ impl Transpiler<'_> {
                                         .push_str(&to_add[..]);
                                 }
                             } else {
-                                println!("No namespace provided for function call.");
-                                std::process::exit(2);
+                                panic!("No namespace provided for function call.");
                             }
                         }
 
@@ -388,8 +387,7 @@ impl Transpiler<'_> {
                                 }
                             }
                             _ => {
-                                println!(".= operator was mistakenly tokenized for objective");
-                                std::process::exit(2);
+                                panic!(".= operator was tokenized for objective");
                             }
                         }
                     }
