@@ -9,7 +9,7 @@ Installation
 Databind is installed using `cargo <https://www.rust-lang.org/tools/install>`_.
 With cargo installed, run ``cargo install databind`` to get the latest version.
 If Rust is in your path, then you should be able to access the CLI by running
-``databind``.
+``databind`` in any command line.
 
 Creating a Project
 ------------------
@@ -33,8 +33,9 @@ To create a new project, use the ``databind create`` command.
        <NAME>    The name of the project
 
 Example use: ``databind create my_project`` to create a project in a folder
-called ``my_project``. A ``pack.mcmeta`` and a ``.databind`` file will be
-automatically generated.
+called ``my_project``. A ``pack.mcmeta`` and a ``main.databind`` file will be
+automatically generated. To make a project with the description "My first project,"
+run ``databind create --description "My first project" my_project``.
 
 Writing Code
 ------------
@@ -70,7 +71,8 @@ Building
 
 To build your project, run ``databind <PATH>``. A folder with ``.databind``
 appended to the end will be generated. For example, if your project is
-in a folder called ``my_project``, then you should run ``databind my_project``.
+in a folder called ``my_project``, then you should run ``databind my_project``,
+generating a folder called ``my_project.databind``.
 
 Additional Files
 ----------------
