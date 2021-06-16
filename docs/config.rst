@@ -1,14 +1,12 @@
 Databind Configuration
 ======================
 
-.. _Config File:
-
-Configuration file
+Configuration File
 ------------------
 
 Databind can be configured via a ``databind.toml`` file in the same
 directory as the binary is being run in. A config file can also
-be passed with the `-c` or `--config` option.
+be passed with the ``-c`` or ``--config`` option.
 
 **Note: This table represents the default values of the options if no CLI arguments are passed.**
 
@@ -34,7 +32,7 @@ be passed with the `-c` or `--config` option.
 |                                       | ``databind-out.mcfunction``                                         |
 +---------------------------------------+---------------------------------------------------------------------+
 
-Example config
+Example Config
 --------------
 
 Below is a configuration file with all of the above settings.
@@ -49,7 +47,7 @@ Below is a configuration file with all of the above settings.
 
 (The output option is omitted to use the default folder of ``project_name.databind``)
 
-CLI arguments
+CLI Arguments
 -------------
 
 Most options that can be set in the ``databind.toml`` file can

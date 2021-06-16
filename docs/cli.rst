@@ -1,12 +1,13 @@
 Databind CLI
 ============
 
-What can be transpiled
+What Can Be Transpiled
 ----------------------
 
 Either single mcfunction files or entire datapack folders can be transpiled.
 When transpiling an entire folder, Databind will look for ``.databind`` files and
-leave other files alone. Passing databind folder is required for using ``:func``.
+leave other files alone. Using a project folder as opposed to a single file
+is required for using ``:func``.
 
 Note that the namespace inference used for ``:func`` assumes a typical datapack
 file structure (``<datapack>/data/<namespace>/functions`` for functions), but it
@@ -42,7 +43,7 @@ Using the CLI
       create    Create a new project
       help      Prints this message or the help of the given subcommand(s)
 
-From an installation
+From an Installation
 ^^^^^^^^^^^^^^^^^^^^
 
 To transpile a single file, run ``databind file.databind``. A file called
@@ -55,5 +56,3 @@ With ``cargo run``
 After building Databind yourself, you can use ``cargo run`` to run it. Everything
 works almost the exact same. You just need to add two dashes (``--``) after ``run``
 (eg. ``cargo run -- file.databind`` or ``cargo run -- --help``).
-
-More information is available from the CLI help menu (``databind --help``).

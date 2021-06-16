@@ -32,10 +32,16 @@ To create a new project, use the ``databind create`` command.
    ARGS:
        <NAME>    The name of the project
 
-Example use: ``databind create my_project`` to create a project in a folder
-called ``my_project``. A ``pack.mcmeta`` and a ``main.databind`` file will be
-automatically generated. To make a project with the description "My first project,"
-run ``databind create --description "My first project" my_project``.
+Example use:
+
+``databind create my_project`` to create a new project in a folder
+called ``my_project``.
+
+``databind create --description "My first project" my_project``
+to create a new project with the description ``My first project``.
+
+``databind create --path . my_project`` to create a new project
+in the current directory. Only works if empty.
 
 Writing Code
 ------------
@@ -52,7 +58,7 @@ THe file contains this by default:
    :endfunc
 
 First, a function named main is defined. The name can be changed, it doesn't
-have to be main. Then, it is tagged with the tag ``load``. This tag is
+have to be main. Then, it is tagged with ``load``. This tag is
 normal to datapacks and means that a function will run when the datapack is
 initially loaded. After that, an ordinary ``tellraw``, and then ``:endfunc``
 to close the function definition.
@@ -64,14 +70,15 @@ the following:
 
    tellraw @a "Hello, World!"
 
-A ``load.json`` file will also be generated to give the function a load tag.
+A ``load.json`` file will also be generated in ``minecraft/tags/functions``
+to give the function a load tag.
 
 Building
 --------
 
 To build your project, run ``databind <PATH>``. A folder with ``.databind``
 appended to the end will be generated. For example, if your project is
-in a folder called ``my_project``, then you should run ``databind my_project``,
+in a folder called ``my_project`` then you should run ``databind my_project``,
 generating a folder called ``my_project.databind``.
 
 Additional Files
@@ -86,4 +93,10 @@ If you name a file something other than ``main.databind``, a similarly named
 ``.mcfunction`` file will be generated. Note that you cannot tag functions
 if they're created this way. If you want to have more files that work the same
 as ``main.databind`` (only being used to define other functions), add
-``**/*.databind`` to the :ref:`config file function_out_exclusions <Config File>`.
+``**/*.databind`` to the :ref:`config file function_out_exclusions <Configuration File>`.
+
+Examples
+--------
+
+If you want to see some examples of language features, go to the :ref:`Examples Page <Examples>`.
+Otherwise, you may continue to the next page.
