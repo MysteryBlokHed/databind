@@ -4,12 +4,11 @@ Databind CLI
 What Can Be Transpiled
 ----------------------
 
-Either single mcfunction files or entire datapack folders can be transpiled.
-When transpiling an entire folder, Databind will look for ``.databind`` files and
-leave other files alone. Using a project folder as opposed to a single file
-is required for using ``:func``.
+Databind transpiles Databind projects (see :ref:`Creating a Project`).
+Databind will look for included files (``**/*.databind`` by default) and
+leave other files alone.
 
-Note that the namespace inference used for ``:func`` assumes a typical datapack
+Note that the namespace inference used for ``:func`` assumes a proper
 file structure (``<datapack>/data/<namespace>/functions`` for functions), but it
 **does not check if this is the case.** A ``minecraft/tags/functions/`` folder may
 be generated in an unexpected place if an invalid folder is passed.
@@ -37,7 +36,7 @@ Using the CLI
       -o, --out <output>       The output file or directory
 
    ARGS:
-      <DATAPACK>    The datapack (or file) to transpile
+      <DATAPACK>    The Databind project to transpile
 
    SUBCOMMANDS:
       create    Create a new project
@@ -46,13 +45,12 @@ Using the CLI
 From an Installation
 ^^^^^^^^^^^^^^^^^^^^
 
-To transpile a single file, run ``databind file.databind``. A file called
-``databind-out.mcfunction`` will be generated. To transpile a datapack folder,
-run ``databind path/to/datapack``.  
+When installed, you can access the CLI by running ``databind`` in any command line.
+Running ``databind --help`` will output the text above.
 
 With ``cargo run``
 ^^^^^^^^^^^^^^^^^^
 
 After building Databind yourself, you can use ``cargo run`` to run it. Everything
 works almost the exact same. You just need to add two dashes (``--``) after ``run``
-(eg. ``cargo run -- file.databind`` or ``cargo run -- --help``).
+(eg. ``cargo run -- --help``).
