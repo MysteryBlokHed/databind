@@ -1,0 +1,12 @@
+name: Build Docs
+on:
+  - push
+
+jobs:
+  test_docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ammaraskar/sphinx-action@0.4
+        with:
+          docs-folder: docs/
