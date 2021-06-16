@@ -34,6 +34,21 @@ be passed with the `-c` or `--config` option.
 |                                       | ``databind-out.mcfunction``                                         |
 +---------------------------------------+---------------------------------------------------------------------+
 
+Example config
+--------------
+
+Below is a configuration file with all of the above settings.
+
+.. code-block:: toml
+
+   random_var_names = false
+   var_display_names = false
+   inclusions = ["**/*.databind"]
+   function_out_exclusions = ["**/main.databind"]
+   exclusions = []
+
+(The output option is omitted to use the default folder of ``project_name.databind``)
+
 CLI arguments
 -------------
 
