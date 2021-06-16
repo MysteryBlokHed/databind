@@ -20,23 +20,13 @@ fn test_config() {
         ],
     );
 
-    let expected_funcs = [
-        "different_extension.mcfunction",
-        "should_be_made.mcfunction",
-        "func1.mcfunction",
-        "func2.mcfunction",
-        "func3.mcfunction",
-    ];
-    let unexpected_funcs = ["should_not_be_made.mcfunction"];
+    let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
     path.pop();
 
     path.push("test_config.databind/data/test/functions");
     tests::check_files_exist(&path, &expected_funcs, "test_config:");
     path.pop();
     path.pop();
-
-    path.push("minecraft/tags/functions");
-    tests::check_files_dont_exist(&path, &unexpected_funcs, "test_config:");
 
     // Delete generated folder
     let mut out_path = tests::resources();
