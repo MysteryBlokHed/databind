@@ -1,0 +1,11 @@
+name: PR License Check
+on:
+  - pull_request
+
+jobs:
+  check_license:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check License
+        uses: kt3k/license_checker@v1.0.6
