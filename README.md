@@ -1,4 +1,4 @@
-# Databind [![Crates.io Version](https://img.shields.io/crates/v/databind)](https://crates.io/crates/databind) [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green)](#license) [![Documentation](https://readthedocs.org/projects/databind/badge/?version=latest)](https://databind.readthedocs.io/en/latest/)
+# Databind [![Crates.io Version](https://img.shields.io/crates/v/databind)](https://crates.io/crates/databind) [![License](https://img.shields.io/github/license/MysteryBlokHed/databind)](#license) [![Documentation](https://readthedocs.org/projects/databind/badge/?version=latest)](https://databind.readthedocs.io/en/latest/)
 
 Expand the functionality of Minecraft Datapacks.
 
@@ -52,11 +52,5 @@ To view the documentation, open the `index.html` file generated in /docs/\_build
 
 ## License
 
-Databind is licensed under either of
-
-- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
-  <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or
-  <http://opensource.org/licenses/MIT>)
-
-at your option.
+Databind is licensed under the GNU General Public License, Version 3.0
+([LICENSE](LICENSE) or <https://www.gnu.org/licenses/gpl-3.0.en.html>).
