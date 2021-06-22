@@ -2,12 +2,17 @@
 
 Expand the functionality of Minecraft Datapacks.
 
+## Getting Started
+
+To get started, see the [Getting Started](https://databind.readthedocs.io/en/latest/getting_started.html)
+page on the docs.
+
 ## Features
 
 - Multiple function definitions in a single file
 - Tagging functions in-code
 - Shorthand to call functions without namespace prefix (`func_1` instead of `namespace:func_1`)
-- Transpile single files or entire folders
+- Subcommand to create new projects easily
 - Define text replacements for long and repeated lines of code
 - While loops
 - Variable definitions via scoreboards
