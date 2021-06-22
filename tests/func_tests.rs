@@ -28,7 +28,17 @@ fn test_file_structure() {
     path.push("test_file_structure");
     let path_str = path.to_str().unwrap();
 
-    tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path_str,
+            "--ignore-config",
+            "--out",
+            &format!("{}/../out", path_str),
+        ],
+    );
 
     let expected_funcs = [
         "load.mcfunction",
@@ -40,7 +50,7 @@ fn test_file_structure() {
     let unexpected_tags = ["main.json", "first_func.json", "second_func.json"];
 
     path.pop();
-    path.push("test_file_structure.databind/data");
+    path.push("out/data");
 
     // Check if function files are correctly placed
     path.push("test/functions");
@@ -57,7 +67,7 @@ fn test_file_structure() {
 
     // Delete generated folder
     let mut out_path = tests::resources();
-    out_path.push("test_file_structure.databind");
+    out_path.push("out");
     fs::remove_dir_all(out_path).unwrap();
 }
 
@@ -68,12 +78,22 @@ fn test_nested_funcs() {
     path.push("test_nested_funcs");
     let path_str = path.to_str().unwrap();
 
-    tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path_str,
+            "--ignore-config",
+            "--out",
+            &format!("{}/../out", path_str),
+        ],
+    );
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
 
     path.pop();
-    path.push("test_nested_funcs.databind/data");
+    path.push("out/data");
 
     // Check if function files are correctly placed
     path.push("test/functions");
@@ -83,6 +103,6 @@ fn test_nested_funcs() {
 
     // Delete generated folder
     let mut out_path = tests::resources();
-    out_path.push("test_nested_funcs.databind");
+    out_path.push("out");
     fs::remove_dir_all(out_path).unwrap();
 }

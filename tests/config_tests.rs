@@ -34,20 +34,22 @@ fn test_config() {
             path_str,
             "--config",
             &format!("{}/databind.toml", path_str)[..],
+            "--out",
+            &format!("{}/../out", path_str),
         ],
     );
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
     path.pop();
 
-    path.push("test_config.databind/data/test/functions");
+    path.push("out/data/test/functions");
     tests::check_files_exist(&path, &expected_funcs, "test_config:");
     path.pop();
     path.pop();
 
     // Delete generated folder
     let mut out_path = tests::resources();
-    out_path.push("test_config.databind");
+    out_path.push("out");
     fs::remove_dir_all(out_path).unwrap();
 }
 
@@ -65,6 +67,8 @@ fn test_no_config_out() {
             path_str,
             "--config",
             &format!("{}/should_not_be_made.toml", path_str)[..],
+            "--out",
+            &format!("{}/../out", path_str),
         ],
     );
 
@@ -73,7 +77,7 @@ fn test_no_config_out() {
     let unexpected_toml = ["should_not_be_made.toml"];
 
     path.pop();
-    path.push("test_no_config_out.databind/data/test/functions");
+    path.push("out/data/test/functions");
     tests::check_files_exist(&path, &expected_funcs, "test_no_config_out:");
     path.pop();
     path.pop();
@@ -87,6 +91,6 @@ fn test_no_config_out() {
 
     // Delete generated folder
     let mut out_path = tests::resources();
-    out_path.push("test_no_config_out.databind");
+    out_path.push("out");
     fs::remove_dir_all(out_path).unwrap();
 }

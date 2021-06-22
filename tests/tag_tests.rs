@@ -26,14 +26,24 @@ fn test_tag_generation() {
     path.push("test_tag_generation");
     let path_str = path.to_str().unwrap();
 
-    tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path_str,
+            "--ignore-config",
+            "--out",
+            &format!("{}/../out", path_str),
+        ],
+    );
 
     let expected_funcs = ["load.mcfunction", "tick.mcfunction", "func3.mcfunction"];
     let expected_tags = ["load.json", "tick.json", "second_tag.json", "func3.json"];
     let unexpected_tags = ["main.json"];
 
     path.pop();
-    path.push("test_tag_generation.databind/data");
+    path.push("out/data");
 
     // Check if function files are correctly placed
     path.push("test/functions");
@@ -50,7 +60,7 @@ fn test_tag_generation() {
 
     // Delete generated folder
     let mut out_path = tests::resources();
-    out_path.push("test_tag_generation.databind");
+    out_path.push("out");
     fs::remove_dir_all(out_path).unwrap();
 }
 
@@ -61,7 +71,19 @@ fn test_tag_syntax() {
     path.push("test_tag_syntax");
     let path_str = path.to_str().unwrap();
 
-    tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
+    println!("outputting @ {}/{}", path_str, "out");
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path_str,
+            "--ignore-config",
+            "--out",
+            &format!("{}/../out", path_str),
+        ],
+    );
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
     let expected_tags = [
@@ -73,7 +95,7 @@ fn test_tag_syntax() {
     let unexpected_tags = ["main.json"];
 
     path.pop();
-    path.push("test_tag_syntax.databind/data");
+    path.push("out/data");
 
     // Check if function files are correctly placed
     path.push("test/functions");
@@ -90,6 +112,6 @@ fn test_tag_syntax() {
 
     // Delete generated folder
     let mut out_path = tests::resources();
-    out_path.push("test_tag_syntax.databind");
+    out_path.push("out");
     fs::remove_dir_all(out_path).unwrap();
 }
