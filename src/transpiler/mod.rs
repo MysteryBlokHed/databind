@@ -18,49 +18,19 @@
 use crate::settings::Settings;
 use std::collections::HashMap;
 
-/// Returns from the transpiler
-pub enum TranspileReturn {
-    /// The contents of a single file
-    ///
-    /// # Arguments
-    ///
-    /// - `String` - The contents of the file
-    SingleContents(String),
-    /// The contents of a single file as well as a variable name map
-    ///
-    /// # Arguments
-    ///
-    /// - `String` - The contents of the file
-    /// - `HashMap<String, usize>` - A map of filenames to indexes
-    SingleContentsAndMap(String, HashMap<String, String>),
-    /// The contents of multiple files as well as a map of tags to functions
-    ///
-    /// # Arguments
-    ///
-    /// - `Vec<String>` - A list of file contents
-    /// - `HashMap<String, usize>` - A map of filenames to indexes
-    ///    The first key will always be `""`, which is the main file transpiled
-    /// - `HashMap<String, Vec<String>>` - A map of tags to functions
-    MultiFile(
-        Vec<String>,
-        HashMap<String, usize>,
-        HashMap<String, Vec<String>>,
-    ),
-    /// The contents of multiple files as well as a variable map and a map of tags to functions
-    ///
-    /// # Arguments
-    ///
-    /// - `Vec<String>` - A list of file contents
-    /// - `HashMap<String, usize>` - A map of filenames to indexes
-    ///    The first key will always be `""`, which is the main file transpiled
-    /// - `HashMap<String, String>` - A map of variable names used in files to randomized names
-    /// - `HashMap<String, Vec<String>>` - A map of tags to functions
-    MultiFileAndMap(
-        Vec<String>,
-        HashMap<String, usize>,
-        HashMap<String, String>,
-        HashMap<String, Vec<String>>,
-    ),
+/// Return from the transpiler
+///
+/// # Arguments
+///
+/// - `file_contents` - A list of file contents
+/// - `filename_map` - A map of filenames to indexes in the file_contents Vec
+/// - `var_map` - A map of variable names used in files to randomized names
+/// - `tag_map` - A map of tags to functions
+pub struct TranspileReturn {
+    pub file_contents: Vec<String>,
+    pub filename_map: HashMap<String, usize>,
+    pub var_map: HashMap<String, String>,
+    pub tag_map: HashMap<String, Vec<String>>,
 }
 
 pub struct Transpiler<'a> {
