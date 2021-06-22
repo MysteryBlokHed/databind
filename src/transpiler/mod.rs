@@ -16,22 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 use crate::settings::Settings;
-use std::collections::HashMap;
-
-/// Return from the transpiler
-///
-/// # Arguments
-///
-/// - `file_contents` - A list of file contents
-/// - `filename_map` - A map of filenames to indexes in the file_contents Vec
-/// - `var_map` - A map of variable names used in files to randomized names
-/// - `tag_map` - A map of tags to functions
-pub struct TranspileReturn {
-    pub file_contents: Vec<String>,
-    pub filename_map: HashMap<String, usize>,
-    pub var_map: HashMap<String, String>,
-    pub tag_map: HashMap<String, Vec<String>>,
-}
 
 pub struct Transpiler<'a> {
     chars: Vec<char>,

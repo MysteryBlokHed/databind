@@ -15,11 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use super::{TranspileReturn, Transpiler};
+use super::Transpiler;
 
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 use std::collections::HashMap;
+
+/// Return from the transpiler
+///
+/// # Arguments
+///
+/// - `file_contents` - A list of file contents
+/// - `filename_map` - A map of filenames to indexes in the file_contents Vec
+/// - `var_map` - A map of variable names used in files to randomized names
+/// - `tag_map` - A map of tags to functions
+pub struct TranspileReturn {
+    pub file_contents: Vec<String>,
+    pub filename_map: HashMap<String, usize>,
+    pub var_map: HashMap<String, String>,
+    pub tag_map: HashMap<String, Vec<String>>,
+}
 
 impl Transpiler<'_> {
     /// Convert tokens to a transpiled file or files
