@@ -68,9 +68,7 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
         name
     };
 
-    let mut path = PathBuf::new();
-    path.push("./");
-    path.push(base_path);
+    let mut path = PathBuf::from(format!("./{}", base_path));
 
     let metadata = fs::metadata(&path);
 
@@ -85,7 +83,7 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
         }
     }
 
-    path.push(format!("data/{}/functions", name));
+    path.push(format!("src/data/{}/functions", name));
     fs::create_dir_all(&path)?;
 
     // Create main.databind
@@ -110,6 +108,8 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
     fs::write(&path, pack_mcmeta)?;
 
     path.pop();
+    path.pop();
+
     // Create databind.toml
     let databind_toml = toml::to_string(&Settings::default()).unwrap();
     path.push("databind.toml");
