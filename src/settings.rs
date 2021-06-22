@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 
 /// Settings for the transpiler
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
     pub random_var_names: bool,

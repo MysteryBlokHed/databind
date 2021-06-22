@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use crate::settings::Settings;
 use serde_derive::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -107,6 +108,12 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
     let pack_mcmeta = make_pack_mcmeta(description)?;
     path.push("pack.mcmeta");
     fs::write(&path, pack_mcmeta)?;
+
+    path.pop();
+    // Create databind.toml
+    let databind_toml = toml::to_string(&Settings::default()).unwrap();
+    path.push("databind.toml");
+    fs::write(&path, databind_toml)?;
 
     println!("Created project {} in {}", name, base_path);
     Ok(())
