@@ -1,6 +1,8 @@
 name: PR License Check
 on:
-  - pull_request
+  pull_request:
+    branches:
+      - master
 
 jobs:
   check_license:

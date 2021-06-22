@@ -1,7 +1,17 @@
 name: Build And Test
 on:
-  - push
-  - pull_request
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'src/**'
+      - 'tests/**'
+  push:
+    branches:
+      - master
+    paths:
+      - 'src/**'
+      - 'tests/**'
 
 jobs:
   build_and_test:
