@@ -41,7 +41,8 @@ pub fn get_cli_matches<'a>() -> clap::ArgMatches<'a> {
                 .short("o")
                 .long("out")
                 .help("The output file or directory")
-                .takes_value(true),
+                .takes_value(true)
+                .default_value("out"),
         )
         .arg(
             Arg::with_name("ignore-config")

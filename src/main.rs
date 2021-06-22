@@ -97,12 +97,18 @@ fn main() -> std::io::Result<()> {
     }
 
     let mut transpiler_settings: settings::Settings;
-
     if config_path.exists() && !matches.is_present("ignore-config") {
         let config_contents = fs::read_to_string(&config_path)?;
         transpiler_settings = toml::from_str(&config_contents[..]).unwrap();
+        let cli_out = matches.value_of("output").unwrap();
+        println!("{}", cli_out);
+        if cli_out != "out" {
+            transpiler_settings.output = cli_out.into();
+            println!("JOE?");
+        }
     } else {
         transpiler_settings = settings::Settings::default();
+        transpiler_settings.output = matches.value_of("output").unwrap().into();
     }
 
     // Override config settings with CLI arguments if passed
@@ -112,9 +118,6 @@ fn main() -> std::io::Result<()> {
     if matches.is_present("var-display-names") {
         transpiler_settings.var_display_names = true;
     }
-    if matches.is_present("output") {
-        transpiler_settings.output = Some(matches.value_of("output").unwrap().to_string());
-    }
 
     let datapack = matches.value_of("DATAPACK").unwrap();
     let datapack_is_dir = fs::metadata(datapack)?.is_dir();
@@ -122,20 +125,9 @@ fn main() -> std::io::Result<()> {
     if datapack_is_dir {
         let mut var_map: HashMap<String, String> = HashMap::new();
         let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
-        let mut target_folder: String;
+        let target_folder = &transpiler_settings.output;
 
-        if let Some(output) = &transpiler_settings.output {
-            target_folder = output.clone();
-        } else {
-            target_folder = datapack.to_string();
-            target_folder = target_folder
-                .trim_end_matches('/')
-                .trim_end_matches('\\')
-                .to_string();
-            target_folder.push_str(".databind");
-        }
-
-        if fs::metadata(&target_folder).is_ok() {
+        if fs::metadata(target_folder).is_ok() {
             println!("Deleting old databind folder...");
             fs::remove_dir_all(&target_folder)?;
             println!("Done.");

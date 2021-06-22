@@ -26,7 +26,7 @@ pub struct Settings {
     pub func_tag_inclusions: Vec<String>,
     pub inclusions: Vec<String>,
     pub exclusions: Vec<String>,
-    pub output: Option<String>,
+    pub output: String,
 }
 
 impl Default for Settings {
@@ -34,10 +34,10 @@ impl Default for Settings {
         Settings {
             random_var_names: false,
             var_display_names: false,
-            func_tag_inclusions: vec![String::from("tick"), String::from("load")],
-            inclusions: vec![String::from("**/*.databind")],
+            func_tag_inclusions: vec!["tick".into(), "load".into()],
+            inclusions: vec!["**/*.databind".into()],
             exclusions: Vec::new(),
-            output: None,
+            output: "out".into(),
         }
     }
 }
