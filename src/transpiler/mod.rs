@@ -49,7 +49,7 @@ impl Transpiler<'_> {
             chars: text.chars().collect(),
             position: 0,
             current_char: first_char,
-            settings: &settings,
+            settings: settings,
         }
     }
 

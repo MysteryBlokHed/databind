@@ -15,6 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#![warn(clippy::needless_borrow)]
+#![warn(clippy::redundant_clone)]
+
 use glob::glob;
 use same_file::is_same_file;
 use serde_derive::Serialize;
