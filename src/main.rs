@@ -201,10 +201,6 @@ fn main() -> std::io::Result<()> {
                     var_map = transpiled.var_map;
 
                     for (key, value) in transpiled.filename_map.iter() {
-                        if key == "" {
-                            continue;
-                        }
-
                         let full_path = format!("{}/{}.mcfunction", target_path, key);
 
                         fs::write(full_path, &transpiled.file_contents[*value])?;

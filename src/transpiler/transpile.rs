@@ -59,7 +59,6 @@ impl Transpiler<'_> {
         let mut files: Vec<String> = vec![String::new()];
         // A map of filenames to indexes in the files vector
         let mut filename_to_index: HashMap<String, usize> = HashMap::new();
-        filename_to_index.insert(String::new(), 0);
 
         if let Some(_) = existing_var_map {
             var_map = existing_var_map.unwrap().clone();
@@ -81,6 +80,16 @@ impl Transpiler<'_> {
         let mut objective_target = String::new();
 
         for token in tokens.iter() {
+            // Don't transpile contents outside of a function
+            match token {
+                Token::DefineFunc => {}
+                _ => {
+                    if func_depth == 0 {
+                        continue;
+                    }
+                }
+            }
+
             match token {
                 Token::Var => active_token = Token::Var,
                 Token::TestVar => active_token = Token::TestVar,
