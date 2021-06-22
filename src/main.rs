@@ -192,43 +192,33 @@ fn main() -> std::io::Result<()> {
                     let mut transpile =
                         transpiler::Transpiler::new(content, &transpiler_settings, true);
                     let tokens = transpile.tokenize(false);
-                    let transpiled = transpile.transpile(
+                    let mut transpiled = transpile.transpile(
                         tokens,
                         Some(get_namespace(entry.path())),
                         Some(&var_map),
-                        true,
-                        true,
                     );
 
-                    if let transpiler::TranspileReturn::MultiFileAndMap(
-                        files,
-                        filename_to_index,
-                        vars,
-                        mut tags,
-                    ) = transpiled
-                    {
-                        var_map = vars;
+                    var_map = transpiled.var_map;
 
-                        for (key, value) in filename_to_index.iter() {
-                            if key == "" {
-                                continue;
-                            }
-
-                            let full_path = format!("{}/{}.mcfunction", target_path, key);
-
-                            fs::write(full_path, &files[*value])?;
-
-                            // Add namespace prefix to function in tag map
-                            for (_, funcs) in tags.iter_mut() {
-                                if funcs.contains(key) {
-                                    let i = funcs.iter().position(|x| x == key).unwrap();
-                                    funcs[i] = format!("{}:{}", get_namespace(entry.path()), key);
-                                }
-                            }
+                    for (key, value) in transpiled.filename_map.iter() {
+                        if key == "" {
+                            continue;
                         }
 
-                        tag_map.extend(tags);
+                        let full_path = format!("{}/{}.mcfunction", target_path, key);
+
+                        fs::write(full_path, &transpiled.file_contents[*value])?;
+
+                        // Add namespace prefix to function in tag map
+                        for (_, funcs) in transpiled.tag_map.iter_mut() {
+                            if funcs.contains(key) {
+                                let i = funcs.iter().position(|x| x == key).unwrap();
+                                funcs[i] = format!("{}:{}", get_namespace(entry.path()), key);
+                            }
+                        }
                     }
+
+                    tag_map.extend(transpiled.tag_map);
                 } else {
                     let filename = path.file_name().unwrap().to_str().unwrap();
                     let full_path = format!("{}/{}", target_path, filename);

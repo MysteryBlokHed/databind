@@ -15,11 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use super::{TranspileReturn, Transpiler};
+use super::Transpiler;
 
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 use std::collections::HashMap;
+
+/// Return from the transpiler
+///
+/// # Arguments
+///
+/// - `file_contents` - A list of file contents
+/// - `filename_map` - A map of filenames to indexes in the file_contents Vec
+/// - `var_map` - A map of variable names used in files to randomized names
+/// - `tag_map` - A map of tags to functions
+pub struct TranspileReturn {
+    pub file_contents: Vec<String>,
+    pub filename_map: HashMap<String, usize>,
+    pub var_map: HashMap<String, String>,
+    pub tag_map: HashMap<String, Vec<String>>,
+}
 
 impl Transpiler<'_> {
     /// Convert tokens to a transpiled file or files
@@ -29,15 +44,11 @@ impl Transpiler<'_> {
     /// - `tokens` - A list of tokens
     /// - `namespace` - The namespace to use for functions, if relevant
     /// - `existing_var_map` - An existing map of variables to randomized names
-    /// - `return_var_map` - Whether to return the var map used
-    /// - `return_multi_file` - Whether to return multiple files
     pub fn transpile(
         &self,
         tokens: Vec<Token>,
         namespace: Option<&str>,
         existing_var_map: Option<&HashMap<String, String>>,
-        return_var_map: bool,
-        return_multi_file: bool,
     ) -> TranspileReturn {
         let tokens = self.while_convert(tokens);
 
@@ -430,19 +441,17 @@ impl Transpiler<'_> {
             }
         }
 
-        // Remove leading/trailing whitespace from files
+        // Remove leading/trailing whitespace from files as well as empty lines
         for file in files.iter_mut() {
             *file = file.trim().to_string();
+            *file = file.replace("\n\n", "\n");
         }
 
-        if return_var_map && return_multi_file {
-            TranspileReturn::MultiFileAndMap(files, filename_to_index, var_map, tag_map)
-        } else if !return_var_map && !return_multi_file {
-            TranspileReturn::SingleContents(files[0].clone())
-        } else if return_var_map && !return_multi_file {
-            TranspileReturn::SingleContentsAndMap(files[0].clone(), var_map)
-        } else {
-            TranspileReturn::MultiFile(files, filename_to_index, tag_map)
+        TranspileReturn {
+            file_contents: files,
+            filename_map: filename_to_index,
+            var_map: var_map,
+            tag_map: tag_map,
         }
     }
 }
