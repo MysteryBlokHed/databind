@@ -75,6 +75,9 @@ fn merge_globs(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
 fn main() -> std::io::Result<()> {
     let matches = cli::get_cli_matches();
 
+    let datapack = matches.value_of("DATAPACK").unwrap();
+    let datapack_is_dir = fs::metadata(datapack)?.is_dir();
+
     // Check if create command is used
     if let Some(subcommand) = matches.subcommand {
         return create_project::create_project(subcommand.matches);
@@ -90,7 +93,13 @@ fn main() -> std::io::Result<()> {
             std::process::exit(1);
         }
     } else {
-        config_path_str = String::from("databind.toml");
+        // Look for databind.toml in target folder
+        let potential_path = format!("{}/databind.toml", datapack);
+        if fs::metadata(&potential_path).is_ok() {
+            config_path_str = potential_path;
+        } else {
+            config_path_str = String::new();
+        }
     }
 
     let config_path = Path::new(&config_path_str);
@@ -121,9 +130,6 @@ fn main() -> std::io::Result<()> {
     if matches.is_present("var-display-names") {
         transpiler_settings.var_display_names = true;
     }
-
-    let datapack = matches.value_of("DATAPACK").unwrap();
-    let datapack_is_dir = fs::metadata(datapack)?.is_dir();
 
     if datapack_is_dir {
         let mut var_map: HashMap<String, String> = HashMap::new();
