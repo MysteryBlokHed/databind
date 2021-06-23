@@ -23,7 +23,6 @@ use serde_derive::{Deserialize, Serialize};
 pub struct Settings {
     pub random_var_names: bool,
     pub var_display_names: bool,
-    pub func_tag_inclusions: Vec<String>,
     pub inclusions: Vec<String>,
     pub exclusions: Vec<String>,
     pub output: String,
@@ -34,7 +33,6 @@ impl Default for Settings {
         Settings {
             random_var_names: false,
             var_display_names: false,
-            func_tag_inclusions: vec!["tick".into(), "load".into()],
             inclusions: vec!["**/*.databind".into()],
             exclusions: Vec::new(),
             output: "out".into(),
