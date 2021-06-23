@@ -4,9 +4,9 @@ Databind Configuration
 Configuration File
 ------------------
 
-Databind can be configured via a ``databind.toml`` file in the same
-directory as the binary is being run in. A config file can also
-be passed with the ``-c`` or ``--config`` option.
+Databind can be configured via the ``databind.toml`` generated
+in the project's root. A config file can also be passed
+with the ``-c`` or ``--config`` option.
 
 This table represents the default values of the options
 if no config changes are made.
@@ -23,9 +23,7 @@ if no config changes are made.
 +---------------------------------------+---------------------------------------------------------------------+
 | ``exclusions = []``                   | Specify what files not to copy over/transpile using globs           |
 +---------------------------------------+---------------------------------------------------------------------+
-|                                       | The output file or folder. If unspecified,                          |
-| ``output = String``                   | creates new folder ending in ``.databind`` or a file called         |
-|                                       | ``databind-out.mcfunction``                                         |
+| ``output = "out"``                    | The output file or folder                                           |
 +---------------------------------------+---------------------------------------------------------------------+
 
 Example Config
@@ -39,8 +37,7 @@ Below is a configuration file with all of the above settings.
    var_display_names = false
    inclusions = ["**/*.databind"]
    exclusions = []
-
-(The output option is omitted to use the default folder of ``project_name.databind``)
+   output = "out"
 
 CLI Arguments
 -------------
@@ -52,4 +49,4 @@ of ``random_var_names``) and may have different names or shorthand.
 
 Example use:
 
-``databind -c config.toml -o ./out ./datapack``
+``databind -c config.toml -o ./target ./datapack``
