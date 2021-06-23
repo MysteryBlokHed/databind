@@ -22,6 +22,7 @@ use glob::glob;
 use same_file::is_same_file;
 use serde_derive::Serialize;
 use std::collections::HashMap;
+use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
@@ -69,11 +70,50 @@ fn merge_globs(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
     merged_globs
 }
 
+/// Try to find a config file
+///
+/// # Returns
+///
+/// Either the path to the config file or an error.
+fn find_config_in_parents(start: &dyn AsRef<Path>) -> Result<PathBuf, &str> {
+    let mut start = PathBuf::from(start.as_ref());
+    let mut last = PathBuf::new();
+
+    while start != last {
+        start.push("databind.toml");
+        if start.exists() && start.is_file() {
+            return Ok(start);
+        }
+        start.pop();
+        last = start.clone();
+        start.pop();
+    }
+
+    Err("Did not find databind.toml in parents")
+}
+
 /// The main function
 ///
 /// Transpiles provided files and folders to normal `.mcfunction` files
 fn main() -> std::io::Result<()> {
-    let matches = cli::get_cli_matches();
+    // If databind was run without arguments, check if current directory
+    // is a databind project
+    let args: Vec<_> = env::args().collect();
+    let matches = if args.len() > 1 {
+        cli::get_app().get_matches()
+    } else {
+        println!("WE HERE");
+        let mut args: Vec<String> = vec!["databind".into()];
+        // Find config file
+        let cd = &env::current_dir().unwrap();
+        let config_location = find_config_in_parents(&cd).unwrap();
+        // Get base directory of project from config file location
+        let base_dir = config_location.parent().unwrap();
+
+        args.push(format!("{}/src", base_dir.display()));
+
+        cli::get_app().get_matches_from(args)
+    };
 
     let datapack = matches.value_of("DATAPACK").unwrap();
     let datapack_is_dir = fs::metadata(datapack)?.is_dir();

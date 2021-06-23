@@ -18,7 +18,7 @@
 use clap::{App, Arg, SubCommand};
 
 /// Set up Clap CLI and get arguments
-pub fn get_cli_matches<'a>() -> clap::ArgMatches<'a> {
+pub fn get_app<'a, 'b>() -> App<'a, 'b> {
     App::new("Databind")
         .setting(clap::AppSettings::SubcommandsNegateReqs)
         .version("0.1.0")
@@ -91,5 +91,4 @@ pub fn get_cli_matches<'a>() -> clap::ArgMatches<'a> {
                         .value_name("PATH"),
                 ),
         )
-        .get_matches()
 }
