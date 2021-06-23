@@ -39,6 +39,7 @@ fn test_file_structure() {
             "--out",
             out.path().to_str().unwrap(),
         ],
+        None,
     );
 
     let expected_funcs = [
@@ -82,6 +83,7 @@ fn test_nested_funcs() {
             "--out",
             out.path().to_str().unwrap(),
         ],
+        None,
     );
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];

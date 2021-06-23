@@ -37,6 +37,7 @@ fn test_tag_generation() {
             "--out",
             out.path().to_str().unwrap(),
         ],
+        None,
     );
 
     let expected_funcs = ["load.mcfunction", "tick.mcfunction", "func3.mcfunction"];
@@ -75,6 +76,7 @@ fn test_tag_syntax() {
             "--out",
             out.path().to_str().unwrap(),
         ],
+        None,
     );
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];

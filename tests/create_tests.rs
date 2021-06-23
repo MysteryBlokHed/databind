@@ -20,7 +20,7 @@ use tempdir::TempDir;
 
 mod tests;
 
-/// Test that the TOML config is properly followed
+/// Test the `databind create` file structure
 #[test]
 fn test_create_structure() {
     let out = TempDir::new("test_create_structure").expect("Could not create tempdir for test");
@@ -36,6 +36,7 @@ fn test_create_structure() {
             "--path",
             out.path().to_str().unwrap(),
         ],
+        None,
     );
     // Check that the folder was created
     assert!(path.exists() && path.is_dir());
@@ -53,4 +54,42 @@ fn test_create_structure() {
     // Check that the main.databind file was created
     path.push("data/test_create_structure/functions/main.databind");
     assert!(path.exists() && path.is_file());
+}
+
+/// Test running `databind` alone in a created project
+#[test]
+fn test_databind_alone() {
+    let out = TempDir::new("test_databind_alone").expect("Could not create tempdir for test");
+    let mut path = PathBuf::from(out.path());
+
+    // Create project
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            "create",
+            "test_databind_alone",
+            "--path",
+            out.path().to_str().unwrap(),
+        ],
+        None,
+    );
+
+    // Run `databind` in directory
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--manifest-path",
+            &format!("{}/Cargo.toml", env!("CARGO_MANIFEST_DIR"))[..],
+        ],
+        Some(&path),
+    );
+
+    // Test that out directory exists
+    path.push("out");
+    println!("Checking path {}", path.display());
+    assert!(path.exists() && path.is_dir());
 }

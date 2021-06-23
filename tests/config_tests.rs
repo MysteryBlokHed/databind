@@ -39,6 +39,7 @@ fn test_config() {
             "--out",
             out.path().to_str().unwrap(),
         ],
+        None,
     );
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
@@ -68,6 +69,7 @@ fn test_no_config_out() {
             "--out",
             out.path().to_str().unwrap(),
         ],
+        None,
     );
 
     let expected_funcs = ["tick.mcfunction"];
