@@ -1,10 +1,10 @@
 [package]
 name = "databind"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Adam Thompson-Sharpe <adamthompsonsharpe@gmail.com>"]
 edition = "2018"
 description = "Expand the functionality of Minecraft Datapacks."
-documentation = "https://databind.readthedocs.io/en/v0.2.0/"
+documentation = "https://databind.readthedocs.io/en/v0.2.1/"
 readme = "README.md"
 repository = "https://github.com/MysteryBlokHed/databind"
 license = "GPL-3.0"
@@ -25,12 +25,12 @@ exclude = [
 clap = "2.33"
 glob = "0.3"
 rand = "0.8"
-walkdir = "2.3"
-toml = "0.5"
+regex = "1.5"
+same-file = "1.0"
 serde = { version="1.0", features=["derive"] }
 serde_json = "1.0"
-same-file = "1.0"
-regex = "1.5"
+toml = "0.5"
+walkdir = "2.3"
 
 [dev-dependencies]
 tempdir = "0.3"
