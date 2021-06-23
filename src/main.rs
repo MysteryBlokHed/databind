@@ -114,13 +114,13 @@ fn main() -> std::io::Result<()> {
         cli::get_app().get_matches_from(args)
     };
 
-    let datapack = matches.value_of("DATAPACK").unwrap();
-    let datapack_is_dir = fs::metadata(datapack)?.is_dir();
-
     // Check if create command is used
     if let Some(subcommand) = matches.subcommand {
         return create_project::create_project(subcommand.matches);
     }
+
+    let datapack = matches.value_of("DATAPACK").unwrap();
+    let datapack_is_dir = fs::metadata(datapack)?.is_dir();
 
     let config_path_str: String;
 
