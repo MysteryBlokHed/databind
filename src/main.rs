@@ -15,8 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#![warn(clippy::needless_borrow)]
-#![warn(clippy::redundant_clone)]
+#![warn(clippy::all)]
 
 use glob::glob;
 use same_file::is_same_file;
@@ -54,7 +53,7 @@ fn get_namespace(functions_path: &Path) -> &str {
 }
 
 /// Convert multiple globs into a `Vec<PathBuf>`
-fn merge_globs(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
+fn merge_globs(globs: &[String], prefix: &str) -> Vec<PathBuf> {
     let mut merged_globs: Vec<PathBuf> = Vec::new();
 
     for files_glob in globs.iter() {
@@ -202,7 +201,7 @@ fn main() -> std::io::Result<()> {
 
                 let mut target_path: String = target_folder.to_string();
                 target_path.push('/');
-                target_path.push_str(&format!("{}", path.parent().unwrap().to_str().unwrap())[..]);
+                target_path.push_str(path.parent().unwrap().to_str().unwrap());
 
                 fs::create_dir_all(&target_path)?;
 
@@ -242,10 +241,6 @@ fn main() -> std::io::Result<()> {
                     var_map = transpiled.var_map;
 
                     for (key, value) in transpiled.filename_map.iter() {
-                        if key == "" {
-                            continue;
-                        }
-
                         let full_path = format!("{}/{}.mcfunction", target_path, key);
 
                         fs::write(full_path, &transpiled.file_contents[*value])?;

@@ -59,10 +59,9 @@ impl Transpiler<'_> {
         let mut files: Vec<String> = vec![String::new()];
         // A map of filenames to indexes in the files vector
         let mut filename_to_index: HashMap<String, usize> = HashMap::new();
-        filename_to_index.insert(String::new(), 0);
 
-        if let Some(_) = existing_var_map {
-            var_map = existing_var_map.unwrap().clone();
+        if let Some(map) = existing_var_map {
+            var_map = map.clone();
         } else {
             var_map = HashMap::new();
         }
@@ -81,6 +80,16 @@ impl Transpiler<'_> {
         let mut objective_target = String::new();
 
         for token in tokens.iter() {
+            // Don't transpile contents outside of a function
+            match token {
+                Token::DefineFunc => {}
+                _ => {
+                    if func_depth == 0 {
+                        continue;
+                    }
+                }
+            }
+
             match token {
                 Token::Var => active_token = Token::Var,
                 Token::TestVar => active_token = Token::TestVar,
@@ -138,18 +147,16 @@ impl Transpiler<'_> {
                                 files[filename_to_index[&current_functions[func_depth - 1]]]
                                     .push_str(&to_add[..]);
                             }
-                        } else {
-                            if let Some(ns) = namespace {
-                                let to_add = format!("function {}:{}", ns, name);
-                                if func_depth == 0 {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_functions[func_depth - 1]]]
-                                        .push_str(&to_add[..]);
-                                }
+                        } else if let Some(ns) = namespace {
+                            let to_add = format!("function {}:{}", ns, name);
+                            if func_depth == 0 {
+                                files[0].push_str(&to_add[..]);
                             } else {
-                                panic!("No namespace provided for function call.");
+                                files[filename_to_index[&current_functions[func_depth - 1]]]
+                                    .push_str(&to_add[..]);
                             }
+                        } else {
+                            panic!("No namespace provided for function call.");
                         }
 
                         calling_function = false;
@@ -169,7 +176,7 @@ impl Transpiler<'_> {
 
                     tag_map
                         .entry(tag.clone())
-                        .or_insert(Vec::new())
+                        .or_insert_with(Vec::new)
                         .push(current_functions[func_depth - 1].clone());
                 }
                 Token::ObjectiveName(name) => current_objective = name.clone(),
@@ -450,8 +457,8 @@ impl Transpiler<'_> {
         TranspileReturn {
             file_contents: files,
             filename_map: filename_to_index,
-            var_map: var_map,
-            tag_map: tag_map,
+            var_map,
+            tag_map,
         }
     }
 }

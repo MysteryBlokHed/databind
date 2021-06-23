@@ -32,15 +32,15 @@ impl Transpiler<'_> {
     /// - `text` - The contents of the file to transpile
     /// - `settings` - The settings for the transpiler
     /// - `replacement` - Whether to replace :def's. Required to avoid stack overflow
-    pub fn new<'a>(text: String, settings: &'a Settings, replacement: bool) -> Transpiler<'a> {
+    pub fn new(text: String, settings: &Settings, replacement: bool) -> Transpiler<'_> {
         let text = if replacement {
             Transpiler::replace_definitions(&text)
         } else {
             text
         };
 
-        let first_char = if text.len() > 0 {
-            text.chars().nth(0).unwrap()
+        let first_char = if !text.is_empty() {
+            text.chars().next().unwrap()
         } else {
             '\u{0}'
         };
@@ -49,7 +49,7 @@ impl Transpiler<'_> {
             chars: text.chars().collect(),
             position: 0,
             current_char: first_char,
-            settings: settings,
+            settings,
         }
     }
 

@@ -35,7 +35,7 @@ fn make_pack_mcmeta(description: String) -> Result<String, serde_json::Error> {
     let pack = PackMcMeta {
         pack: Pack {
             pack_format: 6,
-            description: description,
+            description,
         },
     };
 
@@ -56,7 +56,7 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
 
     let name = args.value_of("name").unwrap();
 
-    if name.chars().into_iter().any(|x| !allowed_chars.contains(x)) {
+    if name.chars().any(|x| !allowed_chars.contains(x)) {
         println!("Project name contains disallowed characters");
         std::process::exit(1);
     }
@@ -72,9 +72,8 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
 
     let metadata = fs::metadata(&path);
 
-    if metadata.is_ok() {
-        let unwrapped = metadata.unwrap();
-        if unwrapped.is_file() || unwrapped.is_dir() && !dir_empty(&path)? {
+    if let Ok(meta) = metadata {
+        if meta.is_file() || meta.is_dir() && !dir_empty(&path)? {
             println!(
                 "Path {} is an already existant file or non-empty folder",
                 base_path
