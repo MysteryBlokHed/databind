@@ -6,7 +6,7 @@ Using definitions for a long execute command.
 Example
 -------
 
-``def_example/data/loop/functions/main.databind``
+``example/src/data/example/functions/main.databind``
 
 .. code-block:: databind
 
@@ -23,7 +23,7 @@ Example
 Transpiled
 ----------
 
-``def_example.databind/data/loop/functions/tick.mcfunction``
+``example/out/data/example/functions/tick.mcfunction``
 
 .. code-block:: mcfunction
 

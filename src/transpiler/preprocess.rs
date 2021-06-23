@@ -30,10 +30,10 @@ impl Transpiler<'_> {
     /// # Arguments
     ///
     /// - `content` - The contents of a file
-    pub fn replace_definitions(contents: &String) -> String {
+    pub fn replace_definitions(contents: &str) -> String {
         let settings = &Settings::default();
-        let mut transpiler = Transpiler::new(contents.clone(), settings, false);
-        let mut new_contents = contents.clone();
+        let mut transpiler = Transpiler::new(contents.to_string(), settings, false);
+        let mut new_contents = &*contents.to_string();
 
         let replacement_tokens = transpiler.tokenize(true);
 
@@ -46,22 +46,22 @@ impl Transpiler<'_> {
                 Token::ReplaceContents(contents) => {
                     replacement_map
                         .entry(current_name.to_owned())
-                        .or_insert(contents.clone());
+                        .or_insert_with(|| contents.clone());
                 }
                 _ => {}
             }
         }
 
         // Replace text
+        let mut replaced;
         for (name, replacement) in replacement_map.iter() {
-            new_contents = new_contents.replace(name, replacement);
+            replaced = new_contents.replace(name, replacement);
+            new_contents = &replaced;
         }
 
         // Remove :def lines
         let re = Regex::new(":def.*\n").unwrap();
-        new_contents = re.replace(&new_contents[..], "").to_string();
-
-        new_contents
+        re.replace(&new_contents[..], "").to_string()
     }
 
     /// Replace while loops with databind function definitions
@@ -134,12 +134,11 @@ impl Transpiler<'_> {
 
     /// Randomly generate characters
     fn get_chars() -> String {
-        let chars = rand::thread_rng()
+        rand::thread_rng()
             .sample_iter(&Alphanumeric)
             .take(4)
             .map(char::from)
             .collect::<String>()
-            .to_lowercase();
-        chars
+            .to_lowercase()
     }
 }

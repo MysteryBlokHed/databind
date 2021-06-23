@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use std::fs;
+use tempdir::TempDir;
 
 mod tests;
 
@@ -26,6 +26,8 @@ fn test_config() {
     path.push("test_config");
     let path_str = path.to_str().unwrap();
 
+    let out = TempDir::new("test_config").expect("Could not create tempdir for test");
+
     tests::run_with_args(
         "cargo",
         &[
@@ -34,21 +36,18 @@ fn test_config() {
             path_str,
             "--config",
             &format!("{}/databind.toml", path_str)[..],
+            "--out",
+            out.path().to_str().unwrap(),
         ],
+        None,
     );
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
-    path.pop();
 
-    path.push("test_config.databind/data/test/functions");
+    path.push(format!("{}/data/test/functions", out.path().display()));
     tests::check_files_exist(&path, &expected_funcs, "test_config:");
     path.pop();
     path.pop();
-
-    // Delete generated folder
-    let mut out_path = tests::resources();
-    out_path.push("test_config.databind");
-    fs::remove_dir_all(out_path).unwrap();
 }
 
 #[test]
@@ -56,6 +55,8 @@ fn test_no_config_out() {
     let mut path = tests::resources();
     path.push("test_no_config_out");
     let path_str = path.to_str().unwrap();
+
+    let out = TempDir::new("test_no_config_out").expect("Could not create tempdir for test");
 
     tests::run_with_args(
         "cargo",
@@ -65,15 +66,17 @@ fn test_no_config_out() {
             path_str,
             "--config",
             &format!("{}/should_not_be_made.toml", path_str)[..],
+            "--out",
+            out.path().to_str().unwrap(),
         ],
+        None,
     );
 
     let expected_funcs = ["tick.mcfunction"];
     let expected_toml = ["should_be_made.toml"];
     let unexpected_toml = ["should_not_be_made.toml"];
 
-    path.pop();
-    path.push("test_no_config_out.databind/data/test/functions");
+    path.push(format!("{}/data/test/functions", out.path().display()));
     tests::check_files_exist(&path, &expected_funcs, "test_no_config_out:");
     path.pop();
     path.pop();
@@ -84,9 +87,4 @@ fn test_no_config_out() {
 
     // Ensure config toml file is not outputted
     tests::check_files_dont_exist(&path, &unexpected_toml, "test_no_config_out");
-
-    // Delete generated folder
-    let mut out_path = tests::resources();
-    out_path.push("test_no_config_out.databind");
-    fs::remove_dir_all(out_path).unwrap();
 }

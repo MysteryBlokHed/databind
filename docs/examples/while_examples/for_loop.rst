@@ -6,7 +6,7 @@ A for loop-like while loop.
 Example
 -------
 
-``example/data/example/functions/main.databind``
+``example/src/data/example/functions/main.databind``
 
 .. code-block:: databind
 
@@ -27,7 +27,7 @@ When while loops are transpiled, functions with random characters
 at the end are created. In transpiled examples, these characters
 will be ``abcd``.
 
-``example.databind/data/example/functions/load.mcfunction``
+``example/out/data/example/functions/load.mcfunction``
 
 .. code-block:: mcfunction
 
@@ -36,13 +36,13 @@ will be ``abcd``.
    function example:while_abcd
    tellraw @a "Variable i is at 0"
 
-``example.databind/data/example/functions/while_abcd.mcfunction``
+``example/out/data/example/functions/while_abcd.mcfunction``
 
 .. code-block:: mcfunction
 
    execute if score --databind i matches 1.. run function example:condition_abcd
 
-``example.databind/data/example/functions/condition_abcd.mcfunction``
+``example/out/data/example/functions/condition_abcd.mcfunction``
 
 .. code-block:: mcfunction
 

@@ -21,6 +21,7 @@ use glob::glob;
 use same_file::is_same_file;
 use serde_derive::Serialize;
 use std::collections::HashMap;
+use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
@@ -52,7 +53,7 @@ fn get_namespace(functions_path: &Path) -> &str {
 }
 
 /// Convert multiple globs into a `Vec<PathBuf>`
-fn merge_globs(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
+fn merge_globs(globs: &[String], prefix: &str) -> Vec<PathBuf> {
     let mut merged_globs: Vec<PathBuf> = Vec::new();
 
     for files_glob in globs.iter() {
@@ -68,16 +69,60 @@ fn merge_globs(globs: &Vec<String>, prefix: &str) -> Vec<PathBuf> {
     merged_globs
 }
 
+/// Try to find a config file
+///
+/// # Returns
+///
+/// Either the path to the config file or an error.
+fn find_config_in_parents(start: &dyn AsRef<Path>, config_file: String) -> Result<PathBuf, &str> {
+    let mut start = PathBuf::from(start.as_ref());
+    let mut last = PathBuf::new();
+
+    while start != last {
+        start.push(&config_file);
+        if start.exists() && start.is_file() {
+            return Ok(start);
+        }
+        start.pop();
+        last = start.clone();
+        start.pop();
+    }
+
+    Err("Did not find databind.toml in parents")
+}
+
 /// The main function
 ///
 /// Transpiles provided files and folders to normal `.mcfunction` files
 fn main() -> std::io::Result<()> {
-    let matches = cli::get_cli_matches();
+    // If databind was run without arguments, check if current directory
+    // is a databind project
+    let args: Vec<_> = env::args().collect();
+    let matches = if args.len() > 1 {
+        cli::get_app().get_matches()
+    } else {
+        let mut args: Vec<String> = vec!["databind".into()];
+        // Find config file
+        let current_dir = &env::current_dir();
+        if let Ok(cd) = current_dir {
+            let config_location = find_config_in_parents(&cd, "databind.toml".into()).unwrap();
+            // Get base directory of project from config file location
+            let base_dir = config_location.parent().unwrap();
+            args.push(format!("{}/src", base_dir.display()));
+            cli::get_app().get_matches_from(args)
+        } else {
+            // Run with no args to show help menu
+            cli::get_app().get_matches()
+        }
+    };
 
     // Check if create command is used
     if let Some(subcommand) = matches.subcommand {
         return create_project::create_project(subcommand.matches);
     }
+
+    let datapack = matches.value_of("DATAPACK").unwrap();
+    let datapack_is_dir = fs::metadata(datapack)?.is_dir();
 
     let config_path_str: String;
 
@@ -89,7 +134,13 @@ fn main() -> std::io::Result<()> {
             std::process::exit(1);
         }
     } else {
-        config_path_str = String::from("databind.toml");
+        // Look for databind.toml in target folder
+        let potential_path = format!("{}/databind.toml", datapack);
+        if fs::metadata(&potential_path).is_ok() {
+            config_path_str = potential_path;
+        } else {
+            config_path_str = String::new();
+        }
     }
 
     let config_path = Path::new(&config_path_str);
@@ -99,12 +150,17 @@ fn main() -> std::io::Result<()> {
     }
 
     let mut transpiler_settings: settings::Settings;
-
     if config_path.exists() && !matches.is_present("ignore-config") {
         let config_contents = fs::read_to_string(&config_path)?;
         transpiler_settings = toml::from_str(&config_contents[..]).unwrap();
+        transpiler_settings.output = format!("{}/{}", datapack, transpiler_settings.output);
+        let cli_out = matches.value_of("output").unwrap();
+        if cli_out != "out" {
+            transpiler_settings.output = cli_out.into();
+        }
     } else {
         transpiler_settings = settings::Settings::default();
+        transpiler_settings.output = matches.value_of("output").unwrap().into();
     }
 
     // Override config settings with CLI arguments if passed
@@ -114,30 +170,13 @@ fn main() -> std::io::Result<()> {
     if matches.is_present("var-display-names") {
         transpiler_settings.var_display_names = true;
     }
-    if matches.is_present("output") {
-        transpiler_settings.output = Some(matches.value_of("output").unwrap().to_string());
-    }
-
-    let datapack = matches.value_of("DATAPACK").unwrap();
-    let datapack_is_dir = fs::metadata(datapack)?.is_dir();
 
     if datapack_is_dir {
         let mut var_map: HashMap<String, String> = HashMap::new();
         let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
-        let mut target_folder: String;
+        let target_folder = &transpiler_settings.output;
 
-        if let Some(output) = &transpiler_settings.output {
-            target_folder = output.clone();
-        } else {
-            target_folder = datapack.to_string();
-            target_folder = target_folder
-                .trim_end_matches('/')
-                .trim_end_matches('\\')
-                .to_string();
-            target_folder.push_str(".databind");
-        }
-
-        if fs::metadata(&target_folder).is_ok() {
+        if fs::metadata(target_folder).is_ok() {
             println!("Deleting old databind folder...");
             fs::remove_dir_all(&target_folder)?;
             println!("Done.");
@@ -151,19 +190,31 @@ fn main() -> std::io::Result<()> {
             .cloned()
             .collect();
 
-        for entry in WalkDir::new(&datapack).into_iter().filter_map(|e| e.ok()) {
+        let src_dir = PathBuf::from(format!("{}/src", datapack));
+        let src_dir = if !src_dir.exists() || !src_dir.is_dir() {
+            Path::new(&datapack)
+        } else {
+            src_dir.as_path()
+        };
+
+        for entry in WalkDir::new(&src_dir).into_iter().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
                 // Do not add config file to output folder
                 if config_path.exists() && is_same_file(entry.path(), config_path).unwrap() {
                     continue;
                 }
 
-                let new_path_str = entry.path().to_str().unwrap().replacen(datapack, "", 1);
+                let new_path_str =
+                    entry
+                        .path()
+                        .to_str()
+                        .unwrap()
+                        .replacen(src_dir.to_str().unwrap(), "", 1);
                 let path = Path::new(&new_path_str);
 
                 let mut target_path: String = target_folder.to_string();
                 target_path.push('/');
-                target_path.push_str(&format!("{}", path.parent().unwrap().to_str().unwrap())[..]);
+                target_path.push_str(path.parent().unwrap().to_str().unwrap());
 
                 fs::create_dir_all(&target_path)?;
 

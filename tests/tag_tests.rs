@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use std::fs;
+use tempdir::TempDir;
 
 mod tests;
 
@@ -24,19 +24,28 @@ mod tests;
 fn test_tag_generation() {
     let mut path = tests::resources();
     path.push("test_tag_generation");
-    let path_str = path.to_str().unwrap();
 
-    tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
+    let out = TempDir::new("test_tag_generation").expect("Could not create tempdir for test");
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path.to_str().unwrap(),
+            "--ignore-config",
+            "--out",
+            out.path().to_str().unwrap(),
+        ],
+        None,
+    );
 
     let expected_funcs = ["load.mcfunction", "tick.mcfunction", "func3.mcfunction"];
     let expected_tags = ["load.json", "tick.json", "second_tag.json", "func3.json"];
     let unexpected_tags = ["main.json"];
 
-    path.pop();
-    path.push("test_tag_generation.databind/data");
-
     // Check if function files are correctly placed
-    path.push("test/functions");
+    path.push(format!("{}/data/test/functions", out.path().display()));
     tests::check_files_exist(&path, &expected_funcs, "test_tag_generation");
     path.pop();
     path.pop();
@@ -47,11 +56,6 @@ fn test_tag_generation() {
 
     // Ensure unexpected tag files do not exist
     tests::check_files_dont_exist(&path, &unexpected_tags, "test_tag_generation");
-
-    // Delete generated folder
-    let mut out_path = tests::resources();
-    out_path.push("test_tag_generation.databind");
-    fs::remove_dir_all(out_path).unwrap();
 }
 
 /// Test multiple ways to format :tag code
@@ -59,9 +63,21 @@ fn test_tag_generation() {
 fn test_tag_syntax() {
     let mut path = tests::resources();
     path.push("test_tag_syntax");
-    let path_str = path.to_str().unwrap();
 
-    tests::run_with_args("cargo", &["run", "--", path_str, "--ignore-config"]);
+    let out = TempDir::new("test_tag_syntax").expect("Could not create tempdir for test");
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path.to_str().unwrap(),
+            "--ignore-config",
+            "--out",
+            out.path().to_str().unwrap(),
+        ],
+        None,
+    );
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
     let expected_tags = [
@@ -72,11 +88,8 @@ fn test_tag_syntax() {
     ];
     let unexpected_tags = ["main.json"];
 
-    path.pop();
-    path.push("test_tag_syntax.databind/data");
-
     // Check if function files are correctly placed
-    path.push("test/functions");
+    path.push(format!("{}/data/test/functions", out.path().display()));
     tests::check_files_exist(&path, &expected_funcs, "test_tag_syntax");
     path.pop();
     path.pop();
@@ -87,9 +100,4 @@ fn test_tag_syntax() {
 
     // Ensure unexpected tag files do not exist
     tests::check_files_dont_exist(&path, &unexpected_tags, "test_tag_syntax");
-
-    // Delete generated folder
-    let mut out_path = tests::resources();
-    out_path.push("test_tag_syntax.databind");
-    fs::remove_dir_all(out_path).unwrap();
 }

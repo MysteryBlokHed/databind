@@ -19,28 +19,28 @@ Using the CLI
 .. code-block:: text
 
    USAGE:
-      databind.exe [FLAGS] [OPTIONS] <DATAPACK>
-      databind.exe [FLAGS] [OPTIONS] <SUBCOMMAND>
+       databind [FLAGS] [OPTIONS] <DATAPACK>
+       databind [FLAGS] [OPTIONS] <SUBCOMMAND>
 
    FLAGS:
-      -h, --help                 Prints help information
-         --ignore-config        Ignore the config file. Used for testing
-         --random-var-names     Add characters to the end of variable names. Does not work when using variables across
-                                 multiple files
-         --var-display-names    Change the display name of variables in-game to hide extra characters. Only relevant with
-                                 --random-var-names
-      -V, --version              Prints version information
+       -h, --help                 Prints help information
+           --ignore-config        Ignore the config file. Used for testing
+           --random-var-names     Add characters to the end of variable names. Does not work when using variables across
+                                  multiple files
+           --var-display-names    Change the display name of variables in-game to hide extra characters. Only relevant with
+                                  --random-var-names
+       -V, --version              Prints version information
 
    OPTIONS:
-      -c, --config <config>    Configuration for the transpiler
-      -o, --out <output>       The output file or directory
+       -c, --config <config>    Configuration for the transpiler
+       -o, --out <output>       The output file or directory [default: out]
 
    ARGS:
-      <DATAPACK>    The Databind project to transpile
+       <DATAPACK>    The Databind project to transpile
 
    SUBCOMMANDS:
-      create    Create a new project
-      help      Prints this message or the help of the given subcommand(s)
+       create    Create a new project
+       help      Prints this message or the help of the given subcommand(s)
 
 From an Installation
 ^^^^^^^^^^^^^^^^^^^^

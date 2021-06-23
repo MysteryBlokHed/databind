@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use crate::settings::Settings;
 use serde_derive::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -55,7 +56,7 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
 
     let name = args.value_of("name").unwrap();
 
-    if name.chars().into_iter().any(|x| !allowed_chars.contains(x)) {
+    if name.chars().any(|x| !allowed_chars.contains(x)) {
         println!("Project name contains disallowed characters");
         std::process::exit(1);
     }
@@ -67,15 +68,12 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
         name
     };
 
-    let mut path = PathBuf::new();
-    path.push("./");
-    path.push(base_path);
+    let mut path = PathBuf::from(base_path);
 
     let metadata = fs::metadata(&path);
 
-    if metadata.is_ok() {
-        let unwrapped = metadata.unwrap();
-        if unwrapped.is_file() || unwrapped.is_dir() && !dir_empty(&path)? {
+    if let Ok(meta) = metadata {
+        if meta.is_file() || meta.is_dir() && !dir_empty(&path)? {
             println!(
                 "Path {} is an already existant file or non-empty folder",
                 base_path
@@ -84,7 +82,7 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
         }
     }
 
-    path.push(format!("data/{}/functions", name));
+    path.push(format!("src/data/{}/functions", name));
     fs::create_dir_all(&path)?;
 
     // Create main.databind
@@ -107,6 +105,14 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
     let pack_mcmeta = make_pack_mcmeta(description)?;
     path.push("pack.mcmeta");
     fs::write(&path, pack_mcmeta)?;
+
+    path.pop();
+    path.pop();
+
+    // Create databind.toml
+    let databind_toml = toml::to_string(&Settings::default()).unwrap();
+    path.push("databind.toml");
+    fs::write(&path, databind_toml)?;
 
     println!("Created project {} in {}", name, base_path);
     Ok(())

@@ -15,18 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 
 /// Settings for the transpiler
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
     pub random_var_names: bool,
     pub var_display_names: bool,
-    pub func_tag_inclusions: Vec<String>,
     pub inclusions: Vec<String>,
     pub exclusions: Vec<String>,
-    pub output: Option<String>,
+    pub output: String,
 }
 
 impl Default for Settings {
@@ -34,10 +33,9 @@ impl Default for Settings {
         Settings {
             random_var_names: false,
             var_display_names: false,
-            func_tag_inclusions: vec![String::from("tick"), String::from("load")],
-            inclusions: vec![String::from("**/*.databind")],
+            inclusions: vec!["**/*.databind".into()],
             exclusions: Vec::new(),
-            output: None,
+            output: "out".into(),
         }
     }
 }

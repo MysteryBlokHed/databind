@@ -48,7 +48,7 @@ impl Transpiler<'_> {
                 }
             }
 
-            if get_definitions && tokens.len() > 0 {
+            if get_definitions && !tokens.is_empty() {
                 match tokens.last().unwrap() {
                     Token::DefineReplace | Token::ReplaceName(_) | Token::ReplaceContents(_) => {}
                     _ => break,
@@ -85,7 +85,7 @@ impl Transpiler<'_> {
 
             if !building_keyword && last_char.is_whitespace() && self.current_char == ':' {
                 building_keyword = true;
-                if current_non_databind.len() > 0 {
+                if !current_non_databind.is_empty() {
                     tokens.push(Token::NonDatabind(current_non_databind));
                     current_non_databind = String::new();
                 }
@@ -356,7 +356,7 @@ impl Transpiler<'_> {
                 continue;
             } else if !['\r', '\n'].contains(&self.current_char) {
                 current_non_databind.push(self.current_char);
-            } else if current_non_databind.len() > 0 {
+            } else if !current_non_databind.is_empty() {
                 tokens.push(Token::NonDatabind(current_non_databind));
                 current_non_databind = String::new();
             }
@@ -369,7 +369,7 @@ impl Transpiler<'_> {
             self.next_char();
         }
 
-        if current_non_databind.len() > 0 {
+        if !current_non_databind.is_empty() {
             tokens.push(Token::NonDatabind(current_non_databind));
         }
 

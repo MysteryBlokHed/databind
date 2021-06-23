@@ -17,17 +17,21 @@
  */
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Output};
 
-pub fn run_with_args(cmd: &str, args: &[&str]) -> String {
-    String::from_utf8(
+pub fn run_with_args(cmd: &str, args: &[&str], path: Option<&dyn AsRef<Path>>) -> Output {
+    if let Some(p) = path {
+        Command::new(cmd)
+            .args(args)
+            .current_dir(p.as_ref())
+            .output()
+            .expect("Failed to execute process")
+    } else {
         Command::new(cmd)
             .args(args)
             .output()
             .expect("Failed to execute process")
-            .stdout,
-    )
-    .unwrap()
+    }
 }
 
 pub fn resources() -> PathBuf {

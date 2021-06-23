@@ -60,8 +60,8 @@ impl Transpiler<'_> {
         // A map of filenames to indexes in the files vector
         let mut filename_to_index: HashMap<String, usize> = HashMap::new();
 
-        if let Some(_) = existing_var_map {
-            var_map = existing_var_map.unwrap().clone();
+        if let Some(map) = existing_var_map {
+            var_map = map.clone();
         } else {
             var_map = HashMap::new();
         }
@@ -176,7 +176,7 @@ impl Transpiler<'_> {
 
                     tag_map
                         .entry(tag.clone())
-                        .or_insert(Vec::new())
+                        .or_insert_with(Vec::new)
                         .push(current_functions[func_depth - 1].clone());
                 }
                 Token::ObjectiveName(name) => current_objective = name.clone(),

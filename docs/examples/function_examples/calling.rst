@@ -8,7 +8,7 @@ Different ways to call a function.
 
 Built into mcfunctions. Requires a namespace.
 
-``example/data/example/functions/main.databind``
+``example/src/data/example/functions/main.databind``
 
 .. code-block:: databind
 
@@ -24,7 +24,7 @@ Built into mcfunctions. Requires a namespace.
 Add namespaces to functions while transpiling.
 Allows more freedom with directory names.
 
-``example/data/example/functions/main.databind``
+``example/src/data/example/functions/main.databind``
 
 .. code-block:: databind
 
@@ -38,7 +38,7 @@ Transpiled, ``:call example_func`` becomes ``function example:example_func``.
 
 ``:call`` (explicit namespace)
 
-``example/data/example/functions/main.databind``
+``example/src/data/example/functions/main.databind``
 
 .. code-block:: databind
 
