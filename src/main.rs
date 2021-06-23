@@ -103,11 +103,11 @@ fn main() -> std::io::Result<()> {
     } else {
         let mut args: Vec<String> = vec!["databind".into()];
         // Find config file
-        let current_dir = &env::current_dir();
-        if let Ok(cd) = current_dir {
-            let config_location = find_config_in_parents(&cd, "databind.toml".into()).unwrap();
+        let cd = &env::current_dir().unwrap();
+        let config_location = find_config_in_parents(&cd, "databind.toml".into());
+        if let Ok(config) = config_location {
             // Get base directory of project from config file location
-            let base_dir = config_location.parent().unwrap();
+            let base_dir = config.parent().unwrap();
             args.push(format!("{}/src", base_dir.display()));
             cli::get_app().get_matches_from(args)
         } else {
