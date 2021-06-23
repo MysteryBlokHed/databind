@@ -46,9 +46,8 @@ in the current directory. Only works if empty.
 Writing Code
 ------------
 
-By default, files named ``main.databind`` **can only be used** to define
-other functions, such as functions tagged with ``load`` or ``tick``.
-THe file contains this by default:
+Below is the default ``main.databind`` file. ``.databind`` files
+**can only be used** to contain function definitions.
 
 .. code-block:: databind
 
@@ -76,10 +75,9 @@ to give the function a load tag.
 Building
 --------
 
-To build your project, run ``databind <PATH>``. A folder with ``.databind``
-appended to the end will be generated. For example, if your project is
-in a folder called ``my_project`` then you should run ``databind my_project``,
-generating a folder called ``my_project.databind``.
+To build your project, run ``databind`` in the root directory of your project.
+Alternatively, you can run ``databind <PATH>`` where ``<PATH>`` is the path to
+your project.
 
 Additional Files
 ----------------
