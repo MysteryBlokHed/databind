@@ -13,11 +13,12 @@ categories = ["compilers", "command-line-utilities"]
 exclude = [
     ".github",
     ".vscode",
+    ".gitignore",
     ".licenserc.json",
+    "databind.toml",
     "docs",
     "target",
     "testing",
-    "databind.toml",
 ]
 
 [dependencies]
