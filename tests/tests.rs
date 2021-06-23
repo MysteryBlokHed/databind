@@ -32,7 +32,7 @@ pub fn run_with_args(cmd: &str, args: &[&str]) -> String {
 
 pub fn resources() -> PathBuf {
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    d.push("tests\\resources");
+    d.push("tests/resources");
     d
 }
 
