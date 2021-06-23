@@ -34,7 +34,7 @@ fn make_pack_mcmeta(description: String) -> Result<String, serde_json::Error> {
     let pack = PackMcMeta {
         pack: Pack {
             pack_format: 6,
-            description: description,
+            description,
         },
     };
 

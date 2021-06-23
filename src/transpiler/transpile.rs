@@ -147,18 +147,16 @@ impl Transpiler<'_> {
                                 files[filename_to_index[&current_functions[func_depth - 1]]]
                                     .push_str(&to_add[..]);
                             }
-                        } else {
-                            if let Some(ns) = namespace {
-                                let to_add = format!("function {}:{}", ns, name);
-                                if func_depth == 0 {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_functions[func_depth - 1]]]
-                                        .push_str(&to_add[..]);
-                                }
+                        } else if let Some(ns) = namespace {
+                            let to_add = format!("function {}:{}", ns, name);
+                            if func_depth == 0 {
+                                files[0].push_str(&to_add[..]);
                             } else {
-                                panic!("No namespace provided for function call.");
+                                files[filename_to_index[&current_functions[func_depth - 1]]]
+                                    .push_str(&to_add[..]);
                             }
+                        } else {
+                            panic!("No namespace provided for function call.");
                         }
 
                         calling_function = false;
@@ -459,8 +457,8 @@ impl Transpiler<'_> {
         TranspileReturn {
             file_contents: files,
             filename_map: filename_to_index,
-            var_map: var_map,
-            tag_map: tag_map,
+            var_map,
+            tag_map,
         }
     }
 }
