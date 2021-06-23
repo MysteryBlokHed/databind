@@ -101,7 +101,6 @@ fn main() -> std::io::Result<()> {
     let matches = if args.len() > 1 {
         cli::get_app().get_matches()
     } else {
-        println!("WE HERE");
         let mut args: Vec<String> = vec!["databind".into()];
         // Find config file
         let cd = &env::current_dir().unwrap();
@@ -155,7 +154,6 @@ fn main() -> std::io::Result<()> {
         println!("{}", cli_out);
         if cli_out != "out" {
             transpiler_settings.output = cli_out.into();
-            println!("JOE?");
         }
     } else {
         transpiler_settings = settings::Settings::default();
