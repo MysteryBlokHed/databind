@@ -36,7 +36,7 @@ fn test_file_structure() {
             path_str,
             "--ignore-config",
             "--out",
-            &format!("{}/../out", path_str),
+            &format!("{}/out", path_str),
         ],
     );
 
@@ -49,7 +49,6 @@ fn test_file_structure() {
     let expected_tags = ["load.json", "tick.json"];
     let unexpected_tags = ["main.json", "first_func.json", "second_func.json"];
 
-    path.pop();
     path.push("out/data");
 
     // Check if function files are correctly placed
@@ -67,7 +66,7 @@ fn test_file_structure() {
 
     // Delete generated folder
     let mut out_path = tests::resources();
-    out_path.push("out");
+    out_path.push("test_file_structure/out");
     fs::remove_dir_all(out_path).unwrap();
 }
 
@@ -86,13 +85,12 @@ fn test_nested_funcs() {
             path_str,
             "--ignore-config",
             "--out",
-            &format!("{}/../out", path_str),
+            &format!("{}/out", path_str),
         ],
     );
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
 
-    path.pop();
     path.push("out/data");
 
     // Check if function files are correctly placed
@@ -103,6 +101,6 @@ fn test_nested_funcs() {
 
     // Delete generated folder
     let mut out_path = tests::resources();
-    out_path.push("out");
+    out_path.push("test_nested_funcs/out");
     fs::remove_dir_all(out_path).unwrap();
 }

@@ -34,7 +34,7 @@ fn test_tag_generation() {
             path_str,
             "--ignore-config",
             "--out",
-            &format!("{}/../out", path_str),
+            &format!("{}/out", path_str),
         ],
     );
 
@@ -42,7 +42,6 @@ fn test_tag_generation() {
     let expected_tags = ["load.json", "tick.json", "second_tag.json", "func3.json"];
     let unexpected_tags = ["main.json"];
 
-    path.pop();
     path.push("out/data");
 
     // Check if function files are correctly placed
@@ -60,7 +59,7 @@ fn test_tag_generation() {
 
     // Delete generated folder
     let mut out_path = tests::resources();
-    out_path.push("out");
+    out_path.push("test_tag_generation/out");
     fs::remove_dir_all(out_path).unwrap();
 }
 
@@ -81,7 +80,7 @@ fn test_tag_syntax() {
             path_str,
             "--ignore-config",
             "--out",
-            &format!("{}/../out", path_str),
+            &format!("{}/out", path_str),
         ],
     );
 
@@ -94,7 +93,6 @@ fn test_tag_syntax() {
     ];
     let unexpected_tags = ["main.json"];
 
-    path.pop();
     path.push("out/data");
 
     // Check if function files are correctly placed
@@ -112,6 +110,6 @@ fn test_tag_syntax() {
 
     // Delete generated folder
     let mut out_path = tests::resources();
-    out_path.push("out");
+    out_path.push("test_tag_syntax/out");
     fs::remove_dir_all(out_path).unwrap();
 }
