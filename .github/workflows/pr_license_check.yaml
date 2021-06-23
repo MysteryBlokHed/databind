@@ -3,6 +3,10 @@ on:
   pull_request:
     branches:
       - master
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'README.md'
 
 jobs:
   check_license:
