@@ -15,16 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use std::fs;
+use std::path::PathBuf;
+use tempdir::TempDir;
 
 mod tests;
 
 /// Test that the TOML config is properly followed
 #[test]
 fn test_create_structure() {
-    let mut path = tests::resources();
-    path.push("test_create_structure");
-    let path_str = path.to_str().unwrap();
+    let out = TempDir::new("test_create_structure").expect("Could not create tempdir for test");
+    let mut path = PathBuf::from(out.path());
 
     tests::run_with_args(
         "cargo",
@@ -34,12 +34,9 @@ fn test_create_structure() {
             "create",
             "test_create_structure",
             "--path",
-            path_str,
+            out.path().to_str().unwrap(),
         ],
     );
-
-    println!("alleged path: {}", path.display());
-
     // Check that the folder was created
     assert!(path.exists() && path.is_dir());
 
@@ -56,9 +53,4 @@ fn test_create_structure() {
     // Check that the main.databind file was created
     path.push("data/test_create_structure/functions/main.databind");
     assert!(path.exists() && path.is_file());
-
-    // Delete generated folder
-    let mut out_path = tests::resources();
-    out_path.push("test_create_structure");
-    fs::remove_dir_all(out_path).unwrap();
 }
