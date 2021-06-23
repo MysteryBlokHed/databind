@@ -68,7 +68,7 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
         name
     };
 
-    let mut path = PathBuf::from(format!("./{}", base_path));
+    let mut path = PathBuf::from(base_path);
 
     let metadata = fs::metadata(&path);
 
