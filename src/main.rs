@@ -74,12 +74,12 @@ fn merge_globs(globs: &[String], prefix: &str) -> Vec<PathBuf> {
 /// # Returns
 ///
 /// Either the path to the config file or an error.
-fn find_config_in_parents(start: &dyn AsRef<Path>) -> Result<PathBuf, &str> {
+fn find_config_in_parents(start: &dyn AsRef<Path>, config_file: String) -> Result<PathBuf, &str> {
     let mut start = PathBuf::from(start.as_ref());
     let mut last = PathBuf::new();
 
     while start != last {
-        start.push("databind.toml");
+        start.push(&config_file);
         if start.exists() && start.is_file() {
             return Ok(start);
         }
@@ -103,14 +103,17 @@ fn main() -> std::io::Result<()> {
     } else {
         let mut args: Vec<String> = vec!["databind".into()];
         // Find config file
-        let cd = &env::current_dir().unwrap();
-        let config_location = find_config_in_parents(&cd).unwrap();
-        // Get base directory of project from config file location
-        let base_dir = config_location.parent().unwrap();
-
-        args.push(format!("{}/src", base_dir.display()));
-
-        cli::get_app().get_matches_from(args)
+        let current_dir = &env::current_dir();
+        if let Ok(cd) = current_dir {
+            let config_location = find_config_in_parents(&cd, "databind.toml".into()).unwrap();
+            // Get base directory of project from config file location
+            let base_dir = config_location.parent().unwrap();
+            args.push(format!("{}/src", base_dir.display()));
+            cli::get_app().get_matches_from(args)
+        } else {
+            // Run with no args to show help menu
+            cli::get_app().get_matches()
+        }
     };
 
     // Check if create command is used
@@ -150,8 +153,8 @@ fn main() -> std::io::Result<()> {
     if config_path.exists() && !matches.is_present("ignore-config") {
         let config_contents = fs::read_to_string(&config_path)?;
         transpiler_settings = toml::from_str(&config_contents[..]).unwrap();
+        transpiler_settings.output = format!("{}/{}", datapack, transpiler_settings.output);
         let cli_out = matches.value_of("output").unwrap();
-        println!("{}", cli_out);
         if cli_out != "out" {
             transpiler_settings.output = cli_out.into();
         }
@@ -187,14 +190,26 @@ fn main() -> std::io::Result<()> {
             .cloned()
             .collect();
 
-        for entry in WalkDir::new(&datapack).into_iter().filter_map(|e| e.ok()) {
+        let src_dir = PathBuf::from(format!("{}/src", datapack));
+        let src_dir = if !src_dir.exists() || !src_dir.is_dir() {
+            Path::new(&datapack)
+        } else {
+            src_dir.as_path()
+        };
+
+        for entry in WalkDir::new(&src_dir).into_iter().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
                 // Do not add config file to output folder
                 if config_path.exists() && is_same_file(entry.path(), config_path).unwrap() {
                     continue;
                 }
 
-                let new_path_str = entry.path().to_str().unwrap().replacen(datapack, "", 1);
+                let new_path_str =
+                    entry
+                        .path()
+                        .to_str()
+                        .unwrap()
+                        .replacen(src_dir.to_str().unwrap(), "", 1);
                 let path = Path::new(&new_path_str);
 
                 let mut target_path: String = target_folder.to_string();
