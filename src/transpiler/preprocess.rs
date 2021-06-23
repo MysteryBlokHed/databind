@@ -33,7 +33,7 @@ impl Transpiler<'_> {
     pub fn replace_definitions(contents: &str) -> String {
         let settings = &Settings::default();
         let mut transpiler = Transpiler::new(contents.to_string(), settings, false);
-        let mut new_contents = contents.clone();
+        let mut new_contents = &*contents.to_string();
 
         let replacement_tokens = transpiler.tokenize(true);
 
@@ -46,7 +46,7 @@ impl Transpiler<'_> {
                 Token::ReplaceContents(contents) => {
                     replacement_map
                         .entry(current_name.to_owned())
-                        .or_insert(contents.clone());
+                        .or_insert_with(|| contents.clone());
                 }
                 _ => {}
             }
