@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 use crate::settings::Settings;
-use serde_derive::Serialize;
+use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
 

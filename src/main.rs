@@ -19,7 +19,7 @@
 
 use glob::glob;
 use same_file::is_same_file;
-use serde_derive::Serialize;
+use serde::Serialize;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
