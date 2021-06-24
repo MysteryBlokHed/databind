@@ -37,19 +37,22 @@ struct TagFile<'a> {
     values: &'a Vec<String>,
 }
 
-/// Get namespace (name of folder containing `/functions`)
-fn get_namespace(functions_path: &Path) -> &str {
+/// Get namespace (name of folder containing the main /functions)
+/// If there are multiple /functions folders, uses the one closest
+/// to the project root
+fn get_namespace<P: AsRef<Path>>(functions_path: &P) -> Result<&str, &str> {
     let namespace_folder = functions_path
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
+        .as_ref()
         .to_str()
+        .unwrap()
+        .split("functions")
+        .next()
+        .unwrap()
+        .strip_suffix(|x: char| ['\\', '/'].contains(&x))
         .unwrap();
 
-    let folders = namespace_folder.split(&['/', '\\'][..]);
-
-    folders.last().unwrap()
+    let folders = namespace_folder.split(|x: char| ['\\', '/'].contains(&x));
+    Ok(folders.last().unwrap())
 }
 
 /// Convert multiple globs into a `Vec<PathBuf>`
@@ -244,8 +247,11 @@ fn main() -> std::io::Result<()> {
                         .expect(&format!("Failed to read file {}", entry.path().display())[..]);
                     let mut compile = compiler::Compiler::new(content, &compiler_settings, true);
                     let tokens = compile.tokenize(false);
-                    let mut compiled =
-                        compile.compile(tokens, Some(get_namespace(entry.path())), Some(&var_map));
+                    let mut compiled = compile.compile(
+                        tokens,
+                        Some(get_namespace(&entry.path()).unwrap()),
+                        Some(&var_map),
+                    );
 
                     var_map = compiled.var_map;
 
@@ -258,7 +264,8 @@ fn main() -> std::io::Result<()> {
                         for (_, funcs) in compiled.tag_map.iter_mut() {
                             if funcs.contains(key) {
                                 let i = funcs.iter().position(|x| x == key).unwrap();
-                                funcs[i] = format!("{}:{}", get_namespace(entry.path()), key);
+                                funcs[i] =
+                                    format!("{}:{}", get_namespace(&entry.path()).unwrap(), key);
                             }
                         }
                     }
