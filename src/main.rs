@@ -27,10 +27,10 @@ use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 mod cli;
+mod compiler;
 mod create_project;
 mod settings;
 mod token;
-mod transpiler;
 
 #[derive(Serialize)]
 struct TagFile<'a> {
@@ -93,7 +93,7 @@ fn find_config_in_parents(start: &dyn AsRef<Path>, config_file: String) -> Resul
 
 /// The main function
 ///
-/// Transpiles provided files and folders to normal `.mcfunction` files
+/// Compiles provided files and folders to normal `.mcfunction` files
 fn main() -> std::io::Result<()> {
     // If databind was run without arguments, check if current directory
     // is a databind project
@@ -149,32 +149,32 @@ fn main() -> std::io::Result<()> {
         std::process::exit(1);
     }
 
-    let mut transpiler_settings: settings::Settings;
+    let mut compiler_settings: settings::Settings;
     if config_path.exists() && !matches.is_present("ignore-config") {
         let config_contents = fs::read_to_string(&config_path)?;
-        transpiler_settings = toml::from_str(&config_contents[..]).unwrap();
-        transpiler_settings.output = format!("{}/{}", datapack, transpiler_settings.output);
+        compiler_settings = toml::from_str(&config_contents[..]).unwrap();
+        compiler_settings.output = format!("{}/{}", datapack, compiler_settings.output);
         let cli_out = matches.value_of("output").unwrap();
         if cli_out != "out" {
-            transpiler_settings.output = cli_out.into();
+            compiler_settings.output = cli_out.into();
         }
     } else {
-        transpiler_settings = settings::Settings::default();
-        transpiler_settings.output = matches.value_of("output").unwrap().into();
+        compiler_settings = settings::Settings::default();
+        compiler_settings.output = matches.value_of("output").unwrap().into();
     }
 
     // Override config settings with CLI arguments if passed
     if matches.is_present("random-var-names") {
-        transpiler_settings.random_var_names = true;
+        compiler_settings.random_var_names = true;
     }
     if matches.is_present("var-display-names") {
-        transpiler_settings.var_display_names = true;
+        compiler_settings.var_display_names = true;
     }
 
     if datapack_is_dir {
         let mut var_map: HashMap<String, String> = HashMap::new();
         let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
-        let target_folder = &transpiler_settings.output;
+        let target_folder = &compiler_settings.output;
 
         if fs::metadata(target_folder).is_ok() {
             println!("Deleting old databind folder...");
@@ -182,8 +182,8 @@ fn main() -> std::io::Result<()> {
             println!("Done.");
         }
 
-        let mut inclusions = merge_globs(&transpiler_settings.inclusions, datapack);
-        let exclusions = merge_globs(&transpiler_settings.exclusions, datapack);
+        let mut inclusions = merge_globs(&compiler_settings.inclusions, datapack);
+        let exclusions = merge_globs(&compiler_settings.exclusions, datapack);
         inclusions = inclusions
             .iter()
             .filter(|&x| !exclusions.contains(x))
@@ -218,12 +218,12 @@ fn main() -> std::io::Result<()> {
 
                 fs::create_dir_all(&target_path)?;
 
-                let mut transpile = false;
+                let mut compile = false;
                 let mut continue_loop = false;
 
                 for file in inclusions.iter() {
                     if is_same_file(file, entry.path()).expect("Failed to check file paths") {
-                        transpile = true;
+                        compile = true;
                         break;
                     }
                 }
@@ -239,27 +239,23 @@ fn main() -> std::io::Result<()> {
                     continue;
                 }
 
-                if transpile {
+                if compile {
                     let content = fs::read_to_string(entry.path())
                         .expect(&format!("Failed to read file {}", entry.path().display())[..]);
-                    let mut transpile =
-                        transpiler::Transpiler::new(content, &transpiler_settings, true);
-                    let tokens = transpile.tokenize(false);
-                    let mut transpiled = transpile.transpile(
-                        tokens,
-                        Some(get_namespace(entry.path())),
-                        Some(&var_map),
-                    );
+                    let mut compile = compiler::Compiler::new(content, &compiler_settings, true);
+                    let tokens = compile.tokenize(false);
+                    let mut compiled =
+                        compile.compile(tokens, Some(get_namespace(entry.path())), Some(&var_map));
 
-                    var_map = transpiled.var_map;
+                    var_map = compiled.var_map;
 
-                    for (key, value) in transpiled.filename_map.iter() {
+                    for (key, value) in compiled.filename_map.iter() {
                         let full_path = format!("{}/{}.mcfunction", target_path, key);
 
-                        fs::write(full_path, &transpiled.file_contents[*value])?;
+                        fs::write(full_path, &compiled.file_contents[*value])?;
 
                         // Add namespace prefix to function in tag map
-                        for (_, funcs) in transpiled.tag_map.iter_mut() {
+                        for (_, funcs) in compiled.tag_map.iter_mut() {
                             if funcs.contains(key) {
                                 let i = funcs.iter().position(|x| x == key).unwrap();
                                 funcs[i] = format!("{}:{}", get_namespace(entry.path()), key);
@@ -267,7 +263,7 @@ fn main() -> std::io::Result<()> {
                         }
                     }
 
-                    tag_map.extend(transpiled.tag_map);
+                    tag_map.extend(compiled.tag_map);
                 } else {
                     let filename = path.file_name().unwrap().to_str().unwrap();
                     let full_path = format!("{}/{}", target_path, filename);

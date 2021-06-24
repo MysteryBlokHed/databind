@@ -17,24 +17,24 @@
  */
 use crate::settings::Settings;
 
-pub struct Transpiler<'a> {
+pub struct Compiler<'a> {
     chars: Vec<char>,
     position: usize,
     current_char: char,
     settings: &'a Settings,
 }
 
-impl Transpiler<'_> {
-    /// Create a new Transpiler.
+impl Compiler<'_> {
+    /// Create a new Compiler.
     ///
     /// # Arguments
     ///
-    /// - `text` - The contents of the file to transpile
-    /// - `settings` - The settings for the transpiler
+    /// - `text` - The contents of the file to compile
+    /// - `settings` - The settings for the compiler
     /// - `replacement` - Whether to replace :def's. Required to avoid stack overflow
-    pub fn new(text: String, settings: &Settings, replacement: bool) -> Transpiler<'_> {
+    pub fn new(text: String, settings: &Settings, replacement: bool) -> Compiler<'_> {
         let text = if replacement {
-            Transpiler::replace_definitions(&text)
+            Compiler::replace_definitions(&text)
         } else {
             text
         };
@@ -45,7 +45,7 @@ impl Transpiler<'_> {
             '\u{0}'
         };
 
-        Transpiler {
+        Compiler {
             chars: text.chars().collect(),
             position: 0,
             current_char: first_char,
@@ -64,6 +64,6 @@ impl Transpiler<'_> {
     }
 }
 
+mod compile;
 mod preprocess;
 mod tokenize;
-mod transpile;

@@ -15,13 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use super::Transpiler;
+use super::Compiler;
 
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 use std::collections::HashMap;
 
-/// Return from the transpiler
+/// Return from the compiler
 ///
 /// # Arguments
 ///
@@ -29,27 +29,27 @@ use std::collections::HashMap;
 /// - `filename_map` - A map of filenames to indexes in the file_contents Vec
 /// - `var_map` - A map of variable names used in files to randomized names
 /// - `tag_map` - A map of tags to functions
-pub struct TranspileReturn {
+pub struct CompileReturn {
     pub file_contents: Vec<String>,
     pub filename_map: HashMap<String, usize>,
     pub var_map: HashMap<String, String>,
     pub tag_map: HashMap<String, Vec<String>>,
 }
 
-impl Transpiler<'_> {
-    /// Convert tokens to a transpiled file or files
+impl Compiler<'_> {
+    /// Convert tokens to a compiled file or files
     ///
     /// # Arguments
     ///
     /// - `tokens` - A list of tokens
     /// - `namespace` - The namespace to use for functions, if relevant
     /// - `existing_var_map` - An existing map of variables to randomized names
-    pub fn transpile(
+    pub fn compile(
         &self,
         tokens: Vec<Token>,
         namespace: Option<&str>,
         existing_var_map: Option<&HashMap<String, String>>,
-    ) -> TranspileReturn {
+    ) -> CompileReturn {
         let tokens = self.while_convert(tokens);
 
         let mut var_map: HashMap<String, String>;
@@ -80,7 +80,7 @@ impl Transpiler<'_> {
         let mut objective_target = String::new();
 
         for token in tokens.iter() {
-            // Don't transpile contents outside of a function
+            // Don't compile contents outside of a function
             match token {
                 Token::DefineFunc => {}
                 _ => {
@@ -454,7 +454,7 @@ impl Transpiler<'_> {
             *file = file.replace("\n\n", "\n");
         }
 
-        TranspileReturn {
+        CompileReturn {
             file_contents: files,
             filename_map: filename_to_index,
             var_map,
