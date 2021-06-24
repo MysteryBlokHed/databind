@@ -49,8 +49,9 @@ impl Compiler<'_> {
         tokens: Vec<Token>,
         namespace: Option<&str>,
         existing_var_map: Option<&HashMap<String, String>>,
+        subfolder: &str,
     ) -> CompileReturn {
-        let tokens = self.while_convert(tokens);
+        let tokens = self.while_convert(tokens, subfolder);
 
         let mut var_map: HashMap<String, String>;
         let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
