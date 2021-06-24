@@ -121,7 +121,7 @@ fn main() -> std::io::Result<()> {
         return create_project::create_project(subcommand.matches);
     }
 
-    let datapack = matches.value_of("DATAPACK").unwrap();
+    let datapack = matches.value_of("project").unwrap();
     let datapack_is_dir = fs::metadata(datapack)?.is_dir();
 
     let config_path_str: String;

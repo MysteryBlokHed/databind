@@ -25,16 +25,18 @@ pub fn get_app<'a, 'b>() -> App<'a, 'b> {
         .author("Adam Thompson-Sharpe <adamthompsonsharpe@gmail.com>")
         .about("Expand the functionality of Minecraft Datapacks.")
         .arg(
-            Arg::with_name("DATAPACK")
+            Arg::with_name("project")
                 .help("The Databind project to compile")
-                .required(true),
+                .required(true)
+                .value_name("PROJECT"),
         )
         .arg(
             Arg::with_name("config")
                 .short("c")
                 .long("config")
                 .help("Configuration for the compiler")
-                .takes_value(true),
+                .takes_value(true)
+                .value_name("FILE"),
         )
         .arg(
             Arg::with_name("output")
@@ -42,7 +44,8 @@ pub fn get_app<'a, 'b>() -> App<'a, 'b> {
                 .long("out")
                 .help("The output file or directory")
                 .takes_value(true)
-                .default_value("out"),
+                .default_value("out")
+                .value_name("DIRECTORY"),
         )
         .arg(
             Arg::with_name("ignore-config")
