@@ -69,7 +69,10 @@ impl Compiler<'_> {
     /// # Arguments
     ///
     /// - `tokens` - A list of tokens that may include while loops
-    pub fn while_convert(&self, tokens: Vec<Token>) -> Vec<Token> {
+    /// - `subfolder` - If the while loop is in a subfolder, the prefix
+    ///   to put before the function name (eg. should be `Some("cmd/")` for
+    ///   a subfolder called `cmd`). Can be an empty string if there is no prefix
+    pub fn while_convert(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
         let mut new_tokens = tokens.clone();
 
         let mut while_index: usize = 0;
@@ -85,24 +88,26 @@ impl Compiler<'_> {
                     Token::WhileCondition(condition) => new_contents.push_str(
                         &format!(
                             ":func while_{chars}\n\
-                             execute if {condition} run :call condition_{chars}\n\
+                             execute if {condition} run :call {subfolder}condition_{chars}\n\
                              :endfunc\n",
                             chars = chars,
-                            condition = condition
+                            condition = condition,
+                            subfolder = subfolder
                         )[..],
                     ),
                     Token::WhileContents(contents) => new_contents.push_str(
                         &format!(
                             ":func condition_{chars}\n\
                              {contents}\n\
-                             :call while_{chars}\n\
+                             :call {subfolder}while_{chars}\n\
                              :endfunc\n",
                             chars = chars,
-                            contents = contents
+                            contents = contents,
+                            subfolder = subfolder
                         )[..],
                     ),
                     Token::EndWhileLoop => {
-                        new_contents.push_str(&format!(":call while_{}\n", chars)[..]);
+                        new_contents.push_str(&format!(":call {}while_{}\n", subfolder, chars)[..]);
                         chars = Compiler::get_chars();
 
                         // Tokenize new contents

@@ -38,8 +38,6 @@ struct TagFile<'a> {
 }
 
 /// Get namespace (name of folder containing the main /functions)
-/// If there are multiple /functions folders, uses the one closest
-/// to the project root
 fn get_namespace<P: AsRef<Path>>(functions_path: &P) -> Result<&str, &str> {
     let namespace_folder = functions_path
         .as_ref()
@@ -47,14 +45,43 @@ fn get_namespace<P: AsRef<Path>>(functions_path: &P) -> Result<&str, &str> {
         .unwrap()
         .split("functions")
         .next()
-        .unwrap()
-        .strip_suffix(|x: char| ['\\', '/'].contains(&x))
         .unwrap();
+
+    let namespace_folder =
+        if let Some(new) = namespace_folder.strip_suffix(|x: char| ['\\', '/'].contains(&x)) {
+            new
+        } else {
+            namespace_folder
+        };
 
     let folders = namespace_folder.split(|x: char| ['\\', '/'].contains(&x));
     Ok(folders.last().unwrap())
 }
 
+/// Get the prefix of a subfolder before a function call (eg. `"cmd/"` for
+/// a subfolder called `cmd`)
+fn get_subfolder_prefix<P: AsRef<Path>>(functions_path: &P) -> String {
+    let mut after_functions = PathBuf::from(
+        functions_path
+            .as_ref()
+            .to_str()
+            .unwrap()
+            .split("functions")
+            .last()
+            .unwrap(),
+    );
+
+    after_functions.pop();
+
+    // Ensure no backslashes and remove leading slash, if present
+    let prefix = after_functions.to_str().unwrap().replace('\\', "/");
+
+    if let Some(new) = prefix.strip_prefix('/') {
+        format!("{}/", new)
+    } else {
+        format!("{}/", prefix)
+    }
+}
 /// Convert multiple globs into a `Vec<PathBuf>`
 fn merge_globs(globs: &[String], prefix: &str) -> Vec<PathBuf> {
     let mut merged_globs: Vec<PathBuf> = Vec::new();
@@ -251,6 +278,7 @@ fn main() -> std::io::Result<()> {
                         tokens,
                         Some(get_namespace(&entry.path()).unwrap()),
                         Some(&var_map),
+                        &get_subfolder_prefix(&entry.path()),
                     );
 
                     var_map = compiled.var_map;
