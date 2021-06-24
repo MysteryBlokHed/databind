@@ -17,8 +17,8 @@ Example
    # Say something if example is 1
    execute if :tvar example matches 1 run say Variable example is equal to 1!
 
-Transpiled
-----------
+Compiled
+--------
 
 .. code-block:: mcfunction
 

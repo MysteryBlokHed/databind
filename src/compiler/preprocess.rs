@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use super::Transpiler;
+use super::Compiler;
 use crate::settings::Settings;
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 use regex::Regex;
 use std::collections::HashMap;
 
-impl Transpiler<'_> {
+impl Compiler<'_> {
     /// Get text replacement definitions and replace matches.
     /// Definitions that are not at the top of the file will be ignored
     /// and cause errors
@@ -32,10 +32,10 @@ impl Transpiler<'_> {
     /// - `content` - The contents of a file
     pub fn replace_definitions(contents: &str) -> String {
         let settings = &Settings::default();
-        let mut transpiler = Transpiler::new(contents.to_string(), settings, false);
+        let mut compiler = Compiler::new(contents.to_string(), settings, false);
         let mut new_contents = &*contents.to_string();
 
-        let replacement_tokens = transpiler.tokenize(true);
+        let replacement_tokens = compiler.tokenize(true);
 
         let mut replacement_map: HashMap<String, String> = HashMap::new();
         let mut current_name = &String::new();
@@ -76,7 +76,7 @@ impl Transpiler<'_> {
         let mut index_offset: usize = 0;
         let mut looping = true;
         let mut new_contents = String::new();
-        let mut chars = Transpiler::get_chars();
+        let mut chars = Compiler::get_chars();
 
         for i in 0..tokens.len() {
             let token = tokens.get(i).unwrap();
@@ -103,12 +103,11 @@ impl Transpiler<'_> {
                     ),
                     Token::EndWhileLoop => {
                         new_contents.push_str(&format!(":call while_{}\n", chars)[..]);
-                        chars = Transpiler::get_chars();
+                        chars = Compiler::get_chars();
 
                         // Tokenize new contents
-                        let tks =
-                            Transpiler::new(new_contents.clone(), &Settings::default(), false)
-                                .tokenize(false);
+                        let tks = Compiler::new(new_contents.clone(), &Settings::default(), false)
+                            .tokenize(false);
 
                         // When gettings indexes in the new tokens vector,
                         // the length and position of elements will have changed

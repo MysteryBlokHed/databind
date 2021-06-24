@@ -17,7 +17,7 @@
  */
 use serde::{Deserialize, Serialize};
 
-/// Settings for the transpiler
+/// Settings for the compiler
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {

@@ -26,14 +26,14 @@ pub fn get_app<'a, 'b>() -> App<'a, 'b> {
         .about("Expand the functionality of Minecraft Datapacks.")
         .arg(
             Arg::with_name("DATAPACK")
-                .help("The Databind project to transpile")
+                .help("The Databind project to compile")
                 .required(true),
         )
         .arg(
             Arg::with_name("config")
                 .short("c")
                 .long("config")
-                .help("Configuration for the transpiler")
+                .help("Configuration for the compiler")
                 .takes_value(true),
         )
         .arg(

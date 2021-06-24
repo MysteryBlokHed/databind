@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use super::Transpiler;
+use super::Compiler;
 use crate::token::Token;
 
 const DIGITS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-impl Transpiler<'_> {
+impl Compiler<'_> {
     /// Convert the provided file contents into a list of tokens
     pub fn tokenize(&mut self, get_definitions: bool) -> Vec<Token> {
         let mut tokens: Vec<Token> = Vec::new();
@@ -56,7 +56,7 @@ impl Transpiler<'_> {
             }
 
             // When building a while loop, the contents are stored as a string for a token
-            // Later, in the transpile function, the while loop is converted to two databind
+            // Later, in the compile function, the while loop is converted to two databind
             // functions.
             if building_while {
                 if building_condition {

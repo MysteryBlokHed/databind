@@ -20,8 +20,8 @@ A function that increments a counter and logs when it's run.
    :var counter += 1
    :endfunc
 
-Transpiled
-----------
+Compiled
+--------
 
 ``example/out/data/example/functions/load.mcfunction``
 
