@@ -292,8 +292,12 @@ fn main() -> std::io::Result<()> {
                         for (_, funcs) in compiled.tag_map.iter_mut() {
                             if funcs.contains(key) {
                                 let i = funcs.iter().position(|x| x == key).unwrap();
-                                funcs[i] =
-                                    format!("{}:{}", get_namespace(&entry.path()).unwrap(), key);
+                                funcs[i] = format!(
+                                    "{}:{}{}",
+                                    get_namespace(&entry.path()).unwrap(),
+                                    get_subfolder_prefix(&entry.path()),
+                                    key
+                                );
                             }
                         }
                     }
