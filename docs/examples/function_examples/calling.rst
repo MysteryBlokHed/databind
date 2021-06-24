@@ -21,7 +21,7 @@ Built into mcfunctions. Requires a namespace.
 ``:call`` (infer namespace)
 ---------------------------
 
-Add namespaces to functions while transpiling.
+Add namespaces to functions while compiling.
 Allows more freedom with directory names.
 
 ``example/src/data/example/functions/main.databind``
