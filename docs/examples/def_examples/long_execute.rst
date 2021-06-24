@@ -20,8 +20,8 @@ Example
    LONG_EXECUTE run summon lightning_bolt ^-5 ^ ^
    :endfunc
 
-Transpiled
-----------
+Compiled
+--------
 
 ``example/out/data/example/functions/tick.mcfunction``
 

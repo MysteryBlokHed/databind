@@ -20,11 +20,11 @@ Example
    tellraw @a "Variable i is at 0"
    :endfunc
 
-Transpiled
-----------
+Compiled
+--------
 
-When while loops are transpiled, functions with random characters
-at the end are created. In transpiled examples, these characters
+When while loops are compiled, functions with random characters
+at the end are created. In compiled examples, these characters
 will be ``abcd``.
 
 ``example/out/data/example/functions/load.mcfunction``

@@ -19,9 +19,9 @@ if no config changes are made.
 +---------------------------------------+---------------------------------------------------------------------+
 | ``var_display_names = false``         | Whether to update scoreboard display names for randomized variables |
 +---------------------------------------+---------------------------------------------------------------------+
-| ``inclusions = ["**/*.databind"]``    | Specify what files to transpile using globs                         |
+| ``inclusions = ["**/*.databind"]``    | Specify what files to compile using globs                           |
 +---------------------------------------+---------------------------------------------------------------------+
-| ``exclusions = []``                   | Specify what files not to copy over/transpile using globs           |
+| ``exclusions = []``                   | Specify what files not to copy over/compile using globs             |
 +---------------------------------------+---------------------------------------------------------------------+
 | ``output = "out"``                    | The output file or folder                                           |
 +---------------------------------------+---------------------------------------------------------------------+

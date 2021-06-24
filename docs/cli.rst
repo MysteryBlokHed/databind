@@ -1,10 +1,10 @@
 Databind CLI
 ============
 
-What Can Be Transpiled
+What Can Be Compiled
 ----------------------
 
-Databind transpiles Databind projects (see :ref:`Creating a Project`).
+Databind compiles Databind projects (see :ref:`Creating a Project`).
 Databind will look for included files (``**/*.databind`` by default) and
 leave other files alone.
 
@@ -32,11 +32,11 @@ Using the CLI
        -V, --version              Prints version information
 
    OPTIONS:
-       -c, --config <config>    Configuration for the transpiler
+       -c, --config <config>    Configuration for the compiler
        -o, --out <output>       The output file or directory [default: out]
 
    ARGS:
-       <DATAPACK>    The Databind project to transpile
+       <DATAPACK>    The Databind project to compile
 
    SUBCOMMANDS:
        create    Create a new project

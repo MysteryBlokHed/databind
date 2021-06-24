@@ -34,7 +34,7 @@ Allows more freedom with directory names.
 
    :call example_func
 
-Transpiled, ``:call example_func`` becomes ``function example:example_func``.
+Compiled, ``:call example_func`` becomes ``function example:example_func``.
 
 ``:call`` (explicit namespace)
 

@@ -12,8 +12,8 @@ Example
    :obj points dummy
    :sobj points @a = 100
 
-Transpiled
-----------
+Compiled
+--------
 
 .. code-block:: mcfunction
 
