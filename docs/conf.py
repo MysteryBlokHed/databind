@@ -17,7 +17,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Databind'
-copyright = '2021 Adam Thompson-Sharpe. Licensed under MIT OR Apache-2.0.'
+copyright = '2021 Adam Thompson-Sharpe. Licensed under GPL-3.0.'
 author = 'Adam Thompson-Sharpe'
 
 # The full version, including alpha/beta/rc tags
