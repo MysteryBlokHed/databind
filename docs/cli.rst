@@ -19,7 +19,7 @@ Using the CLI
 .. code-block:: text
 
    USAGE:
-       databind [FLAGS] [OPTIONS] <DATAPACK>
+       databind [FLAGS] [OPTIONS] <PROJECT>
        databind [FLAGS] [OPTIONS] <SUBCOMMAND>
 
    FLAGS:
@@ -32,11 +32,11 @@ Using the CLI
        -V, --version              Prints version information
 
    OPTIONS:
-       -c, --config <config>    Configuration for the compiler
-       -o, --out <output>       The output file or directory [default: out]
+       -c, --config <FILE>      Configuration for the compiler
+       -o, --out <DIRECTORY>    The output file or directory [default: out]
 
    ARGS:
-       <DATAPACK>    The Databind project to compile
+       <PROJECT>    The Databind project to compile
 
    SUBCOMMANDS:
        create    Create a new project
