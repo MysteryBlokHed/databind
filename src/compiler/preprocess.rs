@@ -114,6 +114,8 @@ impl Compiler<'_> {
                         let tks = Compiler::new(new_contents.clone(), &Settings::default(), false)
                             .tokenize(false);
 
+                        new_contents = String::new();
+
                         // When gettings indexes in the new tokens vector,
                         // the length and position of elements will have changed
                         // due to new things being added
