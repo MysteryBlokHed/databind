@@ -132,7 +132,7 @@ impl Compiler<'_> {
                 Token::FuncName(name) => {
                     // Function definition
                     if !calling_function {
-                        files.push(String::new());
+                        files.push("# Compiled with MysteryBlokHed/databind".into());
                         filename_to_index.insert(name.clone(), files.len() - 1);
                         current_functions.push(name.clone());
                     // Function call
