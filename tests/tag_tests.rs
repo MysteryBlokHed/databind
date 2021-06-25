@@ -15,9 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use serde::Deserialize;
+use std::fs;
 use tempdir::TempDir;
 
 mod tests;
+
+#[derive(Debug, PartialEq, Deserialize)]
+struct TagFile {
+    pub values: Vec<String>,
+}
 
 /// Test that tags are properly generated
 #[test]
@@ -42,6 +49,12 @@ fn test_tag_generation() {
 
     let expected_funcs = ["load.mcfunction", "tick.mcfunction", "func3.mcfunction"];
     let expected_tags = ["load.json", "tick.json", "second_tag.json", "func3.json"];
+    let expected_tag_contents = [
+        vec!["test:load".to_string()],
+        vec!["test:tick".to_string()],
+        vec!["test:load".to_string(), "test:tick".to_string()],
+        vec!["test:func3".to_string()],
+    ];
     let unexpected_tags = ["main.json"];
 
     // Check if function files are correctly placed
@@ -53,6 +66,17 @@ fn test_tag_generation() {
     // Check if tag files are correctly placed
     path.push("minecraft/tags/functions");
     tests::check_files_exist(&path, &expected_tags, "test_tag_generation");
+    // Check tag file contents
+    for i in 0..expected_tags.len() {
+        path.push(&expected_tags[i]);
+        let contents = fs::read_to_string(&path).unwrap();
+        let contents_tag: TagFile = serde_json::from_str(&contents).unwrap();
+        let expected_tag = TagFile {
+            values: expected_tag_contents[i].clone(),
+        };
+        assert_eq!(contents_tag, expected_tag);
+        path.pop();
+    }
 
     // Ensure unexpected tag files do not exist
     tests::check_files_dont_exist(&path, &unexpected_tags, "test_tag_generation");
@@ -86,6 +110,16 @@ fn test_tag_syntax() {
         "func3_tag.json",
         "all_tag.json",
     ];
+    let expected_tag_contents = [
+        vec!["test:func1".to_string()],
+        vec!["test:func2".to_string()],
+        vec!["test:func3".to_string()],
+        vec![
+            "test:func1".to_string(),
+            "test:func2".to_string(),
+            "test:func3".to_string(),
+        ],
+    ];
     let unexpected_tags = ["main.json"];
 
     // Check if function files are correctly placed
@@ -97,6 +131,17 @@ fn test_tag_syntax() {
     // Check if tag files are correctly placed
     path.push("minecraft/tags/functions");
     tests::check_files_exist(&path, &expected_tags, "test_tag_syntax");
+    // Check tag file contents
+    for i in 0..expected_tags.len() {
+        path.push(&expected_tags[i]);
+        let contents = fs::read_to_string(&path).unwrap();
+        let contents_tag: TagFile = serde_json::from_str(&contents).unwrap();
+        let expected_tag = TagFile {
+            values: expected_tag_contents[i].clone(),
+        };
+        assert_eq!(contents_tag, expected_tag);
+        path.pop();
+    }
 
     // Ensure unexpected tag files do not exist
     tests::check_files_dont_exist(&path, &unexpected_tags, "test_tag_syntax");
