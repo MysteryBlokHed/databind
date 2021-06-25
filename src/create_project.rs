@@ -114,6 +114,10 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
     path.push("databind.toml");
     fs::write(&path, databind_toml)?;
 
-    println!("Created project {} in {}", name, base_path);
+    println!(
+        "Created project {} in {}",
+        name,
+        fs::canonicalize(&base_path).unwrap().display()
+    );
     Ok(())
 }
