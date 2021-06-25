@@ -14,7 +14,38 @@ on:
       - 'tests/**'
 
 jobs:
-  build_and_test:
+  windows_build:
+    name: Windows Build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Build
+        run: cargo build --release --all-features
+
+      - name: Test
+        run: cargo test --all-features
+
+  macos_build:
+    name: macOS Build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Build
+        run: cargo build --release --all-features
+
+      - name: Test
+        run: cargo test --all-features
+
+  ubuntu_build:
+    name: Ubuntu Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
