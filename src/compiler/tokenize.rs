@@ -140,6 +140,10 @@ impl Compiler<'_> {
                         building_while = true;
                         building_condition = true;
                     }
+                    "delvar" | "delobj" => {
+                        tokens.push(Token::DeleteVar);
+                        building_token = Token::DeleteVar;
+                    }
                     _ => keyword_found = false,
                 }
 
@@ -344,6 +348,17 @@ impl Compiler<'_> {
                             }
                         }
                     },
+                    Token::DeleteVar => {
+                        if self.current_char.is_whitespace() {
+                            tokens.push(Token::VarName(current_keyword));
+                            building_keyword = false;
+                            building_token = Token::None;
+                            current_keyword = String::new();
+                            first_whitespace = false;
+                        } else {
+                            current_keyword.push(self.current_char);
+                        }
+                    }
                     _ => {}
                 }
             } else if self.current_char == '#'
