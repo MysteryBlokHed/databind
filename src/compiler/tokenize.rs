@@ -59,6 +59,16 @@ impl Compiler<'_> {
             // Later, in the compile function, the while loop is converted to two databind
             // functions.
             if building_while {
+                if current_keyword.trim() == ":endwhile" {
+                    building_while = false;
+                    building_keyword = false;
+                    current_keyword = String::new();
+                    tokens.push(Token::WhileContents(while_lines.join("\n")));
+                    while_line = String::new();
+                    while_lines = Vec::new();
+                    tokens.push(Token::EndWhileLoop);
+                }
+
                 if building_condition {
                     if self.current_char == '\n' {
                         tokens.push(Token::WhileCondition(current_keyword.trim().to_string()));
@@ -72,14 +82,6 @@ impl Compiler<'_> {
                         while_lines.push(while_line.trim().to_string());
                         while_line = String::new();
                     }
-                }
-
-                if current_keyword.trim() == ":endwhile" {
-                    building_while = false;
-                    tokens.push(Token::WhileContents(while_lines.join("\n")));
-                    while_line = String::new();
-                    while_lines = Vec::new();
-                    tokens.push(Token::EndWhileLoop);
                 }
             }
 
@@ -137,10 +139,6 @@ impl Compiler<'_> {
                         tokens.push(Token::WhileLoop);
                         building_while = true;
                         building_condition = true;
-                    }
-                    "endwhile" => {
-                        tokens.push(Token::EndWhileLoop);
-                        building_keyword = false;
                     }
                     _ => keyword_found = false,
                 }
