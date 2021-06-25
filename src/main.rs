@@ -138,7 +138,7 @@ fn main() -> std::io::Result<()> {
         if let Ok(config) = config_location {
             // Get base directory of project from config file location
             let base_dir = config.parent().unwrap();
-            args.push(format!("{}/src", base_dir.display()));
+            args.push(base_dir.to_str().unwrap().into());
             cli::get_app().get_matches_from(args)
         } else {
             // Run with no args to show help menu
