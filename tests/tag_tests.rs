@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use std::fs;
 use tempdir::TempDir;
 
 mod tests;
@@ -100,4 +101,40 @@ fn test_tag_syntax() {
 
     // Ensure unexpected tag files do not exist
     tests::check_files_dont_exist(&path, &unexpected_tags, "test_tag_syntax");
+}
+
+/// Test that use of tags such as `kill @e[type=#namespace:tag]`
+/// is not removed by comments
+#[test]
+fn test_tags_and_comments() {
+    let mut path = tests::resources();
+    path.push("test_tags_and_comments");
+
+    let out = TempDir::new("test_tags_and_comments").expect("Could not create tempdir for test");
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path.to_str().unwrap(),
+            "--ignore-config",
+            "--out",
+            out.path().to_str().unwrap(),
+        ],
+        None,
+    );
+
+    let expected_funcs = ["func1.mcfunction"];
+    let expected_include = "kill @e[type=#test:tag_should_be_included]";
+    let expected_exclude = "# should not be included";
+
+    path.push(format!("{}/data/test/functions", out.path().display()));
+    tests::check_files_exist(&path, &expected_funcs, "test_tags_and_comments");
+
+    // Check contents of func1.mcfunction
+    path.push("func1.mcfunction");
+    let contents = fs::read_to_string(&path).unwrap();
+    assert!(contents.contains(expected_include));
+    assert!(!contents.contains(expected_exclude));
 }
