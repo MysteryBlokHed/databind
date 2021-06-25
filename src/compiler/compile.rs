@@ -376,7 +376,7 @@ impl Compiler<'_> {
                         }
                     } else if active_token == Token::SetObjective {
                         match assignment_operator {
-                            Token::VarSet => {
+                            Token::VarSet | Token::VarAdd | Token::VarSub => {
                                 let action = match assignment_operator {
                                     Token::VarAdd => "add",
                                     Token::VarSub => "remove",
