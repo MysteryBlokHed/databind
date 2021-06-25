@@ -21,7 +21,7 @@ use clap::{App, Arg, SubCommand};
 pub fn get_app<'a, 'b>() -> App<'a, 'b> {
     App::new("Databind")
         .setting(clap::AppSettings::SubcommandsNegateReqs)
-        .version("0.2.2")
+        .version("0.2.3")
         .author("Adam Thompson-Sharpe <adamthompsonsharpe@gmail.com>")
         .about("Expand the functionality of Minecraft Datapacks.")
         .arg(
