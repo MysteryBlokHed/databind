@@ -76,7 +76,9 @@ fn get_subfolder_prefix<P: AsRef<Path>>(functions_path: &P) -> String {
     // Ensure no backslashes and remove leading slash, if present
     let prefix = after_functions.to_str().unwrap().replace('\\', "/");
 
-    if let Some(new) = prefix.strip_prefix('/') {
+    if prefix == "/" {
+        String::new()
+    } else if let Some(new) = prefix.strip_prefix('/') {
         format!("{}/", new)
     } else {
         format!("{}/", prefix)
