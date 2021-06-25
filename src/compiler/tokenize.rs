@@ -349,6 +349,7 @@ impl Compiler<'_> {
             } else if self.current_char == '#'
                 && tokens.last().ok_or(Token::None).is_ok()
                 && tokens.last().unwrap() == &Token::NewLine
+                && current_non_databind.is_empty()
             {
                 comment = true;
                 continue;
