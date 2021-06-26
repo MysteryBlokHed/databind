@@ -25,6 +25,9 @@ pub enum Token {
     SetObjective,
     /// Used before a variable (`Token::VarName`) to test
     TestVar,
+    /// Used before a variable (`Token::VarName`) to get.
+    /// Meant for scoreboard operations (`:varop`)
+    GetVar,
     /// Define a text replacement
     DefineReplace,
     /// The name of a replacement
@@ -69,6 +72,8 @@ pub enum Token {
     VarAdd,
     /// Subtract from the value of a variable or objective
     VarSub,
+    /// Shorthand for `scoreboard players operation`
+    ScoreboardOperation,
     /// An integer
     Int(i32),
     /// Commands, etc. that are not by databind
