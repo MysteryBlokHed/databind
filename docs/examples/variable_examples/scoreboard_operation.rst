@@ -4,7 +4,7 @@ Scoreboard Operations
 Example
 -------
 
-Define two variable and use a scoreboard operation to multiply the first.
+Define two variables and use a scoreboard operation to multiply the first.
 
 .. code-block:: databind
 
