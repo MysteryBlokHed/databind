@@ -10,7 +10,7 @@ Example
 
    # Create an objective points and set everyone's score to 100
    :obj points dummy
-   :sobj points @a = 100
+   :sobj @a points = 100
 
 Compiled
 --------

@@ -8,7 +8,7 @@ Syntax
 +--------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
 | ``:obj objectiveName <objective>``                                       | Define a new scoreboard objective                                                      |
 +--------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
-| ``:sobj objectiveName <objective> <target> <assignment operator> <int>`` | Set the value of an objective for a given target (eg. ``@a`` or ``PlayerName``)        |
+| ``:sobj objectiveName <target> <objective> <assignment operator> <int>`` | Set the value of an objective for a given target (eg. ``@a`` or ``PlayerName``)        |
 +--------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
 | ``:def defName <text replacement>``                                      | Define a text replacement for the preprocessor. See examples for more information      |
 +--------------------------------------------------------------------------+----------------------------------------------------------------------------------------+

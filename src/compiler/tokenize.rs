@@ -278,12 +278,12 @@ impl Compiler {
                     },
                     Token::SetObjective => match remaining_params {
                         4 => {
-                            if add_token!(Token::ObjectiveName(current_keyword)) {
+                            if add_token!(Token::Target(current_keyword)) {
                                 remaining_params -= 1;
                             }
                         }
                         3 => {
-                            if add_token!(Token::Target(current_keyword)) {
+                            if add_token!(Token::ObjectiveName(current_keyword)) {
                                 remaining_params -= 1;
                             }
                         }
