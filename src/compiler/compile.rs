@@ -98,7 +98,6 @@ impl Compiler<'_> {
                 Token::SetObjective => active_token = Token::SetObjective,
                 Token::Target(target) => objective_target = target.clone(),
                 Token::VarName(var) => {
-                    println!("varname found, active token: {:?}", active_token);
                     if active_token == Token::DeleteVar {
                         if self.settings.random_var_names {
                             if var_map.contains_key(var) {
@@ -126,10 +125,16 @@ impl Compiler<'_> {
                         }
                     } else {
                         current_var = var.clone();
-                        if active_token == Token::TestVar {
+                        if active_token == Token::TestVar || active_token == Token::GetVar {
+                            let to_front = if active_token == Token::TestVar {
+                                "score "
+                            } else {
+                                ""
+                            };
                             if self.settings.random_var_names {
                                 if var_map.contains_key(var) {
-                                    let to_add = format!("score --databind {} ", var_map[var]);
+                                    let to_add =
+                                        format!("{}--databind {} ", to_front, var_map[var]);
 
                                     if func_depth == 0 {
                                         files[0].push_str(&to_add[..]);
@@ -143,7 +148,7 @@ impl Compiler<'_> {
                                     std::process::exit(1);
                                 }
                             } else {
-                                let to_add = format!("score --databind {} ", var);
+                                let to_add = format!("{}--databind {} ", to_front, var);
                                 if func_depth == 0 {
                                     files[0].push_str(&to_add[..]);
                                 } else {
@@ -467,6 +472,7 @@ impl Compiler<'_> {
                             .push_str(string);
                     }
                 }
+                Token::GetVar => active_token = Token::GetVar,
                 Token::DeleteVar => active_token = Token::DeleteVar,
                 Token::NewLine => {
                     if func_depth == 0 {

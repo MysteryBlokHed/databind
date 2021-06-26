@@ -356,7 +356,7 @@ impl Compiler<'_> {
                             }
                         }
                     },
-                    Token::DeleteVar => {
+                    Token::DeleteVar | Token::GetVar => {
                         if self.current_char.is_whitespace() {
                             tokens.push(Token::VarName(current_keyword));
                             building_keyword = false;
