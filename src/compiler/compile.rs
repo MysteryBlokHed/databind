@@ -79,6 +79,12 @@ impl Compiler {
                 }
             }
 
+            macro_rules! current_file {
+                () => {
+                    files[filename_to_index[&current_functions[func_depth - 1]]];
+                };
+            }
+
             match token {
                 Token::Var => active_token = Token::Var,
                 Token::TestVar => active_token = Token::TestVar,
@@ -88,12 +94,7 @@ impl Compiler {
                 Token::ModVarName(var) => current_var = var.clone(),
                 Token::DelVarName(var) => {
                     let to_add = format!("scoreboard objectives remove {}", var);
-                    if func_depth == 0 {
-                        files[0].push_str(&to_add[..]);
-                    } else {
-                        files[filename_to_index[&current_functions[func_depth - 1]]]
-                            .push_str(&to_add[..]);
-                    }
+                    current_file!().push_str(&to_add[..]);
                 }
                 Token::TestVarName(var) | Token::OpVarName(var) => {
                     current_var = var.clone();
@@ -104,12 +105,7 @@ impl Compiler {
                     };
 
                     let to_add = format!("{}--databind {} ", to_front, var);
-                    if func_depth == 0 {
-                        files[0].push_str(&to_add[..]);
-                    } else {
-                        files[filename_to_index[&current_functions[func_depth - 1]]]
-                            .push_str(&to_add[..]);
-                    }
+                    current_file!().push_str(&to_add[..]);
                 }
                 Token::InitialSet => assignment_operator = Token::InitialSet,
                 Token::VarSet => assignment_operator = Token::VarSet,
@@ -128,20 +124,12 @@ impl Compiler {
 
                         if has_namespace {
                             let to_add = format!("function {}", name);
-                            if func_depth == 0 {
-                                files[0].push_str(&to_add[..]);
-                            } else {
-                                files[filename_to_index[&current_functions[func_depth - 1]]]
-                                    .push_str(&to_add[..]);
-                            }
+
+                            current_file!().push_str(&to_add[..]);
                         } else if let Some(ns) = namespace {
                             let to_add = format!("function {}:{}", ns, name);
-                            if func_depth == 0 {
-                                files[0].push_str(&to_add[..]);
-                            } else {
-                                files[filename_to_index[&current_functions[func_depth - 1]]]
-                                    .push_str(&to_add[..]);
-                            }
+
+                            current_file!().push_str(&to_add[..]);
                         } else {
                             panic!("No namespace provided for function call.");
                         }
@@ -174,12 +162,7 @@ impl Compiler {
                         current_objective, objective
                     );
 
-                    if func_depth == 0 {
-                        files[0].push_str(&to_add[..]);
-                    } else {
-                        files[filename_to_index[&current_functions[func_depth - 1]]]
-                            .push_str(&to_add[..]);
-                    }
+                    current_file!().push_str(&to_add[..]);
                     active_token = Token::None;
                 }
                 // An int will always be the last part of a variable or objective assignment
@@ -190,24 +173,14 @@ impl Compiler {
                                 let to_add =
                                     format!("scoreboard objectives add {} dummy\n", current_var);
 
-                                if func_depth == 0 {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_functions[func_depth - 1]]]
-                                        .push_str(&to_add[..]);
-                                }
+                                current_file!().push_str(&to_add[..]);
 
                                 let to_add = format!(
                                     "scoreboard players set --databind {} {}",
                                     current_var, int
                                 );
 
-                                if func_depth == 0 {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_functions[func_depth - 1]]]
-                                        .push_str(&to_add[..]);
-                                }
+                                current_file!().push_str(&to_add[..]);
                             }
                             Token::VarAdd | Token::VarSub | Token::VarSet => {
                                 let action = match assignment_operator {
@@ -221,12 +194,7 @@ impl Compiler {
                                     action, &current_var, int
                                 );
 
-                                if func_depth == 0 {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_functions[func_depth - 1]]]
-                                        .push_str(&to_add[..]);
-                                }
+                                current_file!().push_str(&to_add[..]);
                             }
                             _ => {}
                         }
@@ -244,12 +212,7 @@ impl Compiler {
                                     action, objective_target, &current_objective, int
                                 );
 
-                                if func_depth == 0 {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_functions[func_depth - 1]]]
-                                        .push_str(&to_add[..]);
-                                }
+                                current_file!().push_str(&to_add[..]);
                             }
                             _ => {
                                 panic!(".= operator was tokenized for objective");
@@ -260,21 +223,12 @@ impl Compiler {
                     assignment_operator = Token::None;
                 }
                 Token::NonDatabind(string) => {
-                    if func_depth == 0 {
-                        files[0].push_str(string);
-                    } else {
-                        files[filename_to_index[&current_functions[func_depth - 1]]]
-                            .push_str(string);
-                    }
+                    current_file!().push_str(string);
                 }
                 Token::GetVar => active_token = Token::GetVar,
                 Token::DeleteVar => active_token = Token::DeleteVar,
                 Token::NewLine => {
-                    if func_depth == 0 {
-                        files[0].push('\n');
-                    } else {
-                        files[filename_to_index[&current_functions[func_depth - 1]]].push('\n');
-                    }
+                    current_file!().push('\n');
                 }
                 _ => {}
             }
