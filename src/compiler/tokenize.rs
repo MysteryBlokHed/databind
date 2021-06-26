@@ -102,7 +102,7 @@ impl Compiler<'_> {
         ///
         /// `true` if an operator was found, `false` otherwise
         macro_rules! assignment_operator {
-            () => {{
+            () => {
                 if self.current_char.is_whitespace() {
                     if assignment_operators.contains(&&current_keyword[..]) {
                         match &current_keyword[..] {
@@ -124,7 +124,7 @@ impl Compiler<'_> {
                     current_keyword.push(self.current_char);
                     false
                 }
-            }};
+            };
         }
 
         while self.current_char != '\u{0}' {
