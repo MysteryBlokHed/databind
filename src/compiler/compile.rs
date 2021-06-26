@@ -68,6 +68,12 @@ impl Compiler {
         let mut current_objective = String::new();
         let mut objective_target = String::new();
 
+        macro_rules! current_file {
+            () => {
+                files[filename_to_index[&current_functions[func_depth - 1]]];
+            };
+        }
+
         for token in tokens.iter() {
             // Don't compile contents outside of a function
             match token {
@@ -77,12 +83,6 @@ impl Compiler {
                         continue;
                     }
                 }
-            }
-
-            macro_rules! current_file {
-                () => {
-                    files[filename_to_index[&current_functions[func_depth - 1]]];
-                };
             }
 
             match token {
@@ -222,14 +222,8 @@ impl Compiler {
                     active_token = Token::None;
                     assignment_operator = Token::None;
                 }
-                Token::NonDatabind(string) => {
-                    current_file!().push_str(string);
-                }
-                Token::GetVar => active_token = Token::GetVar,
-                Token::DeleteVar => active_token = Token::DeleteVar,
-                Token::NewLine => {
-                    current_file!().push('\n');
-                }
+                Token::NonDatabind(string) => current_file!().push_str(string),
+                Token::NewLine => current_file!().push('\n'),
                 _ => {}
             }
         }
