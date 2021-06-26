@@ -98,11 +98,12 @@ impl Compiler<'_> {
                 Token::SetObjective => active_token = Token::SetObjective,
                 Token::Target(target) => objective_target = target.clone(),
                 Token::VarName(var) => {
-                    current_var = var.clone();
-                    if active_token == Token::TestVar {
+                    println!("varname found, active token: {:?}", active_token);
+                    if active_token == Token::DeleteVar {
                         if self.settings.random_var_names {
                             if var_map.contains_key(var) {
-                                let to_add = format!("score --databind {} ", var_map[var]);
+                                let to_add =
+                                    format!("scoreboard objectives remove {}", var_map[var]);
 
                                 if func_depth == 0 {
                                     files[0].push_str(&to_add[..]);
@@ -115,12 +116,40 @@ impl Compiler<'_> {
                                 std::process::exit(1);
                             }
                         } else {
-                            let to_add = format!("score --databind {} ", var);
+                            let to_add = format!("scoreboard objectives remove {}", var);
                             if func_depth == 0 {
                                 files[0].push_str(&to_add[..]);
                             } else {
                                 files[filename_to_index[&current_functions[func_depth - 1]]]
                                     .push_str(&to_add[..]);
+                            }
+                        }
+                    } else {
+                        current_var = var.clone();
+                        if active_token == Token::TestVar {
+                            if self.settings.random_var_names {
+                                if var_map.contains_key(var) {
+                                    let to_add = format!("score --databind {} ", var_map[var]);
+
+                                    if func_depth == 0 {
+                                        files[0].push_str(&to_add[..]);
+                                    } else {
+                                        files
+                                            [filename_to_index[&current_functions[func_depth - 1]]]
+                                            .push_str(&to_add[..]);
+                                    }
+                                } else {
+                                    println!("[ERROR] Attempted test on non-existant variable");
+                                    std::process::exit(1);
+                                }
+                            } else {
+                                let to_add = format!("score --databind {} ", var);
+                                if func_depth == 0 {
+                                    files[0].push_str(&to_add[..]);
+                                } else {
+                                    files[filename_to_index[&current_functions[func_depth - 1]]]
+                                        .push_str(&to_add[..]);
+                                }
                             }
                         }
                     }
@@ -438,6 +467,7 @@ impl Compiler<'_> {
                             .push_str(string);
                     }
                 }
+                Token::DeleteVar => active_token = Token::DeleteVar,
                 Token::NewLine => {
                     if func_depth == 0 {
                         files[0].push('\n');

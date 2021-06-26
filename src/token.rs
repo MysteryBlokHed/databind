@@ -57,6 +57,8 @@ pub enum Token {
     ObjectiveName(String),
     /// An objective's type (eg. deathCount)
     ObjectiveType(String),
+    /// Delete a variable or objective
+    DeleteVar,
     /// A targeted entity (eg. `Username` or `@a`)
     Target(String),
     /// Set the initial value of a variable
