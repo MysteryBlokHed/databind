@@ -140,6 +140,14 @@ impl Compiler<'_> {
                         building_while = true;
                         building_condition = true;
                     }
+                    "gvar" => {
+                        tokens.push(Token::GetVar);
+                        building_token = Token::GetVar;
+                    }
+                    "sbop" => {
+                        tokens.push(Token::ScoreboardOperation);
+                        building_keyword = false;
+                    }
                     "delvar" | "delobj" => {
                         tokens.push(Token::DeleteVar);
                         building_token = Token::DeleteVar;
@@ -348,7 +356,7 @@ impl Compiler<'_> {
                             }
                         }
                     },
-                    Token::DeleteVar => {
+                    Token::DeleteVar | Token::GetVar => {
                         if self.current_char.is_whitespace() {
                             tokens.push(Token::VarName(current_keyword));
                             building_keyword = false;

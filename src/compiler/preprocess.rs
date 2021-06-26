@@ -64,7 +64,8 @@ impl Compiler<'_> {
         re.replace(&new_contents[..], "").to_string()
     }
 
-    /// Replace while loops with databind function definitions
+    /// Replace while loops with databind function definitions and expand
+    /// other shorthand
     ///
     /// # Arguments
     ///
@@ -72,7 +73,7 @@ impl Compiler<'_> {
     /// - `subfolder` - If the while loop is in a subfolder, the prefix
     ///   to put before the function name (eg. should be `Some("cmd/")` for
     ///   a subfolder called `cmd`). Can be an empty string if there is no prefix
-    pub fn while_convert(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
+    pub fn parse_shorthand(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
         let mut new_tokens = tokens.clone();
 
         let mut while_index: usize = 0;
@@ -124,6 +125,10 @@ impl Compiler<'_> {
                             tks.iter().cloned(),
                         );
                         index_offset += tks.len() - 4;
+                    }
+                    Token::ScoreboardOperation => {
+                        new_tokens[i + index_offset] =
+                            Token::NonDatabind("scoreboard players operation".into());
                     }
                     _ => {}
                 }
