@@ -40,6 +40,93 @@ impl Compiler<'_> {
         let mut current_non_databind = String::new();
         let mut comment = false;
 
+        /// Add a token to the list
+        ///
+        /// # Returns
+        ///
+        /// `true` if a token was found and added, `false` otherwise
+        macro_rules! add_token {
+            ($token: expr) => {
+                if self.current_char.is_whitespace() {
+                    tokens.push($token);
+                    current_keyword = String::new();
+                    true
+                } else {
+                    current_keyword.push(self.current_char);
+                    false
+                }
+            };
+        }
+
+        /// Add a token to the list and reset variables
+        macro_rules! add_token_and_reset {
+            ($token: expr) => {
+                if add_token!($token) {
+                    building_keyword = false;
+                    building_token = Token::None;
+                    first_whitespace = false;
+                }
+            };
+        }
+
+        /// Add an integer to the token list and reset variables
+        macro_rules! add_int_and_reset {
+            () => {
+                if self.current_char.is_whitespace() {
+                    let var_value: i32 = current_keyword.parse().unwrap();
+                    tokens.push(Token::Int(var_value));
+                    building_keyword = false;
+                    building_token = Token::None;
+                    current_keyword = String::new();
+                    first_whitespace = false;
+                } else if DIGITS.contains(&self.current_char) {
+                    current_keyword.push(self.current_char);
+                } else {
+                    println!("[ERROR] Variables can only store integers.");
+                    std::process::exit(1);
+                }
+            };
+        }
+
+        /// Add a token to the tokens list and set the token being built
+        macro_rules! set_building {
+            ($token: expr) => {
+                tokens.push($token);
+                building_token = $token;
+            };
+        }
+
+        /// Try to find an assignment operator
+        ///
+        /// # Returns
+        ///
+        /// `true` if an operator was found, `false` otherwise
+        macro_rules! assignment_operator {
+            () => {
+                if self.current_char.is_whitespace() {
+                    if assignment_operators.contains(&&current_keyword[..]) {
+                        match &current_keyword[..] {
+                            ".=" => tokens.push(Token::InitialSet),
+                            "=" => tokens.push(Token::VarSet),
+                            "+=" => tokens.push(Token::VarAdd),
+                            "-=" => tokens.push(Token::VarSub),
+                            _ => {
+                                panic!("Someone didn't update the assignment operator match!");
+                            }
+                        };
+                    } else {
+                        println!("Invalid assignment operator provided");
+                        std::process::exit(1);
+                    }
+                    current_keyword = String::new();
+                    true
+                } else {
+                    current_keyword.push(self.current_char);
+                    false
+                }
+            };
+        }
+
         while self.current_char != '\u{0}' {
             while comment {
                 self.next_char();
@@ -96,44 +183,36 @@ impl Compiler<'_> {
                 let mut keyword_found = true;
                 match &current_keyword[..] {
                     "var" => {
-                        tokens.push(Token::Var);
-                        building_token = Token::Var;
+                        set_building!(Token::Var);
                         remaining_params = 3;
                     }
                     "obj" => {
-                        tokens.push(Token::Objective);
-                        building_token = Token::Objective;
+                        set_building!(Token::Objective);
                         remaining_params = 2;
                     }
                     "sobj" => {
-                        tokens.push(Token::SetObjective);
-                        building_token = Token::SetObjective;
+                        set_building!(Token::SetObjective);
                         remaining_params = 4;
                     }
                     "tvar" => {
-                        tokens.push(Token::TestVar);
-                        building_token = Token::TestVar;
+                        set_building!(Token::TestVar);
                     }
                     "func" => {
-                        tokens.push(Token::DefineFunc);
-                        building_token = Token::DefineFunc;
+                        set_building!(Token::DefineFunc);
                     }
                     "endfunc" => {
                         tokens.push(Token::EndFunc);
                         building_keyword = false;
                     }
                     "def" => {
-                        tokens.push(Token::DefineReplace);
-                        building_token = Token::DefineReplace;
+                        set_building!(Token::DefineReplace);
                         remaining_params = 2;
                     }
                     "tag" => {
-                        tokens.push(Token::Tag);
-                        building_token = Token::Tag;
+                        set_building!(Token::Tag);
                     }
                     "call" => {
-                        tokens.push(Token::CallFunc);
-                        building_token = Token::CallFunc;
+                        set_building!(Token::CallFunc);
                     }
                     "while" => {
                         tokens.push(Token::WhileLoop);
@@ -141,16 +220,14 @@ impl Compiler<'_> {
                         building_condition = true;
                     }
                     "gvar" => {
-                        tokens.push(Token::GetVar);
-                        building_token = Token::GetVar;
+                        set_building!(Token::GetVar);
                     }
                     "sbop" => {
                         tokens.push(Token::ScoreboardOperation);
                         building_keyword = false;
                     }
                     "delvar" | "delobj" => {
-                        tokens.push(Token::DeleteVar);
-                        building_token = Token::DeleteVar;
+                        set_building!(Token::DeleteVar);
                     }
                     _ => keyword_found = false,
                 }
@@ -171,177 +248,61 @@ impl Compiler<'_> {
                         match remaining_params {
                             // Variable name
                             3 => {
-                                if self.current_char.is_whitespace() {
-                                    tokens.push(Token::VarName(current_keyword));
-                                    current_keyword = String::new();
+                                if add_token!(Token::VarName(current_keyword)) {
                                     remaining_params -= 1;
-                                } else {
-                                    current_keyword.push(self.current_char);
                                 }
                             }
                             // Assignment operator
                             2 => {
-                                if self.current_char.is_whitespace() {
-                                    if assignment_operators.contains(&&current_keyword[..]) {
-                                        match &current_keyword[..] {
-                                            ".=" => tokens.push(Token::InitialSet),
-                                            "=" => tokens.push(Token::VarSet),
-                                            "+=" => tokens.push(Token::VarAdd),
-                                            "-=" => tokens.push(Token::VarSub),
-                                            _ => {
-                                                panic!("Someone didn't update the assignment operator match!");
-                                            }
-                                        }
-                                        current_keyword = String::new();
-                                        remaining_params -= 1;
-                                    }
-                                } else {
-                                    current_keyword.push(self.current_char);
+                                if assignment_operator!() {
+                                    remaining_params -= 1;
                                 }
                             }
                             // Value
-                            _ => {
-                                if self.current_char.is_whitespace() {
-                                    let var_value: i32 = current_keyword.parse().unwrap();
-                                    tokens.push(Token::Int(var_value));
-
-                                    building_keyword = false;
-                                    building_token = Token::None;
-                                    current_keyword = String::new();
-                                    first_whitespace = false;
-                                } else if DIGITS.contains(&self.current_char) {
-                                    current_keyword.push(self.current_char);
-                                } else {
-                                    println!("[ERROR] Variables can only store integers.");
-                                    std::process::exit(1);
-                                }
-                            }
+                            _ => add_int_and_reset!(),
                         }
                     }
                     Token::TestVar => {
-                        if self.current_char.is_whitespace() {
-                            tokens.push(Token::VarName(current_keyword));
-                            building_keyword = false;
-                            building_token = Token::None;
-                            current_keyword = String::new();
-                            first_whitespace = false;
-                        } else {
-                            current_keyword.push(self.current_char);
-                        }
+                        add_token_and_reset!(Token::VarName(current_keyword));
                     }
                     Token::DefineFunc | Token::CallFunc => {
-                        if self.current_char.is_whitespace() {
-                            tokens.push(Token::FuncName(current_keyword));
-
-                            building_keyword = false;
-                            building_token = Token::None;
-                            current_keyword = String::new();
-                            first_whitespace = false;
-                        } else {
-                            current_keyword.push(self.current_char);
-                        }
+                        add_token_and_reset!(Token::FuncName(current_keyword));
                     }
                     Token::Objective => match remaining_params {
                         2 => {
-                            if self.current_char.is_whitespace() {
-                                tokens.push(Token::ObjectiveName(current_keyword));
-                                current_keyword = String::new();
+                            if add_token!(Token::ObjectiveName(current_keyword)) {
                                 remaining_params -= 1;
-                            } else {
-                                current_keyword.push(self.current_char);
                             }
                         }
                         _ => {
-                            if self.current_char.is_whitespace() {
-                                tokens.push(Token::ObjectiveType(current_keyword));
-                                building_keyword = false;
-                                building_token = Token::None;
-                                current_keyword = String::new();
-                                first_whitespace = false;
-                            } else {
-                                current_keyword.push(self.current_char);
-                            }
+                            add_token_and_reset!(Token::ObjectiveType(current_keyword));
                         }
                     },
                     Token::SetObjective => match remaining_params {
                         4 => {
-                            if self.current_char.is_whitespace() {
-                                tokens.push(Token::ObjectiveName(current_keyword));
-                                current_keyword = String::new();
+                            if add_token!(Token::ObjectiveName(current_keyword)) {
                                 remaining_params -= 1;
-                            } else {
-                                current_keyword.push(self.current_char);
                             }
                         }
                         3 => {
-                            if self.current_char.is_whitespace() {
-                                tokens.push(Token::Target(current_keyword));
-                                current_keyword = String::new();
+                            if add_token!(Token::Target(current_keyword)) {
                                 remaining_params -= 1;
-                            } else {
-                                current_keyword.push(self.current_char);
                             }
                         }
                         2 => {
-                            if self.current_char.is_whitespace() {
-                                if assignment_operators.contains(&&current_keyword[..]) {
-                                    match &current_keyword[..] {
-                                        ".=" => {
-                                            println!(
-                                                "The .= operator is not valid for objectives."
-                                            );
-                                            std::process::exit(1);
-                                        }
-                                        "=" => tokens.push(Token::VarSet),
-                                        "+=" => tokens.push(Token::VarAdd),
-                                        "-=" => tokens.push(Token::VarSub),
-                                        _ => {
-                                            panic!("Someone didn't update the assignment operator match!");
-                                        }
-                                    }
-                                    current_keyword = String::new();
-                                    remaining_params -= 1;
-                                }
-                            } else {
-                                current_keyword.push(self.current_char);
+                            if assignment_operator!() {
+                                remaining_params -= 1;
                             }
                         }
-                        _ => {
-                            if self.current_char.is_whitespace() {
-                                let var_value: i32 = current_keyword.parse().unwrap();
-                                tokens.push(Token::Int(var_value));
-
-                                building_keyword = false;
-                                building_token = Token::None;
-                                current_keyword = String::new();
-                                first_whitespace = false;
-                            } else if DIGITS.contains(&self.current_char) {
-                                current_keyword.push(self.current_char);
-                            } else {
-                                println!("[ERROR] Objectives can only store integers.");
-                                std::process::exit(1);
-                            }
-                        }
+                        _ => add_int_and_reset!(),
                     },
                     Token::Tag => {
-                        if self.current_char.is_whitespace() {
-                            tokens.push(Token::TagName(current_keyword));
-                            building_keyword = false;
-                            building_token = Token::None;
-                            current_keyword = String::new();
-                            first_whitespace = false;
-                        } else {
-                            current_keyword.push(self.current_char);
-                        }
+                        add_token_and_reset!(Token::TagName(current_keyword));
                     }
                     Token::DefineReplace => match remaining_params {
                         2 => {
-                            if self.current_char.is_whitespace() {
-                                tokens.push(Token::ReplaceName(current_keyword));
-                                current_keyword = String::new();
+                            if add_token!(Token::ReplaceName(current_keyword)) {
                                 remaining_params -= 1;
-                            } else {
-                                current_keyword.push(self.current_char);
                             }
                         }
                         _ => {
@@ -357,18 +318,10 @@ impl Compiler<'_> {
                         }
                     },
                     Token::DeleteVar | Token::GetVar => {
-                        if self.current_char.is_whitespace() {
-                            tokens.push(Token::VarName(current_keyword));
-                            building_keyword = false;
-                            building_token = Token::None;
-                            current_keyword = String::new();
-                            first_whitespace = false;
-                        } else {
-                            current_keyword.push(self.current_char);
-                        }
+                        add_token_and_reset!(Token::VarName(current_keyword));
                     }
                     _ => {}
-                }
+                };
             } else if self.current_char == '#'
                 && tokens.last().ok_or(Token::None).is_ok()
                 && tokens.last().unwrap() == &Token::NewLine
