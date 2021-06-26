@@ -85,32 +85,30 @@ impl Compiler {
                 Token::Objective => active_token = Token::Objective,
                 Token::SetObjective => active_token = Token::SetObjective,
                 Token::Target(target) => objective_target = target.clone(),
-                Token::VarName(var) => {
-                    if active_token == Token::DeleteVar {
-                        let to_add = format!("scoreboard objectives remove {}", var);
-                        if func_depth == 0 {
-                            files[0].push_str(&to_add[..]);
-                        } else {
-                            files[filename_to_index[&current_functions[func_depth - 1]]]
-                                .push_str(&to_add[..]);
-                        }
+                Token::ModVarName(var) => current_var = var.clone(),
+                Token::DelVarName(var) => {
+                    let to_add = format!("scoreboard objectives remove {}", var);
+                    if func_depth == 0 {
+                        files[0].push_str(&to_add[..]);
                     } else {
-                        current_var = var.clone();
-                        if active_token == Token::TestVar || active_token == Token::GetVar {
-                            let to_front = if active_token == Token::TestVar {
-                                "score "
-                            } else {
-                                ""
-                            };
+                        files[filename_to_index[&current_functions[func_depth - 1]]]
+                            .push_str(&to_add[..]);
+                    }
+                }
+                Token::TestVarName(var) | Token::OpVarName(var) => {
+                    current_var = var.clone();
+                    let to_front = if active_token == Token::TestVar {
+                        "score "
+                    } else {
+                        ""
+                    };
 
-                            let to_add = format!("{}--databind {} ", to_front, var);
-                            if func_depth == 0 {
-                                files[0].push_str(&to_add[..]);
-                            } else {
-                                files[filename_to_index[&current_functions[func_depth - 1]]]
-                                    .push_str(&to_add[..]);
-                            }
-                        }
+                    let to_add = format!("{}--databind {} ", to_front, var);
+                    if func_depth == 0 {
+                        files[0].push_str(&to_add[..]);
+                    } else {
+                        files[filename_to_index[&current_functions[func_depth - 1]]]
+                            .push_str(&to_add[..]);
                     }
                 }
                 Token::InitialSet => assignment_operator = Token::InitialSet,

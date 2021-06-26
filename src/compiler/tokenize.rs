@@ -248,7 +248,7 @@ impl Compiler {
                         match remaining_params {
                             // Variable name
                             3 => {
-                                if add_token!(Token::VarName(current_keyword)) {
+                                if add_token!(Token::ModVarName(current_keyword)) {
                                     remaining_params -= 1;
                                 }
                             }
@@ -263,7 +263,7 @@ impl Compiler {
                         }
                     }
                     Token::TestVar => {
-                        add_token_and_reset!(Token::VarName(current_keyword));
+                        add_token_and_reset!(Token::TestVarName(current_keyword));
                     }
                     Token::DefineFunc | Token::CallFunc => {
                         add_token_and_reset!(Token::FuncName(current_keyword));
@@ -274,9 +274,7 @@ impl Compiler {
                                 remaining_params -= 1;
                             }
                         }
-                        _ => {
-                            add_token_and_reset!(Token::ObjectiveType(current_keyword));
-                        }
+                        _ => add_token_and_reset!(Token::ObjectiveType(current_keyword)),
                     },
                     Token::SetObjective => match remaining_params {
                         4 => {
@@ -296,9 +294,7 @@ impl Compiler {
                         }
                         _ => add_int_and_reset!(),
                     },
-                    Token::Tag => {
-                        add_token_and_reset!(Token::TagName(current_keyword));
-                    }
+                    Token::Tag => add_token_and_reset!(Token::TagName(current_keyword)),
                     Token::DefineReplace => match remaining_params {
                         2 => {
                             if add_token!(Token::ReplaceName(current_keyword)) {
@@ -317,9 +313,8 @@ impl Compiler {
                             }
                         }
                     },
-                    Token::DeleteVar | Token::GetVar => {
-                        add_token_and_reset!(Token::VarName(current_keyword));
-                    }
+                    Token::GetVar => add_token_and_reset!(Token::OpVarName(current_keyword)),
+                    Token::DeleteVar => add_token_and_reset!(Token::DelVarName(current_keyword)),
                     _ => {}
                 };
             } else if self.current_char == '#'

@@ -54,8 +54,14 @@ pub enum Token {
     WhileContents(String),
     /// Close a while loop
     EndWhileLoop,
-    /// A variable's name
-    VarName(String),
+    /// A variable's name for modifying
+    ModVarName(String),
+    /// A variable's name for testing
+    TestVarName(String),
+    /// A variable's name for deleting
+    DelVarName(String),
+    /// A variable's name for scoreboard operations
+    OpVarName(String),
     /// An objective's name
     ObjectiveName(String),
     /// An objective's type (eg. deathCount)
