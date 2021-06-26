@@ -18,7 +18,6 @@
 use super::Compiler;
 
 use crate::token::Token;
-use rand::{distributions::Alphanumeric, Rng};
 use std::collections::HashMap;
 
 /// Return from the compiler
@@ -27,45 +26,34 @@ use std::collections::HashMap;
 ///
 /// - `file_contents` - A list of file contents
 /// - `filename_map` - A map of filenames to indexes in the file_contents Vec
-/// - `var_map` - A map of variable names used in files to randomized names
 /// - `tag_map` - A map of tags to functions
 pub struct CompileReturn {
     pub file_contents: Vec<String>,
     pub filename_map: HashMap<String, usize>,
-    pub var_map: HashMap<String, String>,
     pub tag_map: HashMap<String, Vec<String>>,
 }
 
-impl Compiler<'_> {
+impl Compiler {
     /// Convert tokens to a compiled file or files
     ///
     /// # Arguments
     ///
     /// - `tokens` - A list of tokens
     /// - `namespace` - The namespace to use for functions, if relevant
-    /// - `existing_var_map` - An existing map of variables to randomized names
     pub fn compile(
         &self,
         tokens: Vec<Token>,
         namespace: Option<&str>,
-        existing_var_map: Option<&HashMap<String, String>>,
         subfolder: &str,
     ) -> CompileReturn {
         let tokens = self.parse_shorthand(tokens, subfolder);
 
-        let mut var_map: HashMap<String, String>;
         let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
 
         // A vector of file contents
         let mut files: Vec<String> = vec![String::new()];
         // A map of filenames to indexes in the files vector
         let mut filename_to_index: HashMap<String, usize> = HashMap::new();
-
-        if let Some(map) = existing_var_map {
-            var_map = map.clone();
-        } else {
-            var_map = HashMap::new();
-        }
 
         let mut active_token = Token::None;
 
@@ -99,29 +87,12 @@ impl Compiler<'_> {
                 Token::Target(target) => objective_target = target.clone(),
                 Token::VarName(var) => {
                     if active_token == Token::DeleteVar {
-                        if self.settings.random_var_names {
-                            if var_map.contains_key(var) {
-                                let to_add =
-                                    format!("scoreboard objectives remove {}", var_map[var]);
-
-                                if func_depth == 0 {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_functions[func_depth - 1]]]
-                                        .push_str(&to_add[..]);
-                                }
-                            } else {
-                                println!("[ERROR] Attempted test on non-existant variable");
-                                std::process::exit(1);
-                            }
+                        let to_add = format!("scoreboard objectives remove {}", var);
+                        if func_depth == 0 {
+                            files[0].push_str(&to_add[..]);
                         } else {
-                            let to_add = format!("scoreboard objectives remove {}", var);
-                            if func_depth == 0 {
-                                files[0].push_str(&to_add[..]);
-                            } else {
-                                files[filename_to_index[&current_functions[func_depth - 1]]]
-                                    .push_str(&to_add[..]);
-                            }
+                            files[filename_to_index[&current_functions[func_depth - 1]]]
+                                .push_str(&to_add[..]);
                         }
                     } else {
                         current_var = var.clone();
@@ -131,30 +102,13 @@ impl Compiler<'_> {
                             } else {
                                 ""
                             };
-                            if self.settings.random_var_names {
-                                if var_map.contains_key(var) {
-                                    let to_add =
-                                        format!("{}--databind {} ", to_front, var_map[var]);
 
-                                    if func_depth == 0 {
-                                        files[0].push_str(&to_add[..]);
-                                    } else {
-                                        files
-                                            [filename_to_index[&current_functions[func_depth - 1]]]
-                                            .push_str(&to_add[..]);
-                                    }
-                                } else {
-                                    println!("[ERROR] Attempted test on non-existant variable");
-                                    std::process::exit(1);
-                                }
+                            let to_add = format!("{}--databind {} ", to_front, var);
+                            if func_depth == 0 {
+                                files[0].push_str(&to_add[..]);
                             } else {
-                                let to_add = format!("{}--databind {} ", to_front, var);
-                                if func_depth == 0 {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_functions[func_depth - 1]]]
-                                        .push_str(&to_add[..]);
-                                }
+                                files[filename_to_index[&current_functions[func_depth - 1]]]
+                                    .push_str(&to_add[..]);
                             }
                         }
                     }
@@ -217,59 +171,16 @@ impl Compiler<'_> {
                 Token::ObjectiveName(name) => current_objective = name.clone(),
                 // An objective type will always be the last part of a new objective
                 Token::ObjectiveType(objective) => {
-                    if self.settings.random_var_names {
-                        if !var_map.contains_key(&current_objective) {
-                            let mut random_name = current_objective.clone();
-                            let extension: String = rand::thread_rng()
-                                .sample_iter(&Alphanumeric)
-                                .take(4)
-                                .map(char::from)
-                                .collect();
-                            random_name.push('-');
-                            random_name.push_str(&extension[..]);
+                    let to_add = format!(
+                        "scoreboard objectives add {} {}\n",
+                        current_objective, objective
+                    );
 
-                            var_map.insert(current_objective.clone(), random_name);
-                            if self.settings.var_display_names {
-                                let to_add = format!(
-                                    "scoreboard objectives add {} {} {{\"text\":\"{}\"}}\n",
-                                    var_map[&current_objective], objective, current_objective
-                                );
-
-                                if func_depth == 0 {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_functions[func_depth - 1]]]
-                                        .push_str(&to_add[..]);
-                                }
-                            } else {
-                                let to_add = format!(
-                                    "scoreboard objectives add {} {}\n",
-                                    var_map[&current_objective], objective
-                                );
-
-                                if func_depth == 0 {
-                                    files[0].push_str(&to_add[..]);
-                                } else {
-                                    files[filename_to_index[&current_functions[func_depth - 1]]]
-                                        .push_str(&to_add[..]);
-                                }
-                            }
-                        } else {
-                            println!("[ERROR] Attempted creation of already-existing objective.");
-                            std::process::exit(1);
-                        }
+                    if func_depth == 0 {
+                        files[0].push_str(&to_add[..]);
                     } else {
-                        let to_add = format!(
-                            "scoreboard objectives add {} {}\n",
-                            current_objective, objective
-                        );
-
-                        if func_depth == 0 {
-                            files[0].push_str(&to_add[..]);
-                        } else {
-                            files[filename_to_index[&current_functions[func_depth - 1]]]
-                                .push_str(&to_add[..]);
-                        }
+                        files[filename_to_index[&current_functions[func_depth - 1]]]
+                            .push_str(&to_add[..]);
                     }
                     active_token = Token::None;
                 }
@@ -278,89 +189,26 @@ impl Compiler<'_> {
                     if active_token == Token::Var {
                         match assignment_operator {
                             Token::InitialSet => {
-                                if self.settings.random_var_names {
-                                    if !var_map.contains_key(&current_var) {
-                                        let mut random_name = current_var.clone();
-                                        let extension: String = rand::thread_rng()
-                                            .sample_iter(&Alphanumeric)
-                                            .take(4)
-                                            .map(char::from)
-                                            .collect();
-                                        random_name.push('-');
-                                        random_name.push_str(&extension[..]);
+                                let to_add =
+                                    format!("scoreboard objectives add {} dummy\n", current_var);
 
-                                        var_map.insert(current_var.clone(), random_name);
-                                        if self.settings.var_display_names {
-                                            let to_add = format!(
-                                                "scoreboard objectives add {} dummy {{\"text\":\"{}\"}}\n",
-                                                var_map[&current_var], current_var
-                                            );
-
-                                            if func_depth == 0 {
-                                                files[0].push_str(&to_add[..]);
-                                            } else {
-                                                files[filename_to_index
-                                                    [&current_functions[func_depth - 1]]]
-                                                    .push_str(&to_add[..]);
-                                            }
-                                        } else {
-                                            let to_add = format!(
-                                                "scoreboard objectives add {} dummy\n",
-                                                var_map[&current_var]
-                                            );
-
-                                            if func_depth == 0 {
-                                                files[0].push_str(&to_add[..]);
-                                            } else {
-                                                files[filename_to_index
-                                                    [&current_functions[func_depth - 1]]]
-                                                    .push_str(&to_add[..]);
-                                            }
-                                        }
-                                        let to_add = format!(
-                                            "scoreboard players set --databind {} {}",
-                                            var_map[&current_var], int
-                                        );
-
-                                        if func_depth == 0 {
-                                            files[0].push_str(&to_add[..]);
-                                        } else {
-                                            files[filename_to_index
-                                                [&current_functions[func_depth - 1]]]
-                                                .push_str(&to_add[..]);
-                                        }
-                                    } else {
-                                        println!(
-                                            "[ERROR] Attempted creation of already-existing variable."
-                                        );
-                                        std::process::exit(1);
-                                    }
+                                if func_depth == 0 {
+                                    files[0].push_str(&to_add[..]);
                                 } else {
-                                    let to_add = format!(
-                                        "scoreboard objectives add {} dummy\n",
-                                        current_var
-                                    );
+                                    files[filename_to_index[&current_functions[func_depth - 1]]]
+                                        .push_str(&to_add[..]);
+                                }
 
-                                    if func_depth == 0 {
-                                        files[0].push_str(&to_add[..]);
-                                    } else {
-                                        files
-                                            [filename_to_index[&current_functions[func_depth - 1]]]
-                                            .push_str(&to_add[..]);
-                                    }
+                                let to_add = format!(
+                                    "scoreboard players set --databind {} {}",
+                                    current_var, int
+                                );
 
-                                    let to_add = format!(
-                                        "scoreboard players set --databind {} {}",
-                                        current_var, int
-                                    );
-
-                                    if func_depth == 0 {
-                                        files[0].push_str(&to_add[..]);
-                                    } else {
-                                        files
-                                            [filename_to_index[&current_functions[func_depth - 1]]]
-                                            .push_str(&to_add[..]);
-                                    }
+                                if func_depth == 0 {
+                                    files[0].push_str(&to_add[..]);
+                                } else {
+                                    files[filename_to_index[&current_functions[func_depth - 1]]]
+                                        .push_str(&to_add[..]);
                                 }
                             }
                             Token::VarAdd | Token::VarSub | Token::VarSet => {
@@ -370,40 +218,16 @@ impl Compiler<'_> {
                                     _ => "set",
                                 };
 
-                                if self.settings.random_var_names {
-                                    if var_map.contains_key(&current_var) {
-                                        let to_add = format!(
-                                            "scoreboard players {} --databind {} {}",
-                                            action, var_map[&current_var], int
-                                        );
+                                let to_add = format!(
+                                    "scoreboard players {} --databind {} {}",
+                                    action, &current_var, int
+                                );
 
-                                        if func_depth == 0 {
-                                            files[0].push_str(&to_add[..]);
-                                        } else {
-                                            files[filename_to_index
-                                                [&current_functions[func_depth - 1]]]
-                                                .push_str(&to_add[..]);
-                                        }
-                                    } else {
-                                        println!(
-                                            "[ERROR] Attempted {} of non-existant variable",
-                                            action
-                                        );
-                                        std::process::exit(1);
-                                    }
+                                if func_depth == 0 {
+                                    files[0].push_str(&to_add[..]);
                                 } else {
-                                    let to_add = format!(
-                                        "scoreboard players {} --databind {} {}",
-                                        action, &current_var, int
-                                    );
-
-                                    if func_depth == 0 {
-                                        files[0].push_str(&to_add[..]);
-                                    } else {
-                                        files
-                                            [filename_to_index[&current_functions[func_depth - 1]]]
-                                            .push_str(&to_add[..]);
-                                    }
+                                    files[filename_to_index[&current_functions[func_depth - 1]]]
+                                        .push_str(&to_add[..]);
                                 }
                             }
                             _ => {}
@@ -417,43 +241,16 @@ impl Compiler<'_> {
                                     _ => "set",
                                 };
 
-                                if self.settings.random_var_names {
-                                    if var_map.contains_key(&current_objective) {
-                                        let to_add = format!(
-                                            "scoreboard players {} {} {} {}",
-                                            action,
-                                            objective_target,
-                                            var_map[&current_objective],
-                                            int
-                                        );
+                                let to_add = format!(
+                                    "scoreboard players {} {} {} {}",
+                                    action, objective_target, &current_objective, int
+                                );
 
-                                        if func_depth == 0 {
-                                            files[0].push_str(&to_add[..]);
-                                        } else {
-                                            files[filename_to_index
-                                                [&current_functions[func_depth - 1]]]
-                                                .push_str(&to_add[..]);
-                                        }
-                                    } else {
-                                        println!(
-                                            "[ERROR] Attempted {} of non-existant variable",
-                                            action
-                                        );
-                                        std::process::exit(1);
-                                    }
+                                if func_depth == 0 {
+                                    files[0].push_str(&to_add[..]);
                                 } else {
-                                    let to_add = format!(
-                                        "scoreboard players {} {} {} {}",
-                                        action, objective_target, &current_objective, int
-                                    );
-
-                                    if func_depth == 0 {
-                                        files[0].push_str(&to_add[..]);
-                                    } else {
-                                        files
-                                            [filename_to_index[&current_functions[func_depth - 1]]]
-                                            .push_str(&to_add[..]);
-                                    }
+                                    files[filename_to_index[&current_functions[func_depth - 1]]]
+                                        .push_str(&to_add[..]);
                                 }
                             }
                             _ => {
@@ -494,7 +291,6 @@ impl Compiler<'_> {
         CompileReturn {
             file_contents: files,
             filename_map: filename_to_index,
-            var_map,
             tag_map,
         }
     }

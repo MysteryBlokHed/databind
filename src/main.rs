@@ -195,16 +195,7 @@ fn main() -> std::io::Result<()> {
         compiler_settings.output = matches.value_of("output").unwrap().into();
     }
 
-    // Override config settings with CLI arguments if passed
-    if matches.is_present("random-var-names") {
-        compiler_settings.random_var_names = true;
-    }
-    if matches.is_present("var-display-names") {
-        compiler_settings.var_display_names = true;
-    }
-
     if datapack_is_dir {
-        let mut var_map: HashMap<String, String> = HashMap::new();
         let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
         let target_folder = &compiler_settings.output;
 
@@ -274,16 +265,13 @@ fn main() -> std::io::Result<()> {
                 if compile {
                     let content = fs::read_to_string(entry.path())
                         .expect(&format!("Failed to read file {}", entry.path().display())[..]);
-                    let mut compile = compiler::Compiler::new(content, &compiler_settings, true);
+                    let mut compile = compiler::Compiler::new(content, true);
                     let tokens = compile.tokenize(false);
                     let mut compiled = compile.compile(
                         tokens,
                         Some(get_namespace(&entry.path()).unwrap()),
-                        Some(&var_map),
                         &get_subfolder_prefix(&entry.path()),
                     );
-
-                    var_map = compiled.var_map;
 
                     for (key, value) in compiled.filename_map.iter() {
                         let full_path = format!("{}/{}.mcfunction", target_path, key);
