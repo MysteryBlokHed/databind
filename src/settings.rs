@@ -21,8 +21,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
-    pub random_var_names: bool,
-    pub var_display_names: bool,
     pub inclusions: Vec<String>,
     pub exclusions: Vec<String>,
     pub output: String,
@@ -31,8 +29,6 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Settings {
-            random_var_names: false,
-            var_display_names: false,
             inclusions: vec!["**/*.databind".into()],
             exclusions: Vec::new(),
             output: "out".into(),

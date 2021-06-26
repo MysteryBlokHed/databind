@@ -14,10 +14,6 @@ if no config changes are made.
 +---------------------------------------+---------------------------------------------------------------------+
 |                 Option                |                                Notes                                |
 +=======================================+=====================================================================+
-| ``random_var_names = false``          | (Not well-supported) Whether to randomly add characters             |
-|                                       | to the end of variable names                                        |
-+---------------------------------------+---------------------------------------------------------------------+
-| ``var_display_names = false``         | Whether to update scoreboard display names for randomized variables |
 +---------------------------------------+---------------------------------------------------------------------+
 | ``inclusions = ["**/*.databind"]``    | Specify what files to compile using globs                           |
 +---------------------------------------+---------------------------------------------------------------------+
@@ -33,8 +29,6 @@ Below is a configuration file with all of the above settings.
 
 .. code-block:: toml
 
-   random_var_names = false
-   var_display_names = false
    inclusions = ["**/*.databind"]
    exclusions = []
    output = "out"
@@ -43,9 +37,7 @@ CLI Arguments
 -------------
 
 Most options that can be set in the ``databind.toml`` file
-can also be set using CLI arguments. The CLI arguments use dashes
-instead of underscores (eg. ``--random-var-names`` instead
-of ``random_var_names``) and may have different names or shorthand.
+can also be set using CLI arguments.
 
 Example use:
 

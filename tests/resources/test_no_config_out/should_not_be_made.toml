@@ -1,3 +1,1 @@
-random_var_names = false
-var_display_names = false
 to_transpile = ["**/*.databind"]

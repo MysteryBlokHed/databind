@@ -15,24 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use crate::settings::Settings;
 
-pub struct Compiler<'a> {
+pub struct Compiler {
     chars: Vec<char>,
     position: usize,
     current_char: char,
-    settings: &'a Settings,
 }
 
-impl Compiler<'_> {
+impl Compiler {
     /// Create a new Compiler.
     ///
     /// # Arguments
     ///
     /// - `text` - The contents of the file to compile
-    /// - `settings` - The settings for the compiler
     /// - `replacement` - Whether to replace :def's. Required to avoid stack overflow
-    pub fn new(text: String, settings: &Settings, replacement: bool) -> Compiler<'_> {
+    pub fn new(text: String, replacement: bool) -> Compiler {
         let text = if replacement {
             Compiler::replace_definitions(&text)
         } else {
@@ -49,7 +46,6 @@ impl Compiler<'_> {
             chars: text.chars().collect(),
             position: 0,
             current_char: first_char,
-            settings,
         }
     }
 

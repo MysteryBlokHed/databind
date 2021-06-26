@@ -52,22 +52,6 @@ pub fn get_app<'a, 'b>() -> App<'a, 'b> {
                 .long("ignore-config")
                 .help("Ignore the config file. Used for testing"),
         )
-        .arg(
-            Arg::with_name("random-var-names")
-                .long("random-var-names")
-                .help(
-                    "Add characters to the end of variable names. \
-                Does not work when using variables across multiple files",
-                ),
-        )
-        .arg(
-            Arg::with_name("var-display-names")
-                .long("var-display-names")
-                .help(
-                    "Change the display name of variables in-game to hide extra characters. \
-                Only relevant with --random-var-names",
-                ),
-        )
         .subcommand(
             SubCommand::with_name("create")
                 .about("Create a new project")

@@ -16,13 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 use super::Compiler;
-use crate::settings::Settings;
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 use regex::Regex;
 use std::collections::HashMap;
 
-impl Compiler<'_> {
+impl Compiler {
     /// Get text replacement definitions and replace matches.
     /// Definitions that are not at the top of the file will be ignored
     /// and cause errors
@@ -31,8 +30,7 @@ impl Compiler<'_> {
     ///
     /// - `content` - The contents of a file
     pub fn replace_definitions(contents: &str) -> String {
-        let settings = &Settings::default();
-        let mut compiler = Compiler::new(contents.to_string(), settings, false);
+        let mut compiler = Compiler::new(contents.to_string(), false);
         let mut new_contents = &*contents.to_string();
 
         let replacement_tokens = compiler.tokenize(true);
@@ -112,8 +110,7 @@ impl Compiler<'_> {
                         chars = Compiler::get_chars();
 
                         // Tokenize new contents
-                        let tks = Compiler::new(new_contents.clone(), &Settings::default(), false)
-                            .tokenize(false);
+                        let tks = Compiler::new(new_contents.clone(), false).tokenize(false);
 
                         new_contents = String::new();
 

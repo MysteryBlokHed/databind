@@ -56,8 +56,6 @@ fn test_create_structure() {
         /// Taken from `settings.rs`
         #[derive(Debug, PartialEq, Deserialize)]
         pub struct Settings {
-            pub random_var_names: bool,
-            pub var_display_names: bool,
             pub inclusions: Vec<String>,
             pub exclusions: Vec<String>,
             pub output: String,
@@ -68,8 +66,6 @@ fn test_create_structure() {
         let contents_config: Settings = toml::from_str(&contents).unwrap();
         // Same as Settings::default()
         let expected_config = Settings {
-            random_var_names: false,
-            var_display_names: false,
             inclusions: vec!["**/*.databind".into()],
             exclusions: Vec::new(),
             output: "out".into(),

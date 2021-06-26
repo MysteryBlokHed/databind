@@ -23,13 +23,9 @@ Using the CLI
        databind [FLAGS] [OPTIONS] <SUBCOMMAND>
 
    FLAGS:
-       -h, --help                 Prints help information
-           --ignore-config        Ignore the config file. Used for testing
-           --random-var-names     Add characters to the end of variable names. Does not work when using variables across
-                                  multiple files
-           --var-display-names    Change the display name of variables in-game to hide extra characters. Only relevant with
-                                  --random-var-names
-       -V, --version              Prints version information
+       -h, --help             Prints help information
+           --ignore-config    Ignore the config file. Used for testing
+       -V, --version          Prints version information
 
    OPTIONS:
        -c, --config <FILE>      Configuration for the compiler
