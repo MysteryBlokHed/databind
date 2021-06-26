@@ -18,6 +18,7 @@ page on the docs.
 - Variable definitions via scoreboards
 - Shorthand for objective creation
 - Shorthand for testing variables in `if` commands
+- Shorthand for scoreboard operations
 - Configuration options
 
 ## Building and Running
