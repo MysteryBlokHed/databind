@@ -98,7 +98,7 @@ impl Compiler {
                 }
                 Token::TestVarName(var) | Token::OpVarName(var) => {
                     current_var = var.clone();
-                    let to_front = if active_token == Token::TestVar {
+                    let to_front = if let Token::TestVarName(_) = token {
                         "score "
                     } else {
                         ""

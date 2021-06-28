@@ -59,7 +59,7 @@ impl Compiler {
 
         // Remove :def lines
         let re = Regex::new(":def.*\n").unwrap();
-        re.replace(&new_contents[..], "").to_string()
+        re.replace(new_contents, "").to_string()
     }
 
     /// Replace while loops with databind function definitions and expand
@@ -125,7 +125,7 @@ impl Compiler {
                     }
                     Token::ScoreboardOperation => {
                         new_tokens[i + index_offset] =
-                            Token::NonDatabind("scoreboard players operation".into());
+                            Token::NonDatabind("scoreboard players operation ".into());
                     }
                     _ => {}
                 }
