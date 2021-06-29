@@ -28,10 +28,10 @@ impl Compiler {
     /// # Arguments
     ///
     /// - `text` - The contents of the file to compile
-    /// - `replacement` - Whether to replace :def's. Required to avoid stack overflow
-    pub fn new(text: String, replacement: bool) -> Compiler {
-        let text = if replacement {
-            Compiler::replace_definitions(&text)
+    /// - `macros` - Whether to expand macros. Required to avoid stack overflow
+    pub fn new(text: String, macros: bool) -> Compiler {
+        let text = if macros {
+            Compiler::expand_macros(&text)
         } else {
             text
         };
@@ -61,5 +61,6 @@ impl Compiler {
 }
 
 mod compile;
+mod macros;
 mod preprocess;
 mod tokenize;

@@ -23,7 +23,7 @@ const ASSIGNMENT_OPERATORS: [&str; 4] = [":=", "=", "+=", "-="];
 
 impl Compiler {
     /// Convert the provided file contents into a list of tokens
-    pub fn tokenize(&mut self, get_definitions: bool) -> Vec<Token> {
+    pub fn tokenize(&mut self) -> Vec<Token> {
         let mut tokens: Vec<Token> = Vec::new();
         let mut comment = false;
         let mut building_first_token = true;
@@ -34,6 +34,10 @@ impl Compiler {
         let mut building_while_condition = false;
         let mut while_lines: Vec<String> = Vec::new();
         let mut while_line = String::new();
+
+        let mut building_macro = false;
+        let mut macro_lines: Vec<String> = Vec::new();
+        let mut macro_line = String::new();
 
         let mut building_for = Token::None;
         let mut params_left = 0;
@@ -145,21 +149,53 @@ impl Compiler {
                 }
             }
 
-            if get_definitions && !tokens.is_empty() {
-                match tokens.last().unwrap() {
-                    Token::DefineReplace | Token::ReplaceName(_) | Token::ReplaceContents(_) => {}
-                    _ => break,
+            if building_macro {
+                current_token.push(self.current_char);
+                match params_left {
+                    // Macro name
+                    1 => {
+                        if self.current_char.is_whitespace() {
+                            add_token!(Token::MacroName(current_token));
+                            params_left = 0;
+                        }
+                    }
+                    // Macro arg name
+                    2 => {
+                        if self.current_char.is_whitespace() {
+                            add_token!(Token::MacroArgName(current_token));
+                            params_left = 0;
+                        }
+                    }
+                    // Macro contents
+                    _ => {
+                        if self.current_char.is_whitespace() {
+                            if self.current_char == '\n' {
+                                macro_lines.push(macro_line);
+                                macro_line = String::new();
+                            } else if current_token == "!arg" {
+                                params_left = 2;
+                            } else if current_token == "!end" {
+                                tokens.push(Token::MacroContents(macro_lines.join("\n")));
+                                tokens.push(Token::EndMacro);
+                                building_first_token = true;
+                                building_macro = false;
+                                macro_line = String::new();
+                                macro_lines = Vec::new();
+                            } else if !current_token.is_empty() {
+                                macro_line.push_str(&format!("{} ", current_token));
+                            }
+                            current_token = String::new();
+                        }
+                    }
                 }
-            }
-
-            if building_while {
+            } else if building_while {
                 current_token.push(self.current_char);
                 if building_while_condition {
                     if self.current_char.is_whitespace() {
                         add_token!(Token::WhileCondition(current_token.trim().into()));
                         building_while_condition = false;
                     }
-                } else if current_token != ":endwhile" {
+                } else if current_token != "endwhile" {
                     while_line.push(self.current_char);
                     if self.current_char == '\n' {
                         current_token = String::new();
@@ -189,7 +225,12 @@ impl Compiler {
                             "call" => set_building!(Token::CallFunc, 1),
                             "tvar" => set_building!(Token::TestVar, 1),
                             "gvar" => set_building!(Token::GetVar, 1),
-                            "!def" => set_building!(Token::DefineReplace, 2),
+                            "!macro" => {
+                                // Uses the `params_left` variable to track what's being built
+                                // (eg. name of macro or an argument's name)
+                                set_building!(Token::DefineMacro, 1);
+                                building_macro = true;
+                            }
                             "while" => {
                                 no_args_add!(Token::WhileLoop);
                                 building_first_token = false;
@@ -199,7 +240,13 @@ impl Compiler {
                             }
                             "sbop" => no_args_add!(Token::ScoreboardOperation),
                             "delvar" | "delobj" => set_building!(Token::DeleteVar, 1),
-                            _ => no_args_add!(Token::NonDatabind(format!("{} ", current_token))),
+                            _ => {
+                                if current_token.starts_with('?') {
+                                    set_building!(Token::CallMacro, -1);
+                                } else {
+                                    no_args_add!(Token::NonDatabind(format!("{} ", current_token)));
+                                }
+                            }
                         };
                         if self.current_char == '\n' {
                             tokens.push(Token::NewLine);
@@ -252,22 +299,19 @@ impl Compiler {
                         _ => add_int_and_reset!(),
                     },
                     Token::Tag => add_token_and_reset!(Token::TagName(current_token)),
-                    Token::DefineReplace => match params_left {
-                        2 => {
-                            add_token!(Token::ReplaceName(current_token));
+                    Token::GetVar => add_token_and_reset!(Token::OpVarName(current_token)),
+                    Token::CallMacro => match params_left {
+                        -1 => {
+                            add_token!(Token::MacroName(current_token));
+                        }
+                        0 => {
+                            building_for = Token::None;
+                            building_first_token = true;
                         }
                         _ => {
-                            if ['\r', '\n'].contains(&self.current_char) {
-                                tokens.push(Token::ReplaceContents(current_token));
-                                building_for = Token::None;
-                                building_first_token = true;
-                                current_token = String::new();
-                            } else {
-                                current_token.push(self.current_char);
-                            }
+                            add_token!(Token::MacroArgName(current_token));
                         }
                     },
-                    Token::GetVar => add_token_and_reset!(Token::OpVarName(current_token)),
                     Token::DeleteVar => add_token_and_reset!(Token::DelVarName(current_token)),
                     _ => {}
                 };

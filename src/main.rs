@@ -266,7 +266,7 @@ fn main() -> std::io::Result<()> {
                     let content = fs::read_to_string(entry.path())
                         .expect(&format!("Failed to read file {}", entry.path().display())[..]);
                     let mut compile = compiler::Compiler::new(content, true);
-                    let tokens = compile.tokenize(false);
+                    let tokens = compile.tokenize();
                     let mut compiled = compile.compile(
                         tokens,
                         Some(get_namespace(&entry.path()).unwrap()),
