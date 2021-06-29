@@ -10,7 +10,7 @@ Syntax
 +-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
 | ``sobj objectiveName <target> <objective> <assignment operator> <int>`` | Set the value of an objective for a given target (eg. ``@a`` or ``PlayerName``)        |
 +-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
-| ``#def defName <text replacement>``                                     | Define a text replacement for the preprocessor. See examples for more information      |
+| ``!def defName <text replacement>``                                     | Define a text replacement for the preprocessor. See examples for more information      |
 +-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
 | ``var varName <assignment operator> <int>``                             | Update the value of an existing variable                                               |
 +-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+

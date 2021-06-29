@@ -189,7 +189,7 @@ impl Compiler {
                             "call" => set_building!(Token::CallFunc, 1),
                             "tvar" => set_building!(Token::TestVar, 1),
                             "gvar" => set_building!(Token::GetVar, 1),
-                            "#def" => set_building!(Token::DefineReplace, 2),
+                            "!def" => set_building!(Token::DefineReplace, 2),
                             "while" => {
                                 no_args_add!(Token::WhileLoop);
                                 building_first_token = false;

@@ -10,7 +10,7 @@ Example
 
 .. code-block:: databind
 
-   #def LONG_EXECUTE execute as @a[scores={custom_item_obj=1..},nbt={SelectedItem:{id:"minecraft:carrot_on_a_stick",tag:{custom_item:1b}}}] at @s
+   !def LONG_EXECUTE execute as @a[scores={custom_item_obj=1..},nbt={SelectedItem:{id:"minecraft:carrot_on_a_stick",tag:{custom_item:1b}}}] at @s
 
    func tick
    tag tick

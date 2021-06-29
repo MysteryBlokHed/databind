@@ -58,7 +58,7 @@ impl Compiler {
         }
 
         // Remove :def lines
-        let re = Regex::new("#def.*\n").unwrap();
+        let re = Regex::new("!def.*\n").unwrap();
         re.replace(new_contents, "").to_string()
     }
 
