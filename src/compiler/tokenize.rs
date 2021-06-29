@@ -95,10 +95,7 @@ impl Compiler {
             () => {
                 if self.current_char.is_whitespace() {
                     let var_value: i32 = current_keyword.parse().unwrap();
-                    tokens.push(Token::Int(var_value));
-                    building_for = Token::None;
-                    building_first_token = true;
-                    current_keyword = String::new();
+                    add_token_and_reset!(Token::Int(var_value));
                 } else if DIGITS.contains(&self.current_char) {
                     current_keyword.push(self.current_char);
                 } else {
