@@ -27,7 +27,7 @@ impl Compiler {
         let mut tokens: Vec<Token> = Vec::new();
         let mut comment = false;
         let mut building_first_token = true;
-        let mut current_keyword = String::new();
+        let mut current_token = String::new();
         let mut last_char = '\n';
 
         let mut building_while = false;
@@ -45,7 +45,7 @@ impl Compiler {
 
         macro_rules! set_building {
             ($token: expr, $params: expr) => {
-                current_keyword = String::new();
+                current_token = String::new();
                 tokens.push($token);
                 building_first_token = false;
                 building_for = $token;
@@ -63,11 +63,11 @@ impl Compiler {
             ($token: expr) => {
                 if self.current_char.is_whitespace() {
                     tokens.push($token);
-                    current_keyword = String::new();
+                    current_token = String::new();
                     params_left -= 1;
                     true
                 } else {
-                    current_keyword.push(self.current_char);
+                    current_token.push(self.current_char);
                     false
                 }
             };
@@ -86,7 +86,7 @@ impl Compiler {
         macro_rules! no_args_add {
             ($token: expr) => {
                 tokens.push($token);
-                current_keyword = String::new();
+                current_token = String::new();
             };
         }
 
@@ -94,10 +94,10 @@ impl Compiler {
         macro_rules! add_int_and_reset {
             () => {
                 if self.current_char.is_whitespace() {
-                    let var_value: i32 = current_keyword.parse().unwrap();
+                    let var_value: i32 = current_token.parse().unwrap();
                     add_token_and_reset!(Token::Int(var_value));
                 } else if DIGITS.contains(&self.current_char) {
-                    current_keyword.push(self.current_char);
+                    current_token.push(self.current_char);
                 } else {
                     println!("[ERROR] Variables can only store integers.");
                     std::process::exit(1);
@@ -113,8 +113,8 @@ impl Compiler {
         macro_rules! assignment_operator {
             () => {
                 if self.current_char.is_whitespace() {
-                    if ASSIGNMENT_OPERATORS.contains(&&current_keyword[..]) {
-                        match &current_keyword[..] {
+                    if ASSIGNMENT_OPERATORS.contains(&&current_token[..]) {
+                        match &current_token[..] {
                             ".=" => tokens.push(Token::InitialSet),
                             "=" => tokens.push(Token::VarSet),
                             "+=" => tokens.push(Token::VarAdd),
@@ -128,10 +128,10 @@ impl Compiler {
                         std::process::exit(1);
                     }
                     params_left -= 1;
-                    current_keyword = String::new();
+                    current_token = String::new();
                     true
                 } else {
-                    current_keyword.push(self.current_char);
+                    current_token.push(self.current_char);
                     false
                 }
             };
@@ -147,8 +147,8 @@ impl Compiler {
 
             if building_first_token {
                 if self.current_char.is_whitespace() {
-                    if !current_keyword.is_empty() {
-                        match &current_keyword[..] {
+                    if !current_token.is_empty() {
+                        match &current_token[..] {
                             ":func" => {
                                 set_building!(Token::DefineFunc, 1);
                             }
@@ -191,7 +191,7 @@ impl Compiler {
                                 set_building!(Token::DeleteVar, 1);
                             }
                             _ => {
-                                no_args_add!(Token::NonDatabind(format!("{} ", current_keyword)));
+                                no_args_add!(Token::NonDatabind(format!("{} ", current_token)));
                             }
                         };
                         if self.current_char == '\n' {
@@ -205,7 +205,7 @@ impl Compiler {
                         comment = true;
                         continue;
                     }
-                    current_keyword.push(self.current_char);
+                    current_token.push(self.current_char);
                     next_char!();
                 }
             } else {
@@ -214,7 +214,7 @@ impl Compiler {
                         match params_left {
                             // Variable name
                             3 => {
-                                add_token!(Token::ModVarName(current_keyword));
+                                add_token!(Token::ModVarName(current_token));
                             }
                             // Assignment operator
                             2 => {
@@ -225,46 +225,46 @@ impl Compiler {
                         }
                     }
                     Token::TestVar => {
-                        add_token_and_reset!(Token::TestVarName(current_keyword));
+                        add_token_and_reset!(Token::TestVarName(current_token));
                     }
                     Token::DefineFunc | Token::CallFunc => {
-                        add_token_and_reset!(Token::FuncName(current_keyword));
+                        add_token_and_reset!(Token::FuncName(current_token));
                     }
                     Token::Objective => match params_left {
                         2 => {
-                            add_token!(Token::ObjectiveName(current_keyword));
+                            add_token!(Token::ObjectiveName(current_token));
                         }
-                        _ => add_token_and_reset!(Token::ObjectiveType(current_keyword)),
+                        _ => add_token_and_reset!(Token::ObjectiveType(current_token)),
                     },
                     Token::SetObjective => match params_left {
                         4 => {
-                            add_token!(Token::Target(current_keyword));
+                            add_token!(Token::Target(current_token));
                         }
                         3 => {
-                            add_token!(Token::ObjectiveName(current_keyword));
+                            add_token!(Token::ObjectiveName(current_token));
                         }
                         2 => {
                             assignment_operator!();
                         }
                         _ => add_int_and_reset!(),
                     },
-                    Token::Tag => add_token_and_reset!(Token::TagName(current_keyword)),
+                    Token::Tag => add_token_and_reset!(Token::TagName(current_token)),
                     Token::DefineReplace => match params_left {
                         2 => {
-                            add_token!(Token::ReplaceName(current_keyword));
+                            add_token!(Token::ReplaceName(current_token));
                         }
                         _ => {
                             if ['\r', '\n'].contains(&self.current_char) {
-                                tokens.push(Token::ReplaceContents(current_keyword));
+                                tokens.push(Token::ReplaceContents(current_token));
                                 building_for = Token::None;
-                                current_keyword = String::new();
+                                current_token = String::new();
                             } else {
-                                current_keyword.push(self.current_char);
+                                current_token.push(self.current_char);
                             }
                         }
                     },
-                    Token::GetVar => add_token_and_reset!(Token::OpVarName(current_keyword)),
-                    Token::DeleteVar => add_token_and_reset!(Token::DelVarName(current_keyword)),
+                    Token::GetVar => add_token_and_reset!(Token::OpVarName(current_token)),
+                    Token::DeleteVar => add_token_and_reset!(Token::DelVarName(current_token)),
                     _ => {}
                 };
                 if self.current_char == '\n' {
