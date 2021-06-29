@@ -4,7 +4,7 @@ Expand the functionality of Minecraft Datapacks.
 
 ## Getting Started
 
-To get started, see the [Getting Started](https://databind.readthedocs.io/en/latest/getting_started.html)
+To get started, see the [Getting Started](https://databind.readthedocs.io/en/stable/getting_started.html)
 page on the docs.
 
 ## Features
