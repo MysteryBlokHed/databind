@@ -28,12 +28,20 @@ impl Compiler {
         let mut comment = false;
         let mut building_first_token = true;
         let mut current_keyword = String::new();
+        let mut last_char = '\n';
 
         let mut building_while = false;
         let mut building_while_condition = false;
 
         let mut building_for = Token::None;
         let mut params_left = 0;
+
+        macro_rules! next_char {
+            () => {
+                last_char = self.current_char;
+                self.next_char();
+            };
+        }
 
         macro_rules! set_building {
             ($token: expr, $params: expr) => {
@@ -42,7 +50,7 @@ impl Compiler {
                 building_first_token = false;
                 building_for = $token;
                 params_left = $params;
-                self.next_char();
+                next_char!();
             };
         }
 
@@ -134,7 +142,7 @@ impl Compiler {
 
         while self.current_char != '\u{0}' {
             while comment {
-                self.next_char();
+                next_char!();
                 if self.current_char == '\n' {
                     comment = false;
                 }
@@ -193,11 +201,15 @@ impl Compiler {
                             tokens.push(Token::NewLine);
                         }
                     } else {
-                        self.next_char();
+                        next_char!();
                     }
                 } else {
+                    if last_char == '\n' && self.current_char == '#' {
+                        comment = true;
+                        continue;
+                    }
                     current_keyword.push(self.current_char);
-                    self.next_char();
+                    next_char!();
                 }
             } else {
                 match building_for {
@@ -261,7 +273,7 @@ impl Compiler {
                 if self.current_char == '\n' {
                     tokens.push(Token::NewLine);
                 }
-                self.next_char();
+                next_char!();
             }
         }
 
