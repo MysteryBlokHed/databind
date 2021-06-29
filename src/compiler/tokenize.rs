@@ -44,14 +44,14 @@ impl Compiler {
         }
 
         macro_rules! set_building {
-            ($token: expr, $params: expr) => {
+            ($token: expr, $params: expr) => {{
                 current_token = String::new();
                 tokens.push($token);
                 building_first_token = false;
                 building_for = $token;
                 params_left = $params;
                 next_char!();
-            };
+            }};
         }
 
         /// Add a token to the list
@@ -84,10 +84,10 @@ impl Compiler {
         }
 
         macro_rules! no_args_add {
-            ($token: expr) => {
+            ($token: expr) => {{
                 tokens.push($token);
                 current_token = String::new();
-            };
+            }};
         }
 
         /// Add an integer to the token list and reset variables
@@ -129,10 +129,8 @@ impl Compiler {
                     }
                     params_left -= 1;
                     current_token = String::new();
-                    true
                 } else {
                     current_token.push(self.current_char);
-                    false
                 }
             };
         }
@@ -156,50 +154,24 @@ impl Compiler {
                 if self.current_char.is_whitespace() {
                     if !current_token.is_empty() {
                         match &current_token[..] {
-                            ":func" => {
-                                set_building!(Token::DefineFunc, 1);
-                            }
-                            ":tag" => {
-                                set_building!(Token::Tag, 1);
-                            }
-                            ":endfunc" => {
-                                no_args_add!(Token::EndFunc);
-                            }
-                            ":var" => {
-                                set_building!(Token::Var, 3);
-                            }
-                            ":obj" => {
-                                set_building!(Token::Objective, 2);
-                            }
-                            ":sobj" => {
-                                set_building!(Token::SetObjective, 4);
-                            }
-                            ":call" => {
-                                set_building!(Token::CallFunc, 1);
-                            }
-                            ":tvar" => {
-                                set_building!(Token::TestVar, 1);
-                            }
-                            ":gvar" => {
-                                set_building!(Token::GetVar, 1);
-                            }
-                            ":def" => {
-                                set_building!(Token::DefineReplace, 2);
-                            }
+                            ":func" => set_building!(Token::DefineFunc, 1),
+                            ":tag" => set_building!(Token::Tag, 1),
+                            ":endfunc" => no_args_add!(Token::EndFunc),
+                            ":var" => set_building!(Token::Var, 3),
+                            ":obj" => set_building!(Token::Objective, 2),
+                            ":sobj" => set_building!(Token::SetObjective, 4),
+                            ":call" => set_building!(Token::CallFunc, 1),
+                            ":tvar" => set_building!(Token::TestVar, 1),
+                            ":gvar" => set_building!(Token::GetVar, 1),
+                            ":def" => set_building!(Token::DefineReplace, 2),
                             ":while" => {
                                 tokens.push(Token::WhileLoop);
                                 building_while = true;
                                 building_while_condition = true;
                             }
-                            ":sbop" => {
-                                no_args_add!(Token::ScoreboardOperation);
-                            }
-                            ":delvar" | ":delobj" => {
-                                set_building!(Token::DeleteVar, 1);
-                            }
-                            _ => {
-                                no_args_add!(Token::NonDatabind(format!("{} ", current_token)));
-                            }
+                            ":sbop" => no_args_add!(Token::ScoreboardOperation),
+                            ":delvar" | ":delobj" => set_building!(Token::DeleteVar, 1),
+                            _ => no_args_add!(Token::NonDatabind(format!("{} ", current_token))),
                         };
                         if self.current_char == '\n' {
                             tokens.push(Token::NewLine);
@@ -224,9 +196,7 @@ impl Compiler {
                                 add_token!(Token::ModVarName(current_token));
                             }
                             // Assignment operator
-                            2 => {
-                                assignment_operator!();
-                            }
+                            2 => assignment_operator!(),
                             // Value
                             _ => add_int_and_reset!(),
                         }
@@ -250,9 +220,7 @@ impl Compiler {
                         3 => {
                             add_token!(Token::ObjectiveName(current_token));
                         }
-                        2 => {
-                            assignment_operator!();
-                        }
+                        2 => assignment_operator!(),
                         _ => add_int_and_reset!(),
                     },
                     Token::Tag => add_token_and_reset!(Token::TagName(current_token)),
@@ -264,6 +232,7 @@ impl Compiler {
                             if ['\r', '\n'].contains(&self.current_char) {
                                 tokens.push(Token::ReplaceContents(current_token));
                                 building_for = Token::None;
+                                building_first_token = true;
                                 current_token = String::new();
                             } else {
                                 current_token.push(self.current_char);
