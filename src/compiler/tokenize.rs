@@ -145,6 +145,13 @@ impl Compiler {
                 }
             }
 
+            if get_definitions && !tokens.is_empty() {
+                match tokens.last().unwrap() {
+                    Token::DefineReplace | Token::ReplaceName(_) | Token::ReplaceContents(_) => {}
+                    _ => break,
+                }
+            }
+
             if building_first_token {
                 if self.current_char.is_whitespace() {
                     if !current_token.is_empty() {
