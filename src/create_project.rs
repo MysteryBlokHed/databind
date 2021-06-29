@@ -90,10 +90,10 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
     fs::write(
         &path,
         "\
-    :func main\n\
-    :tag load\n\
+    func main\n\
+    tag load\n\
     tellraw @a \"Hello, World!\"\n\
-    :endfunc\n",
+    endfunc\n",
     )?;
 
     path.pop();

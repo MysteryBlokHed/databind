@@ -8,11 +8,11 @@ Define two objectives and use a scoreboard operation to multiply the first.
 
 .. code-block:: databind
 
-   :obj obj1
-   :obj obj2
-   :sobj @a obj1 = 5
-   :sobj @a obj2 = 2
-   :sbop @a obj1 *= @a obj2
+   obj obj1
+   obj obj2
+   sobj @a obj1 = 5
+   sobj @a obj2 = 2
+   sbop @a obj1 *= @a obj2
 
 Compiled
 --------

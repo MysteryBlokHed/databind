@@ -51,10 +51,10 @@ Below is the default ``main.databind`` file. ``.databind`` files
 
 .. code-block:: databind
 
-   :func main
-   :tag load
+   func main
+   tag load
    tellraw @a "Hello, World!"
-   :endfunc
+   endfunc
 
 First, a function named main is defined. The name can be changed, it doesn't
 have to be main. Then, it is tagged with ``load``. This tag is

@@ -9,8 +9,8 @@ Example
 .. code-block:: databind
 
    # Create an objective points and set everyone's score to 100
-   :obj points dummy
-   :sobj @a points = 100
+   obj points dummy
+   sobj @a points = 100
 
 Compiled
 --------

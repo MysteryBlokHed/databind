@@ -58,7 +58,7 @@ impl Compiler {
         }
 
         // Remove :def lines
-        let re = Regex::new(":def.*\n").unwrap();
+        let re = Regex::new("!def.*\n").unwrap();
         re.replace(new_contents, "").to_string()
     }
 
@@ -86,9 +86,9 @@ impl Compiler {
                 match token {
                     Token::WhileCondition(condition) => new_contents.push_str(
                         &format!(
-                            ":func while_{chars}\n\
-                             execute if {condition} run :call {subfolder}condition_{chars}\n\
-                             :endfunc\n",
+                            "func while_{chars}\n\
+                             execute if {condition} run call {subfolder}condition_{chars}\n\
+                             endfunc\n",
                             chars = chars,
                             condition = condition,
                             subfolder = subfolder
@@ -96,17 +96,17 @@ impl Compiler {
                     ),
                     Token::WhileContents(contents) => new_contents.push_str(
                         &format!(
-                            ":func condition_{chars}\n\
+                            "func condition_{chars}\n\
                              {contents}\n\
-                             :call {subfolder}while_{chars}\n\
-                             :endfunc\n",
+                             call {subfolder}while_{chars}\n\
+                             endfunc\n",
                             chars = chars,
                             contents = contents,
                             subfolder = subfolder
                         )[..],
                     ),
                     Token::EndWhileLoop => {
-                        new_contents.push_str(&format!(":call {}while_{}\n", subfolder, chars)[..]);
+                        new_contents.push_str(&format!("call {}while_{}\n", subfolder, chars)[..]);
                         chars = Compiler::get_chars();
 
                         // Tokenize new contents

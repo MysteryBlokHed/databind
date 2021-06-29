@@ -215,7 +215,7 @@ impl Compiler {
                                 current_file!().push_str(&to_add[..]);
                             }
                             _ => {
-                                panic!(".= operator was tokenized for objective");
+                                panic!(":= operator was tokenized for objective");
                             }
                         }
                     }

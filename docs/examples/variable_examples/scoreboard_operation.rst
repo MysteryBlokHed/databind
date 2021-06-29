@@ -8,9 +8,9 @@ Define two variables and use a scoreboard operation to multiply the first.
 
 .. code-block:: databind
 
-   :var variable1 .= 5
-   :var variable2 .= 2
-   :sbop :gvar variable1 *= :gvar variable2
+   var variable1 := 5
+   var variable2 := 2
+   sbop gvar variable1 *= gvar variable2
 
 Compiled
 --------

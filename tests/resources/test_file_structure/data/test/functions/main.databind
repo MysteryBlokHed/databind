@@ -1,17 +1,17 @@
-:func load
-:tag load
-:var test .= 0
-:endfunc
+func load
+tag load
+var test := 0
+endfunc
 
-:func tick
-:tag tick
-execute if :tvar test matches 1 run say test is 1
-:endfunc
+func tick
+tag tick
+execute if tvar test matches 1 run say test is 1
+endfunc
 
-:func first_func
+func first_func
 say first_func says hi
-:endfunc
+endfunc
 
-:func second_func
+func second_func
 say second_func says hi
-:endfunc
+endfunc

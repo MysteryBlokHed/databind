@@ -1,4 +1,4 @@
-:func func1
+func func1
 # should not be included
 kill @e[type=#test:tag_should_be_included]
-:endfunc
+endfunc

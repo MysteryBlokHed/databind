@@ -19,7 +19,7 @@ use super::Compiler;
 use crate::token::Token;
 
 const DIGITS: [char; 11] = ['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-const ASSIGNMENT_OPERATORS: [&str; 4] = [".=", "=", "+=", "-="];
+const ASSIGNMENT_OPERATORS: [&str; 4] = [":=", "=", "+=", "-="];
 
 impl Compiler {
     /// Convert the provided file contents into a list of tokens
@@ -117,7 +117,7 @@ impl Compiler {
                 if self.current_char.is_whitespace() {
                     if ASSIGNMENT_OPERATORS.contains(&&current_token[..]) {
                         match &current_token[..] {
-                            ".=" => tokens.push(Token::InitialSet),
+                            ":=" => tokens.push(Token::InitialSet),
                             "=" => tokens.push(Token::VarSet),
                             "+=" => tokens.push(Token::VarAdd),
                             "-=" => tokens.push(Token::VarSub),
@@ -180,25 +180,25 @@ impl Compiler {
                 if self.current_char.is_whitespace() {
                     if !current_token.is_empty() {
                         match &current_token[..] {
-                            ":func" => set_building!(Token::DefineFunc, 1),
-                            ":tag" => set_building!(Token::Tag, 1),
-                            ":endfunc" => no_args_add!(Token::EndFunc),
-                            ":var" => set_building!(Token::Var, 3),
-                            ":obj" => set_building!(Token::Objective, 2),
-                            ":sobj" => set_building!(Token::SetObjective, 4),
-                            ":call" => set_building!(Token::CallFunc, 1),
-                            ":tvar" => set_building!(Token::TestVar, 1),
-                            ":gvar" => set_building!(Token::GetVar, 1),
-                            ":def" => set_building!(Token::DefineReplace, 2),
-                            ":while" => {
+                            "func" => set_building!(Token::DefineFunc, 1),
+                            "tag" => set_building!(Token::Tag, 1),
+                            "endfunc" => no_args_add!(Token::EndFunc),
+                            "var" => set_building!(Token::Var, 3),
+                            "obj" => set_building!(Token::Objective, 2),
+                            "sobj" => set_building!(Token::SetObjective, 4),
+                            "call" => set_building!(Token::CallFunc, 1),
+                            "tvar" => set_building!(Token::TestVar, 1),
+                            "gvar" => set_building!(Token::GetVar, 1),
+                            "!def" => set_building!(Token::DefineReplace, 2),
+                            "while" => {
                                 no_args_add!(Token::WhileLoop);
                                 building_first_token = false;
                                 building_while = true;
                                 building_while_condition = true;
                                 self.next_char();
                             }
-                            ":sbop" => no_args_add!(Token::ScoreboardOperation),
-                            ":delvar" | ":delobj" => set_building!(Token::DeleteVar, 1),
+                            "sbop" => no_args_add!(Token::ScoreboardOperation),
+                            "delvar" | "delobj" => set_building!(Token::DeleteVar, 1),
                             _ => no_args_add!(Token::NonDatabind(format!("{} ", current_token))),
                         };
                         if self.current_char == '\n' {

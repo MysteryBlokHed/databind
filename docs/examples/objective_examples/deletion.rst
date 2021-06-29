@@ -8,10 +8,10 @@ Define an objective and delete it.
 
 .. code-block:: databind
 
-   :obj objective dummy
-   :delobj objective
+   obj objective dummy
+   delobj objective
    # or
-   :delvar objective
+   delvar objective
 
 Compiled
 --------
