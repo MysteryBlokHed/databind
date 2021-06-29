@@ -19,7 +19,7 @@ use super::Compiler;
 use crate::token::Token;
 
 const DIGITS: [char; 11] = ['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-const ASSIGNMENT_OPERATORS: [&str; 4] = [".=", "=", "+=", "-="];
+const ASSIGNMENT_OPERATORS: [&str; 4] = [":=", "=", "+=", "-="];
 
 impl Compiler {
     /// Convert the provided file contents into a list of tokens
@@ -117,7 +117,7 @@ impl Compiler {
                 if self.current_char.is_whitespace() {
                     if ASSIGNMENT_OPERATORS.contains(&&current_token[..]) {
                         match &current_token[..] {
-                            ".=" => tokens.push(Token::InitialSet),
+                            ":=" => tokens.push(Token::InitialSet),
                             "=" => tokens.push(Token::VarSet),
                             "+=" => tokens.push(Token::VarAdd),
                             "-=" => tokens.push(Token::VarSub),
