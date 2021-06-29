@@ -8,7 +8,7 @@ Databind compiles Databind projects (see :ref:`Creating a Project`).
 Databind will look for included files (``**/*.databind`` by default) and
 leave other files alone.
 
-Note that the namespace inference used for ``:func`` assumes a proper
+Note that the namespace inference used for ``func`` assumes a proper
 file structure (``<datapack>/data/<namespace>/functions`` for functions), but it
 **does not check if this is the case.** A ``minecraft/tags/functions/`` folder may
 be generated in an unexpected place if an invalid folder is passed.

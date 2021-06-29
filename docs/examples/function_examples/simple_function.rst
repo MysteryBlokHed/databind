@@ -10,15 +10,15 @@ A function that increments a counter and logs when it's run.
 
 .. code-block:: databind
 
-   :func load
-   :tag load
-   :var counter .= 0
-   :endfunc
+   func load
+   tag load
+   var counter := 0
+   endfunc
    
-   :func example
+   func example
    tellraw @a "Example_function run"
-   :var counter += 1
-   :endfunc
+   var counter += 1
+   endfunc
 
 Compiled
 --------

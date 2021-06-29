@@ -12,13 +12,15 @@ Built into mcfunctions. Requires a namespace.
 
 .. code-block:: databind
 
-   :func example_func
+   func example_func
    say Hello, World!
-   :endfunc
+   endfunc
 
+   func main
    function example:example_func
+   endfunc
 
-``:call`` (infer namespace)
+``call`` (infer namespace)
 ---------------------------
 
 Add namespaces to functions while compiling.
@@ -28,24 +30,29 @@ Allows more freedom with directory names.
 
 .. code-block:: databind
 
-   :func example_func
+   func example_func
    say Hello, World!
-   :endfunc
+   endfunc
 
-   :call example_func
+   func main
+   call example_func
+   endfunc
 
-Compiled, ``:call example_func`` becomes ``function example:example_func``.
+Compiled, ``call example_func`` becomes ``function example:example_func``.
 
-``:call`` (explicit namespace)
+``call`` (explicit namespace)
+------------------------------
 
 ``example/src/data/example/functions/main.databind``
 
 .. code-block:: databind
 
-   :func example_func
+   func example_func
    say Hello, World!
-   :endfunc
+   endfunc
 
-   :call example:example_func
+   func main
+   call example:example_func
+   endfunc
 
 Effectively the same as the ``function`` command.

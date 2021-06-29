@@ -8,10 +8,10 @@ Define a variable and delete it.
 
 .. code-block:: databind
 
-   :var variable .= 1
-   :delvar variable
+   var variable := 1
+   delvar variable
    # or
-   :delobj variable
+   delobj variable
 
 Compiled
 --------
