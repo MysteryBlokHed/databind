@@ -1,7 +1,6 @@
-:func func1
-:func func2
-:func func3
-:endfunc
-:endfunc
-:endfunc
-
+func func1
+func func2
+func func3
+endfunc
+endfunc
+endfunc
