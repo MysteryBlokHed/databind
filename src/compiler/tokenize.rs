@@ -32,6 +32,8 @@ impl Compiler {
 
         let mut building_while = false;
         let mut building_while_condition = false;
+        let mut while_lines: Vec<String> = Vec::new();
+        let mut while_line = String::new();
 
         let mut building_for = Token::None;
         let mut params_left = 0;
@@ -150,6 +152,30 @@ impl Compiler {
                 }
             }
 
+            if building_while {
+                current_token.push(self.current_char);
+                if building_while_condition {
+                    if self.current_char.is_whitespace() {
+                        add_token!(Token::WhileCondition(current_token.trim().into()));
+                        building_while_condition = false;
+                    }
+                } else if current_token != ":endwhile" {
+                    while_line.push(self.current_char);
+                    if self.current_char == '\n' {
+                        current_token = String::new();
+                        while_lines.push(while_line.trim().into());
+                        while_line = String::new();
+                    }
+                } else {
+                    building_while = false;
+                    tokens.push(Token::WhileContents(while_lines.join("\n")));
+                    tokens.push(Token::EndWhileLoop);
+                    current_token = String::new();
+                    while_line = String::new();
+                    while_lines = Vec::new();
+                }
+            }
+
             if building_first_token {
                 if self.current_char.is_whitespace() {
                     if !current_token.is_empty() {
@@ -165,9 +191,11 @@ impl Compiler {
                             ":gvar" => set_building!(Token::GetVar, 1),
                             ":def" => set_building!(Token::DefineReplace, 2),
                             ":while" => {
-                                tokens.push(Token::WhileLoop);
+                                no_args_add!(Token::WhileLoop);
+                                building_first_token = false;
                                 building_while = true;
                                 building_while_condition = true;
+                                self.next_char();
                             }
                             ":sbop" => no_args_add!(Token::ScoreboardOperation),
                             ":delvar" | ":delobj" => set_building!(Token::DeleteVar, 1),
