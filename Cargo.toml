@@ -1,20 +1,20 @@
 [package]
-version = "0.3.0"
+version = "0.4.0"
 name = "databind"
 authors = ["Adam Thompson-Sharpe <adamthompsonsharpe@gmail.com>"]
 edition = "2018"
 description = "Expand the functionality of Minecraft Datapacks."
-documentation = "https://databind.readthedocs.io/en/v0.3.0/"
+documentation = "https://databind.readthedocs.io/en/v0.4.0/"
 readme = "README.md"
 repository = "https://github.com/MysteryBlokHed/databind"
 license = "GPL-3.0+"
-keywords = ["minecraft", "datapacks", "compilers", "transpilers"]
-categories = ["compilers", "command-line-utilities"]
+keywords = ["compilers", "datapacks", "minecraft", "transpilers"]
+categories = ["command-line-utilities", "compilers"]
 exclude = [
     ".github",
-    ".vscode",
     ".gitignore",
     ".licenserc.json",
+    ".vscode",
     "databind.toml",
     "docs",
     "target",

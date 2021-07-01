@@ -4,16 +4,18 @@ on:
     branches:
       - master
     paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'README.md'
-      - 'docs/conf.py'
+      - src/**
+      - tests/**
+      - README.md
+      - docs/conf.py
 
 jobs:
   check_license:
     name: Check License
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
       - name: Check License
         uses: kt3k/license_checker@v1.0.6
