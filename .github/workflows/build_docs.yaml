@@ -4,18 +4,22 @@ on:
     branches:
       - master
     paths:
-      - 'docs/**'
+      - docs/**
   push:
     branches:
       - master
     paths:
-      - 'docs/**'
+      - docs/**
 
 jobs:
-  test_docs:
+  build_docs:
+    name: Build Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: ammaraskar/sphinx-action@0.4
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Build Docs
+        uses: ammaraskar/sphinx-action@0.4
         with:
           docs-folder: docs/

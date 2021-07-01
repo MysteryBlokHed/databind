@@ -4,22 +4,25 @@ on:
     branches:
       - master
     paths:
-      - 'src/**'
-      - 'tests/**'
+      - src/**
+      - tests/**
   push:
     branches:
       - master
     paths:
-      - 'src/**'
-      - 'tests/**'
+      - src/**
+      - tests/**
 
 jobs:
   windows_build:
     name: Windows Build
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
 
@@ -33,8 +36,11 @@ jobs:
     name: macOS Build
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
 
@@ -48,8 +54,11 @@ jobs:
     name: Ubuntu Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
 
