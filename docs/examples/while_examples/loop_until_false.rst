@@ -15,8 +15,8 @@ Example
    var bool := 1
    while tvar bool matches 1
    tellraw @a "Bool is true"
-   endwhile
-   endfunc
+   end
+   end
    
 Compiled
 --------
