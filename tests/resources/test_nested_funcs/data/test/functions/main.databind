@@ -1,6 +1,6 @@
 func func1
-func func2
-func func3
-end
-end
+    func func2
+        func func3
+        end
+    end
 end

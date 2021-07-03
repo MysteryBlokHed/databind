@@ -1,17 +1,17 @@
 func load
 tag load
-var test := 0
+    var test := 0
 end
 
 func tick
 tag tick
-execute if tvar test matches 1 run say test is 1
+    execute if tvar test matches 1 run say test is 1
 end
 
 func first_func
-say first_func says hi
+    say first_func says hi
 end
 
 func second_func
-say second_func says hi
+    say second_func says hi
 end
