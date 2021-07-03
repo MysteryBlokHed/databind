@@ -1,11 +1,11 @@
 func func1 tag func1_tag tag all_tag
-endfunc
+end
 
 func func2 tag func2_tag
 tag all_tag
-endfunc
+end
 
 func func3
 tag func3_tag
 tag all_tag
-endfunc
+end
