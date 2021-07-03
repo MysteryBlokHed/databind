@@ -12,12 +12,12 @@ A function that increments a counter and logs when it's run.
 
    func load
    tag load
-   var counter := 0
+       var counter := 0
    end
    
    func example
-   tellraw @a "Example_function run"
-   var counter += 1
+       tellraw @a "Example_function run"
+       var counter += 1
    end
 
 Compiled

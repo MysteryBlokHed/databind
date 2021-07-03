@@ -48,11 +48,11 @@ Compiled, ``call example_func`` becomes ``function example:example_func``.
 .. code-block:: databind
 
    func example_func
-   say Hello, World!
+       say Hello, World!
    end
 
    func main
-   call example:example_func
+       call example:example_func
    end
 
 Effectively the same as the ``function`` command.
