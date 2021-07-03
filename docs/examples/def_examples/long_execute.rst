@@ -14,10 +14,10 @@ Example
 
    func tick
    tag tick
-   LONG_EXECUTE run summon lightning_bolt ^ ^ ^5
-   LONG_EXECUTE run summon lightning_bolt ^ ^ ^-5
-   LONG_EXECUTE run summon lightning_bolt ^5 ^ ^
-   LONG_EXECUTE run summon lightning_bolt ^-5 ^ ^
+       LONG_EXECUTE run summon lightning_bolt ^ ^ ^5
+       LONG_EXECUTE run summon lightning_bolt ^ ^ ^-5
+       LONG_EXECUTE run summon lightning_bolt ^5 ^ ^
+       LONG_EXECUTE run summon lightning_bolt ^-5 ^ ^
    end
 
 Compiled

@@ -12,10 +12,10 @@ Example
 
    func load
    tag load
-   var bool := 1
-   while tvar bool matches 1
-   tellraw @a "Bool is true"
-   end
+       var bool := 1
+       while tvar bool matches 1
+           tellraw @a "Bool is true"
+       end
    end
    
 Compiled

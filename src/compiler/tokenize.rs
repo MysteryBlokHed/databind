@@ -28,7 +28,6 @@ impl Compiler {
         let mut comment = false;
         let mut building_first_token = true;
         let mut current_token = String::new();
-        let mut last_char = '\n';
 
         let mut building_while = false;
         let mut building_while_condition = false;
@@ -38,13 +37,6 @@ impl Compiler {
         let mut building_for = Token::None;
         let mut params_left = 0;
 
-        macro_rules! next_char {
-            () => {
-                last_char = self.current_char;
-                self.next_char();
-            };
-        }
-
         macro_rules! set_building {
             ($token: expr, $params: expr) => {{
                 current_token = String::new();
@@ -52,7 +44,7 @@ impl Compiler {
                 building_first_token = false;
                 building_for = $token;
                 params_left = $params;
-                next_char!();
+                self.next_char();
             }};
         }
 
@@ -139,7 +131,7 @@ impl Compiler {
 
         while self.current_char != '\u{0}' {
             while comment {
-                next_char!();
+                self.next_char();
                 if self.current_char == '\n' {
                     comment = false;
                 }
@@ -207,15 +199,15 @@ impl Compiler {
                             tokens.push(Token::NewLine);
                         }
                     } else {
-                        next_char!();
+                        self.next_char();
                     }
                 } else {
-                    if last_char == '\n' && self.current_char == '#' {
+                    if self.current_char == '#' && current_token.is_empty() {
                         comment = true;
                         continue;
                     }
                     current_token.push(self.current_char);
-                    next_char!();
+                    self.next_char();
                 }
             } else {
                 match building_for {
@@ -276,7 +268,7 @@ impl Compiler {
                 if self.current_char == '\n' {
                     tokens.push(Token::NewLine);
                 }
-                next_char!();
+                self.next_char();
             }
         }
 
