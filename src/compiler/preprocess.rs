@@ -20,14 +20,14 @@ use super::Compiler;
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 use regex::Regex;
-use std::collections::HashMap;
 
 impl Compiler {
     /// Find and expand macros
     ///
     /// # Arguments
     ///
-    /// - `content` - The contents of a file
+    /// - `contents` - The contents of a file
+    #[allow(unused_mut)]
     pub fn expand_macros(contents: &str) -> String {
         let mut compiler = Compiler::new(contents.to_string(), false);
         let mut new_contents = &*contents.to_string();
@@ -37,7 +37,7 @@ impl Compiler {
         let mut building_macro = false;
         let tokens = compiler.tokenize();
 
-        let mut current_name = &String::new();
+        let mut _current_name = &String::new();
 
         // Find macro definitions
         for token in tokens.iter() {
@@ -65,7 +65,7 @@ impl Compiler {
 
         // Remove macro lines
         let re = Regex::new("(?s)!macro.*!end").unwrap();
-        re.replace(new_contents, "").to_string()
+        re.replace(&new_contents, "").to_string()
     }
 
     /// Replace while loops with databind function definitions and expand

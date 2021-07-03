@@ -16,12 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 /// Used to define and expand Databind macros
+#[allow(dead_code)]
 pub struct Macro {
     name: String,
     arg_names: Vec<String>,
     content: String,
 }
 
+#[allow(dead_code)]
 impl Macro {
     /// Define a new macro
     ///

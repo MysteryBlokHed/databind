@@ -149,6 +149,7 @@ impl Compiler {
                 }
             }
 
+            #[allow(unused_assignments)]
             if building_macro {
                 current_token.push(self.current_char);
                 match params_left {
