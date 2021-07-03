@@ -159,7 +159,7 @@ impl Compiler {
                         add_token!(Token::WhileCondition(current_token.trim().into()));
                         building_while_condition = false;
                     }
-                } else if current_token != ":endwhile" {
+                } else if current_token != "endwhile" {
                     while_line.push(self.current_char);
                     if self.current_char == '\n' {
                         current_token = String::new();
