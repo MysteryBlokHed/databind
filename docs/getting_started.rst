@@ -54,12 +54,12 @@ Below is the default ``main.databind`` file. ``.databind`` files
    func main
    tag load
    tellraw @a "Hello, World!"
-   endfunc
+   end
 
 First, a function named main is defined. The name can be changed, it doesn't
 have to be main. Then, it is tagged with ``load``. This tag is
 normal to datapacks and means that a function will run when the datapack is
-initially loaded. After that, an ordinary ``tellraw``, and then ``:endfunc``
+initially loaded. After that, an ordinary ``tellraw``, and then ``end``
 to close the function definition.
 
 When compiled, this will create a file called ``main.mcfunction`` that contains

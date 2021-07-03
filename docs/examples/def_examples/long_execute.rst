@@ -18,7 +18,7 @@ Example
    LONG_EXECUTE run summon lightning_bolt ^ ^ ^-5
    LONG_EXECUTE run summon lightning_bolt ^5 ^ ^
    LONG_EXECUTE run summon lightning_bolt ^-5 ^ ^
-   endfunc
+   end
 
 Compiled
 --------

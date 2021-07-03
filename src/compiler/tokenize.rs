@@ -192,11 +192,11 @@ impl Compiler {
             } else if building_while {
                 current_token.push(self.current_char);
                 if building_while_condition {
-                    if self.current_char.is_whitespace() {
+                    if self.current_char == '\n' {
                         add_token!(Token::WhileCondition(current_token.trim().into()));
                         building_while_condition = false;
                     }
-                } else if current_token != "endwhile" {
+                } else if current_token.trim() != "end" {
                     while_line.push(self.current_char);
                     if self.current_char == '\n' {
                         current_token = String::new();
@@ -205,11 +205,13 @@ impl Compiler {
                     }
                 } else {
                     building_while = false;
+                    building_first_token = true;
                     tokens.push(Token::WhileContents(while_lines.join("\n")));
                     tokens.push(Token::EndWhileLoop);
                     current_token = String::new();
                     while_line = String::new();
                     while_lines = Vec::new();
+                    self.next_char();
                 }
             }
 
@@ -219,7 +221,7 @@ impl Compiler {
                         match &current_token[..] {
                             "func" => set_building!(Token::DefineFunc, 1),
                             "tag" => set_building!(Token::Tag, 1),
-                            "endfunc" => no_args_add!(Token::EndFunc),
+                            "end" => no_args_add!(Token::EndFunc),
                             "var" => set_building!(Token::Var, 3),
                             "obj" => set_building!(Token::Objective, 2),
                             "sobj" => set_building!(Token::SetObjective, 4),

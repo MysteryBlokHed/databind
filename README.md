@@ -1,4 +1,4 @@
-# Databind [![Crates.io Version](https://img.shields.io/crates/v/databind)](https://crates.io/crates/databind) [![License](https://img.shields.io/github/license/MysteryBlokHed/databind)](#license) [![Documentation](https://readthedocs.org/projects/databind/badge/?version=latest)](https://databind.readthedocs.io/en/latest/)
+# Databind [![Crates.io Version](https://img.shields.io/crates/v/databind)](https://crates.io/crates/databind) [![License](https://img.shields.io/github/license/MysteryBlokHed/databind)](#license) [![Documentation](https://readthedocs.org/projects/databind/badge/?version=latest)](https://databind.readthedocs.io/en/stable/)
 
 Expand the functionality of Minecraft Datapacks.
 
@@ -45,7 +45,7 @@ To install Databind from a cloned repository, run `cargo install --path .` in th
 ## Documentation
 
 Documentation is build using reStructuredText and Sphinx. Requires Python.
-Built documentation is hosted on [Read The Docs](https://databind.readthedocs.io/en/latest/).
+Built documentation is hosted on [Read The Docs](https://databind.readthedocs.io/en/stable/).
 
 ### Building Docs
 

@@ -16,9 +16,9 @@ Example
    while tvar i matches 1..
    tellraw @a "Variable i is above 0"
    var i -= 1
-   endwhile
+   end
    tellraw @a "Variable i is at 0"
-   endfunc
+   end
 
 Compiled
 --------

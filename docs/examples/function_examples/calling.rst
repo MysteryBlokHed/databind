@@ -14,11 +14,11 @@ Built into mcfunctions. Requires a namespace.
 
    func example_func
    say Hello, World!
-   endfunc
+   end
 
    func main
    function example:example_func
-   endfunc
+   end
 
 ``call`` (infer namespace)
 ---------------------------
@@ -32,11 +32,11 @@ Allows more freedom with directory names.
 
    func example_func
    say Hello, World!
-   endfunc
+   end
 
    func main
    call example_func
-   endfunc
+   end
 
 Compiled, ``call example_func`` becomes ``function example:example_func``.
 
@@ -49,10 +49,10 @@ Compiled, ``call example_func`` becomes ``function example:example_func``.
 
    func example_func
    say Hello, World!
-   endfunc
+   end
 
    func main
    call example:example_func
-   endfunc
+   end
 
 Effectively the same as the ``function`` command.

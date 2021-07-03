@@ -93,7 +93,7 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
     func main\n\
     tag load\n\
     tellraw @a \"Hello, World!\"\n\
-    endfunc\n",
+    end\n",
     )?;
 
     path.pop();
