@@ -139,7 +139,10 @@ impl Compiler {
 
             if get_definitions && !tokens.is_empty() {
                 match tokens.last().unwrap() {
-                    Token::DefineReplace | Token::ReplaceName(_) | Token::ReplaceContents(_) => {}
+                    Token::DefineReplace
+                    | Token::ReplaceName(_)
+                    | Token::ReplaceContents(_)
+                    | Token::NewLine => {}
                     _ => break,
                 }
             }
