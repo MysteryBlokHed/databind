@@ -33,6 +33,7 @@ impl Compiler {
         let mut building_while_condition = false;
         let mut while_lines: Vec<String> = Vec::new();
         let mut while_line = String::new();
+        let mut escaped = false;
 
         let mut building_for = Token::None;
         let mut params_left = 0;
@@ -59,9 +60,17 @@ impl Compiler {
                     tokens.push($token);
                     current_token = String::new();
                     params_left -= 1;
+                    escaped = false;
                     true
                 } else {
-                    current_token.push(self.current_char);
+                    // A % at the beginning escapes a keyword
+                    if self.current_char != '%'
+                        || self.current_char == '%' && (!current_token.is_empty() || escaped)
+                    {
+                        current_token.push(self.current_char);
+                    } else {
+                        escaped = true;
+                    }
                     false
                 }
             };
@@ -196,7 +205,16 @@ impl Compiler {
                             }
                             "sbop" => no_args_add!(Token::ScoreboardOperation),
                             "delvar" | "delobj" => set_building!(Token::DeleteVar, 1),
-                            _ => no_args_add!(Token::NonDatabind(format!("{} ", current_token))),
+                            _ => {
+                                if current_token.starts_with('%') {
+                                    no_args_add!(Token::NonDatabind(format!(
+                                        "{} ",
+                                        current_token.strip_prefix('%').unwrap()
+                                    )));
+                                } else {
+                                    no_args_add!(Token::NonDatabind(format!("{} ", current_token)));
+                                }
+                            }
                         };
                         if self.current_char == '\n' {
                             tokens.push(Token::NewLine);

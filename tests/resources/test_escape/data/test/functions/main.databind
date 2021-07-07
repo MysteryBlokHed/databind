@@ -1,0 +1,9 @@
+func main
+    say %call
+    call %func
+    call %%percent_prefix
+end
+func %func
+end
+func %%percent_prefix
+end
