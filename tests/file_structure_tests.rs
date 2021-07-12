@@ -277,6 +277,7 @@ fn test_databind_alone() {
     assert!(path.exists() && path.is_dir());
 }
 
+/// Test that while loops create files in the right place
 #[test]
 fn test_while_structure() {
     let mut path = tests::resources();
