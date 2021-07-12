@@ -1,0 +1,11 @@
+tests:
+  - tests/**
+
+source:
+  - src/**
+
+documentation:
+  - docs/**
+
+databind create:
+  - src/create_project.rs
