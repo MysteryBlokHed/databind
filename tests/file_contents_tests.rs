@@ -17,74 +17,19 @@
  */
 use serde::Deserialize;
 use std::fs;
+use std::str;
 use tempdir::TempDir;
 
 mod tests;
 
-#[derive(Debug, PartialEq, Deserialize)]
-struct TagFile {
-    pub values: Vec<String>,
-}
-
-/// Test that tags are properly generated
-#[test]
-fn test_tag_generation() {
-    let mut path = tests::resources();
-    path.push("test_tag_generation");
-
-    let out = TempDir::new("test_tag_generation").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
-
-    let expected_funcs = ["load.mcfunction", "tick.mcfunction", "func3.mcfunction"];
-    let expected_tags = ["load.json", "tick.json", "second_tag.json", "func3.json"];
-    let expected_tag_contents = [
-        vec!["test:load".to_string()],
-        vec!["test:tick".to_string()],
-        vec!["test:load".to_string(), "test:tick".to_string()],
-        vec!["test:func3".to_string()],
-    ];
-    let unexpected_tags = ["main.json"];
-
-    // Check if function files are correctly placed
-    path.push(format!("{}/data/test/functions", out.path().display()));
-    tests::check_files_exist(&path, &expected_funcs, "test_tag_generation");
-    path.pop();
-    path.pop();
-
-    // Check if tag files are correctly placed
-    path.push("minecraft/tags/functions");
-    tests::check_files_exist(&path, &expected_tags, "test_tag_generation");
-    // Check tag file contents
-    for i in 0..expected_tags.len() {
-        path.push(&expected_tags[i]);
-        let contents = fs::read_to_string(&path).unwrap();
-        let contents_tag: TagFile = serde_json::from_str(&contents).unwrap();
-        let expected_tag = TagFile {
-            values: expected_tag_contents[i].clone(),
-        };
-        assert_eq!(contents_tag, expected_tag);
-        path.pop();
-    }
-
-    // Ensure unexpected tag files do not exist
-    tests::check_files_dont_exist(&path, &unexpected_tags, "test_tag_generation");
-}
-
 /// Test multiple ways to format :tag code
 #[test]
 fn test_tag_syntax() {
+    #[derive(Debug, PartialEq, Deserialize)]
+    struct TagFile {
+        pub values: Vec<String>,
+    }
+
     let mut path = tests::resources();
     path.push("test_tag_syntax");
 
@@ -181,4 +126,51 @@ fn test_tags_and_comments() {
     let contents = fs::read_to_string(&path).unwrap();
     assert!(contents.contains(expected_include));
     assert!(!contents.contains(expected_exclude));
+}
+
+/// Test that escaped keywords are properly escaped
+#[test]
+fn test_escape() {
+    let mut path = tests::resources();
+    path.push("test_escape");
+
+    let out = TempDir::new("test_escape").expect("Could not create tempdir for test");
+
+    println!(
+        "{}",
+        str::from_utf8(
+            &tests::run_with_args(
+                "cargo",
+                &[
+                    "run",
+                    "--",
+                    path.to_str().unwrap(),
+                    "--ignore-config",
+                    "--out",
+                    out.path().to_str().unwrap(),
+                ],
+                None,
+            )
+            .stdout
+        )
+        .unwrap()
+    );
+
+    let expected_funcs = [
+        "main.mcfunction",
+        "func.mcfunction",
+        "%percent_prefix.mcfunction",
+    ];
+
+    // Check if function files are correctly placed
+    path.push(format!("{}/data/test/functions", out.path().display()));
+    tests::check_files_exist(&path, &expected_funcs, "test_escape");
+    path.push("main.mcfunction");
+
+    // Check contents of main.mcfunction
+    let main_contents = fs::read_to_string(&path).unwrap();
+    println!("{}", main_contents);
+    assert!(main_contents.contains("say call"));
+    assert!(main_contents.contains("function test:func"));
+    assert!(main_contents.contains("function test:%percent_prefix"));
 }
