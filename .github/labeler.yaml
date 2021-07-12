@@ -1,0 +1,5 @@
+source: src/**
+databind create: src/create_project.rs
+documentation: docs/**
+tests: tests/**
+workflows: .github/workflows/**
