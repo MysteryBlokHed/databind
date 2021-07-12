@@ -1,11 +1,5 @@
-tests:
-  - tests/**
-
-source:
-  - src/**
-
-documentation:
-  - docs/**
-
-databind create:
-  - src/create_project.rs
+source: src/**
+databind create: src/create_project.rs
+documentation: docs/**
+tests: tests/**
+workflows: .github/workflows/**
