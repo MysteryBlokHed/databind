@@ -98,5 +98,5 @@ Would not generate any output.
 See Examples
 ------------
 
-If you want to see some examples of language features, go to the :ref:`Examples`.
+If you want to see some examples of language features, go to the :ref:`examples:Examples`.
 Otherwise, you may continue to the next page.
