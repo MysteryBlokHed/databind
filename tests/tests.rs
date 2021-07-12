@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+// This comment will be reverted
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
