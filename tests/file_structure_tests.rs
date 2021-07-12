@@ -15,6 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use glob::glob;
+use regex::Regex;
 use serde::Deserialize;
 use std::fs;
 use std::path::PathBuf;
@@ -273,4 +275,52 @@ fn test_databind_alone() {
     path.push("out");
     println!("Checking path {}", path.display());
     assert!(path.exists() && path.is_dir());
+}
+
+#[test]
+fn test_while_structure() {
+    let mut path = tests::resources();
+    path.push("test_while_creation");
+
+    let out = TempDir::new("test_while_structure").expect("Could not create tempdir for test");
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path.to_str().unwrap(),
+            "--ignore-config",
+            "--out",
+            out.path().to_str().unwrap(),
+        ],
+        None,
+    );
+
+    let files: Vec<PathBuf> = glob(&format!(
+        "{}/data/test/functions/*.mcfunction",
+        out.path().display()
+    ))
+    .unwrap()
+    .filter_map(Result::ok)
+    .collect();
+
+    for file in files.iter() {
+        let file_str = file
+            .to_str()
+            .unwrap()
+            .split(|x: char| ['\\', '/'].contains(&x))
+            .last()
+            .unwrap();
+
+        if file_str.starts_with("while") {
+            let re = Regex::new("while_[0-9a-z]{4}.mcfunction").unwrap();
+            assert!(re.is_match(file_str));
+        } else if file_str.starts_with("condition") {
+            let re = Regex::new("condition_[0-9a-z]{4}.mcfunction").unwrap();
+            assert!(re.is_match(file_str));
+        } else {
+            assert!(file_str == "main.mcfunction");
+        }
+    }
 }
