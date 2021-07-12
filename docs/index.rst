@@ -1,8 +1,6 @@
 Welcome to Databind's documentation!
 ====================================
 
-.. This comment will be reverted
-
 Contents:
 
 .. toctree::
