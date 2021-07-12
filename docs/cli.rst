@@ -4,7 +4,7 @@ Databind CLI
 What Can Be Compiled
 ----------------------
 
-Databind compiles Databind projects (see :ref:`Creating a Project`).
+Databind compiles Databind projects (see :ref:`getting_started:Creating a Project`).
 Databind will look for included files (``**/*.databind`` by default) and
 leave other files alone.
 
