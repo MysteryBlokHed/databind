@@ -3,6 +3,11 @@ on:
   pull_request:
     branches:
       - master
+    paths:
+      - src/**
+      - docs/**
+      - tests/**
+      - .github/workflows/**
 
 jobs:
   label:
