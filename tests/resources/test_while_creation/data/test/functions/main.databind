@@ -1,0 +1,5 @@
+func main
+    while CONDITION
+        say Inside loop
+    end
+end

@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use glob::glob;
 use serde::Deserialize;
 use std::fs;
+use std::path::{Path, PathBuf};
 use std::str;
 use tempdir::TempDir;
 
@@ -173,4 +175,104 @@ fn test_escape() {
     assert!(main_contents.contains("say call"));
     assert!(main_contents.contains("function test:func"));
     assert!(main_contents.contains("function test:%percent_prefix"));
+}
+
+struct WhileFiles {
+    main_files: Vec<PathBuf>,
+    conditions: Vec<PathBuf>,
+}
+
+/// Returns the mcfunction files for a while loop for a given functions folder
+fn get_while_files<P: AsRef<Path>>(functions_path: P) -> WhileFiles {
+    let path = functions_path.as_ref();
+    let main_files = glob(&format!("{}/while_*.mcfunction", path.display()))
+        .unwrap()
+        .filter_map(Result::ok)
+        .collect();
+    let conditions = glob(&format!("{}/condition_*.mcfunction", path.display()))
+        .unwrap()
+        .filter_map(Result::ok)
+        .collect();
+
+    WhileFiles {
+        main_files,
+        conditions,
+    }
+}
+
+/// Test that the contents of generated while loop functions are correct
+#[test]
+fn test_while_creation() {
+    let mut path = tests::resources();
+    path.push("test_while_creation");
+
+    let out = TempDir::new("test_while_creation").expect("Could not create tempdir for test");
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path.to_str().unwrap(),
+            "--ignore-config",
+            "--out",
+            out.path().to_str().unwrap(),
+        ],
+        None,
+    );
+
+    // Get the randomly-named while loop files
+    let files = get_while_files(format!("{}/data/test/functions", out.path().display()));
+    assert!(!files.main_files.is_empty());
+    assert!(!files.conditions.is_empty());
+    let while_file = &files.main_files[0];
+    let condition_file = &files.conditions[0];
+    // Get the function names (including the namespace) of the while functions via their paths
+    let while_func = format!("test:{}", while_file.file_stem().unwrap().to_str().unwrap());
+    let condition_func = format!(
+        "test:{}",
+        condition_file.file_stem().unwrap().to_str().unwrap()
+    );
+
+    // Test the contents of the main while function
+    let while_contents = fs::read_to_string(&while_file).unwrap();
+    assert!(while_contents.contains(&format!(
+        "execute if CONDITION run function {}",
+        condition_func
+    )));
+    // Test the contents of the condition function
+    let condition_contents = fs::read_to_string(&condition_file).unwrap();
+    assert!(condition_contents.contains("say Inside loop"));
+    assert!(condition_contents.contains(&format!("function {}", while_func)));
+}
+
+/// Test that text replacement text is properly replaced
+#[test]
+fn test_replacement() {
+    let mut path = tests::resources();
+    path.push("test_replacement");
+
+    let out = TempDir::new("test_replacement").expect("Could not create tempdir for test");
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path.to_str().unwrap(),
+            "--ignore-config",
+            "--out",
+            out.path().to_str().unwrap(),
+        ],
+        None,
+    );
+
+    // Test that the two replacements were done
+    let contents = fs::read_to_string(format!(
+        "{}/data/test/functions/main.mcfunction",
+        out.path().display()
+    ))
+    .unwrap();
+    assert!(contents.contains("say Replaced 1: REPLACED_1"));
+    assert!(contents.contains("say Replaced 2: REPLACED_2"));
 }
