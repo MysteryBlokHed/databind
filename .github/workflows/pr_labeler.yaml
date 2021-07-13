@@ -11,10 +11,10 @@ on:
 
 jobs:
   label:
-    name: Label
+    name: Label PR
     runs-on: ubuntu-latest
     steps:
-      - name: Label
+      - name: Add labels
         uses: actions/labeler@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
