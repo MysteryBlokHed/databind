@@ -1,10 +1,10 @@
 [package]
-version = "0.4.0"
+version = "0.5.0"
 name = "databind"
 authors = ["Adam Thompson-Sharpe <adamthompsonsharpe@gmail.com>"]
 edition = "2018"
 description = "Expand the functionality of Minecraft Datapacks."
-documentation = "https://databind.readthedocs.io/en/v0.4.0/"
+documentation = "https://databind.readthedocs.io/en/v0.5.0/"
 readme = "README.md"
 repository = "https://github.com/MysteryBlokHed/databind"
 license = "GPL-3.0+"
