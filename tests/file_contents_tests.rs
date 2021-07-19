@@ -245,34 +245,3 @@ fn test_while_creation() {
     assert!(condition_contents.contains("say Inside loop"));
     assert!(condition_contents.contains(&format!("function {}", while_func)));
 }
-
-/// Test that text replacement text is properly replaced
-#[test]
-fn test_replacement() {
-    let mut path = tests::resources();
-    path.push("test_replacement");
-
-    let out = TempDir::new("test_replacement").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
-
-    // Test that the two replacements were done
-    let contents = fs::read_to_string(format!(
-        "{}/data/test/functions/main.mcfunction",
-        out.path().display()
-    ))
-    .unwrap();
-    assert!(contents.contains("say Replaced 1: REPLACED_1"));
-    assert!(contents.contains("say Replaced 2: REPLACED_2"));
-}
