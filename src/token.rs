@@ -82,6 +82,23 @@ pub enum Token {
     ScoreboardOperation,
     /// An integer
     Int(i32),
+    /// Define a Databind macro
+    DefineMacro,
+    /// Call a Databind macro
+    CallMacro(String),
+    /// The name of a Databind macro
+    MacroName(String),
+    /// Close a Databind macro definition
+    EndMacro,
+    /// A string literal
+    /// Only used for macros
+    String(String),
+    /// Left parenthesis
+    /// Only used for macros
+    LeftParen,
+    /// Right parenthesis
+    /// Only used for macros
+    RightParen,
     /// Commands, etc. that are not by databind
     ///
     /// In the command `execute if :tvar variable #etc`
