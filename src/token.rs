@@ -28,12 +28,6 @@ pub enum Token {
     /// Used before a variable (`Token::VarName`) to get.
     /// Meant for scoreboard operations (`:varop`)
     GetVar,
-    /// Define a text replacement
-    DefineReplace,
-    /// The name of a replacement
-    ReplaceName(String),
-    /// The contents of a replacement
-    ReplaceContents(String),
     /// Define a function
     DefineFunc,
     /// The name of a function

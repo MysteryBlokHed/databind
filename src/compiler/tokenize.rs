@@ -23,7 +23,7 @@ const ASSIGNMENT_OPERATORS: [&str; 4] = [":=", "=", "+=", "-="];
 
 impl Compiler {
     /// Convert the provided file contents into a list of tokens
-    pub fn tokenize(&mut self, get_definitions: bool) -> Vec<Token> {
+    pub fn tokenize(&mut self) -> Vec<Token> {
         let mut tokens: Vec<Token> = Vec::new();
         let mut comment = false;
         let mut building_first_token = true;
@@ -146,16 +146,6 @@ impl Compiler {
                 }
             }
 
-            if get_definitions && !tokens.is_empty() {
-                match tokens.last().unwrap() {
-                    Token::DefineReplace
-                    | Token::ReplaceName(_)
-                    | Token::ReplaceContents(_)
-                    | Token::NewLine => {}
-                    _ => break,
-                }
-            }
-
             if building_while {
                 current_token.push(self.current_char);
                 if building_while_condition {
@@ -195,7 +185,7 @@ impl Compiler {
                             "call" => set_building!(Token::CallFunc, 1),
                             "tvar" => set_building!(Token::TestVar, 1),
                             "gvar" => set_building!(Token::GetVar, 1),
-                            "!def" => set_building!(Token::DefineReplace, 2),
+                            "!def" => set_building!(Token::DefineMacro, 2),
                             "while" => {
                                 no_args_add!(Token::WhileLoop);
                                 building_first_token = false;
@@ -211,6 +201,8 @@ impl Compiler {
                                         "{} ",
                                         current_token.strip_prefix('%').unwrap()
                                     )));
+                                // Macro call
+                                } else if current_token.starts_with('?') {
                                 } else {
                                     no_args_add!(Token::NonDatabind(format!("{} ", current_token)));
                                 }
@@ -267,21 +259,6 @@ impl Compiler {
                         _ => add_int_and_reset!(),
                     },
                     Token::Tag => add_token_and_reset!(Token::TagName(current_token)),
-                    Token::DefineReplace => match params_left {
-                        2 => {
-                            add_token!(Token::ReplaceName(current_token));
-                        }
-                        _ => {
-                            if ['\r', '\n'].contains(&self.current_char) {
-                                tokens.push(Token::ReplaceContents(current_token));
-                                building_for = Token::None;
-                                building_first_token = true;
-                                current_token = String::new();
-                            } else {
-                                current_token.push(self.current_char);
-                            }
-                        }
-                    },
                     Token::GetVar => add_token_and_reset!(Token::OpVarName(current_token)),
                     Token::DeleteVar => add_token_and_reset!(Token::DelVarName(current_token)),
                     _ => {}

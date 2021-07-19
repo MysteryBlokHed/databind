@@ -28,14 +28,7 @@ impl Compiler {
     /// # Arguments
     ///
     /// - `text` - The contents of the file to compile
-    /// - `replacement` - Whether to replace :def's. Required to avoid stack overflow
-    pub fn new(text: String, replacement: bool) -> Compiler {
-        let text = if replacement {
-            Compiler::replace_definitions(&text)
-        } else {
-            text
-        };
-
+    pub fn new(text: String) -> Compiler {
         let first_char = if !text.is_empty() {
             text.chars().next().unwrap()
         } else {

@@ -18,50 +18,8 @@
 use super::Compiler;
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
-use regex::Regex;
-use std::collections::HashMap;
 
 impl Compiler {
-    /// Get text replacement definitions and replace matches.
-    /// Definitions that are not at the top of the file will be ignored
-    /// and cause errors
-    ///
-    /// # Arguments
-    ///
-    /// - `content` - The contents of a file
-    pub fn replace_definitions(contents: &str) -> String {
-        let mut compiler = Compiler::new(contents.to_string(), false);
-        let mut new_contents = &*contents.to_string();
-
-        let replacement_tokens = compiler.tokenize(true);
-
-        let mut replacement_map: HashMap<String, String> = HashMap::new();
-        let mut current_name = &String::new();
-
-        for token in replacement_tokens.iter() {
-            match token {
-                Token::ReplaceName(name) => current_name = name,
-                Token::ReplaceContents(contents) => {
-                    replacement_map
-                        .entry(current_name.to_owned())
-                        .or_insert_with(|| contents.clone());
-                }
-                _ => {}
-            }
-        }
-
-        // Replace text
-        let mut replaced;
-        for (name, replacement) in replacement_map.iter() {
-            replaced = new_contents.replace(name, replacement);
-            new_contents = &replaced;
-        }
-
-        // Remove :def lines
-        let re = Regex::new("!def.*\n").unwrap();
-        re.replace(new_contents, "").to_string()
-    }
-
     /// Replace while loops with databind function definitions and expand
     /// other shorthand
     ///
@@ -111,7 +69,7 @@ impl Compiler {
                         chars = Compiler::get_chars();
 
                         // Tokenize new contents
-                        let tks = Compiler::new(new_contents.clone(), false).tokenize(false);
+                        let tks = Compiler::new(new_contents.clone()).tokenize();
                         new_contents = String::new();
 
                         // When gettings indexes in the new tokens vector,
