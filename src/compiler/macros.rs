@@ -39,8 +39,8 @@ impl Macro {
     /// Returns the text to replace a macro call with
     pub fn replace(&self, args: Vec<String>) -> String {
         let mut replacements: HashMap<String, String> = HashMap::new();
-        for (i, arg) in args.iter().enumerate() {
-            replacements.insert(format!("${}", arg), args[i].clone());
+        for (i, value) in args.iter().enumerate() {
+            replacements.insert(format!("${}", self.arg_names[i].clone()), value.clone());
         }
 
         let mut replaced_content = self.content.clone();
