@@ -10,4 +10,5 @@ Contents:
    syntax.rst
    cli.rst
    config.rst
+   folder_structure.rst
    examples.rst
