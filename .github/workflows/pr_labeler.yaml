@@ -8,6 +8,7 @@ on:
       - docs/**
       - tests/**
       - .github/workflows/**
+      - .github/labeler.yaml
 
 jobs:
   label:
