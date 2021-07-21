@@ -82,6 +82,8 @@ pub enum Token {
     CallMacro(String),
     /// The name of a Databind macro
     MacroName(String),
+    /// The contents of a macro
+    MacroContents(String),
     /// Close a Databind macro definition
     EndMacro,
     /// A list of either argument names for a macro definition

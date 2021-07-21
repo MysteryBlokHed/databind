@@ -43,6 +43,7 @@ impl Compiler {
         let mut marco_args_built = false;
         let mut building_macro_arg = false;
         let mut current_macro_arg = String::new();
+        let mut macro_content = String::new();
 
         let mut building_for = Token::None;
         let mut params_left = 0;
@@ -200,6 +201,23 @@ impl Compiler {
                     }
                 // The contents of the macro
                 } else {
+                    current_token.push(self.current_char);
+                    if self.current_char.is_whitespace() {
+                        if current_token.trim() == "!end" {
+                            tokens.push(Token::MacroContents(macro_content));
+                            tokens.push(Token::EndMacro);
+                            macro_content = String::new();
+                            current_token = String::new();
+                            building_macro = false;
+                            macro_name_built = false;
+                            marco_args_built = false;
+                            building_first_token = true;
+                            self.next_char();
+                        } else {
+                            macro_content.push_str(&current_token);
+                            current_token = String::new();
+                        }
+                    }
                 }
             } else if building_while {
                 current_token.push(self.current_char);
@@ -262,7 +280,7 @@ impl Compiler {
                                         current_token.strip_prefix('%').unwrap()
                                     )));
                                 // Macro call
-                                } else if current_token.starts_with('?') {
+                                // } else if current_token.starts_with('?') {
                                 } else {
                                     no_args_add!(Token::NonDatabind(format!("{} ", current_token)));
                                 }
