@@ -93,6 +93,10 @@ pub enum Token {
     /// Right parenthesis
     /// Only used for macros
     RightParen,
+    /// A list of either argument names for a macro definition
+    DefArgList(Vec<String>),
+    /// A list of argument values for a macro call
+    CallArgList(Vec<String>),
     /// Commands, etc. that are not by databind
     ///
     /// In the command `execute if :tvar variable #etc`

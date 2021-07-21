@@ -35,6 +35,15 @@ impl Compiler {
         let mut while_line = String::new();
         let mut escaped = false;
 
+        // Used to tokenize macro definitions
+        let mut building_macro = false;
+        let mut macro_name = String::new();
+        let mut macro_name_built = false;
+        let mut macro_args: Vec<String> = Vec::new();
+        let mut marco_args_built = false;
+        let mut building_macro_arg = false;
+        let mut current_macro_arg = String::new();
+
         let mut building_for = Token::None;
         let mut params_left = 0;
 
@@ -146,7 +155,53 @@ impl Compiler {
                 }
             }
 
-            if building_while {
+            if building_macro {
+                // Find the macro's name
+                if !macro_name_built {
+                    if self.current_char == ' ' {
+                        continue;
+                    }
+
+                    if self.current_char != '(' {
+                        macro_name.push(self.current_char);
+                    } else {
+                        tokens.push(Token::MacroName(macro_name));
+                        macro_name = String::new();
+                        macro_name_built = true;
+                    }
+                // Get the args the macro takes
+                } else if !marco_args_built {
+                    // A closing ) closes the arg list
+                    if self.current_char == ')' {
+                        marco_args_built = true;
+                        macro_args.push(current_macro_arg);
+                        tokens.push(Token::DefArgList(macro_args));
+                        current_macro_arg = String::new();
+                        macro_args = Vec::new();
+                    // Make sure that arguments start with $
+                    } else if !building_macro_arg {
+                        if self.current_char == ' ' {
+                            self.next_char();
+                            continue;
+                        } else if self.current_char != '$' {
+                            println!("[ERROR] Macro arguments must be preceded by a '$', eg. !def macro($arg1 $arg2)");
+                            std::process::exit(1);
+                        }
+                        building_macro_arg = true;
+                    // Add to the comma-separated list of macro args
+                    } else if building_macro_arg {
+                        if self.current_char != ',' {
+                            current_macro_arg.push(self.current_char);
+                        } else {
+                            macro_args.push(current_macro_arg);
+                            current_macro_arg = String::new();
+                            building_macro_arg = false;
+                        }
+                    }
+                // The contents of the macro
+                } else {
+                }
+            } else if building_while {
                 current_token.push(self.current_char);
                 if building_while_condition {
                     if self.current_char == '\n' {
@@ -185,7 +240,12 @@ impl Compiler {
                             "call" => set_building!(Token::CallFunc, 1),
                             "tvar" => set_building!(Token::TestVar, 1),
                             "gvar" => set_building!(Token::GetVar, 1),
-                            "!def" => set_building!(Token::DefineMacro, 2),
+                            "!def" => {
+                                no_args_add!(Token::DefineMacro);
+                                building_macro = true;
+                                building_first_token = false;
+                                self.next_char();
+                            }
                             "while" => {
                                 no_args_add!(Token::WhileLoop);
                                 building_first_token = false;
