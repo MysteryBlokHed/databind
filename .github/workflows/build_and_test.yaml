@@ -27,7 +27,7 @@ jobs:
           toolchain: stable
 
       - name: Build
-        run: cargo build --release --all-features
+        run: cargo build --all-features
 
       - name: Test
         run: cargo test --all-features
@@ -45,7 +45,7 @@ jobs:
           toolchain: stable
 
       - name: Build
-        run: cargo build --release --all-features
+        run: cargo build --all-features
 
       - name: Test
         run: cargo test --all-features
@@ -63,7 +63,7 @@ jobs:
           toolchain: stable
 
       - name: Build
-        run: cargo build --release --all-features
+        run: cargo build --all-features
 
       - name: Test
         run: cargo test --all-features
