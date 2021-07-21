@@ -84,15 +84,6 @@ pub enum Token {
     MacroName(String),
     /// Close a Databind macro definition
     EndMacro,
-    /// A string literal
-    /// Only used for macros
-    String(String),
-    /// Left parenthesis
-    /// Only used for macros
-    LeftParen,
-    /// Right parenthesis
-    /// Only used for macros
-    RightParen,
     /// A list of either argument names for a macro definition
     DefArgList(Vec<String>),
     /// A list of argument values for a macro call

@@ -330,6 +330,7 @@ impl Compiler {
             }
         }
 
+        println!("{:?}", tokens);
         tokens
     }
 }
