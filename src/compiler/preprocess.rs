@@ -15,17 +15,74 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use super::macros::Macro;
 use super::Compiler;
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
+use std::collections::HashMap;
 
 impl Compiler {
-    /// Replace macro calls with the contents of a macro
+    /// Replace macro calls with the contents of a macro.
+    /// Recursively calls itself until no macro calls are left
+    /// in case a macro definition contains a macro call
+    ///
+    /// This function leaves macro definition tokens in the token list
+    /// as they are ignored by the compiler
     ///
     /// # Arguments
     ///
     /// - `tokens` - A list of tokens to look for macro calls in
     pub fn parse_macros(&self, tokens: Vec<Token>) -> Vec<Token> {
+        let mut new_tokens = tokens.clone();
+
+        let mut macros: HashMap<String, Macro> = HashMap::new();
+        let mut call_index: usize = 0;
+        let mut index_offset: usize = 0;
+
+        let mut active_macro_name = String::new();
+        let mut macro_def_args: Vec<String> = Vec::new();
+
+        for i in 0..tokens.len() {
+            let token = tokens.get(i).unwrap();
+            match token {
+                Token::CallMacro => call_index = i,
+                Token::MacroName(name) => active_macro_name = name.clone(),
+                Token::DefArgList(args) => {
+                    macro_def_args = args.clone();
+                }
+                Token::CallArgList(args) => {
+                    if !macros.contains_key(&active_macro_name) {
+                        println!("A non-existant macro {} was called", active_macro_name);
+                        std::process::exit(1);
+                    }
+
+                    let tks = {
+                        let new_contents = macros[&active_macro_name].replace(args);
+                        println!("replaced contents of call: {:?}", new_contents);
+                        Compiler::new(new_contents.clone()).tokenize()
+                    };
+                    println!("tokens of call: {:?}", tks);
+
+                    // Remove the tokens CallMacro, MacroName, and CallArgList
+                    let tks_len = tks.len();
+                    new_tokens.splice(
+                        call_index + index_offset..call_index + index_offset + 3,
+                        tks,
+                    );
+                    index_offset += tks_len - 3;
+                }
+                Token::MacroContents(contents) => {
+                    macros.insert(
+                        active_macro_name,
+                        Macro::new(macro_def_args, contents.clone()),
+                    );
+                    active_macro_name = String::new();
+                    macro_def_args = Vec::new();
+                }
+                _ => {}
+            }
+        }
+
         tokens // Temporary return
     }
 
@@ -48,6 +105,7 @@ impl Compiler {
         for i in 0..tokens.len() {
             let token = tokens.get(i).unwrap();
             match token {
+                Token::WhileLoop => while_index = i,
                 Token::WhileCondition(condition) => new_contents.push_str(
                     &format!(
                         "func while_{chars}\n\
@@ -92,10 +150,6 @@ impl Compiler {
                         Token::NonDatabind("scoreboard players operation ".into());
                 }
                 _ => {}
-            }
-
-            if token == &Token::WhileLoop {
-                while_index = i;
             }
         }
 

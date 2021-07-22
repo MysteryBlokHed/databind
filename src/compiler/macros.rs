@@ -18,6 +18,7 @@
 use std::collections::HashMap;
 
 /// A definition of a Databind macrco
+#[derive(Debug)]
 pub struct Macro {
     arg_names: Vec<String>,
     content: String,
@@ -37,7 +38,7 @@ impl Macro {
     }
 
     /// Returns the text to replace a macro call with
-    pub fn replace(&self, args: Vec<String>) -> String {
+    pub fn replace(&self, args: &Vec<String>) -> String {
         let mut replacements: HashMap<String, String> = HashMap::new();
         for (i, value) in args.iter().enumerate() {
             replacements.insert(format!("${}", self.arg_names[i].clone()), value.clone());
