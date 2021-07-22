@@ -10,5 +10,6 @@ Contents:
    syntax.rst
    cli.rst
    config.rst
+   macros.rst
    folder_structure.rst
    examples.rst
