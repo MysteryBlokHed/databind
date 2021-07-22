@@ -58,10 +58,8 @@ impl Compiler {
 
                     let tks = {
                         let new_contents = macros[&active_macro_name].replace(args);
-                        println!("replaced contents of call: {:?}", new_contents);
                         Compiler::new(new_contents.clone()).tokenize()
                     };
-                    println!("tokens of call: {:?}", tks);
 
                     // Remove the tokens CallMacro, MacroName, and CallArgList
                     let tks_len = tks.len();
@@ -86,7 +84,6 @@ impl Compiler {
         if new_tokens.contains(&Token::CallMacro) {
             self.parse_macros(new_tokens)
         } else {
-            println!("FINAL RESULT: {:?}", new_tokens);
             new_tokens
         }
     }
