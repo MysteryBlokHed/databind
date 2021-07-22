@@ -54,6 +54,6 @@ impl Compiler {
 }
 
 mod compile;
-mod macros;
+pub mod macros;
 mod preprocess;
 mod tokenize;

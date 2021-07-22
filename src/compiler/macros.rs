@@ -18,7 +18,7 @@
 use std::collections::HashMap;
 
 /// A definition of a Databind macrco
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Macro {
     arg_names: Vec<String>,
     content: String,

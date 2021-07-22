@@ -32,10 +32,18 @@ impl Compiler {
     /// # Arguments
     ///
     /// - `tokens` - A list of tokens to look for macro calls in
-    pub fn parse_macros(&self, tokens: Vec<Token>) -> Vec<Token> {
+    /// - `return_macros` - Whether to return the HashMap of macros.
+    ///   Used for global macros (files beginning with `@`)
+    /// - `existing_macros` - Global macros to use
+    pub fn parse_macros(
+        &self,
+        tokens: Vec<Token>,
+        return_macros: bool,
+        existing_macros: &HashMap<String, Macro>,
+    ) -> (Vec<Token>, Option<HashMap<String, Macro>>) {
         let mut new_tokens = tokens.clone();
 
-        let mut macros: HashMap<String, Macro> = HashMap::new();
+        let mut macros: HashMap<String, Macro> = existing_macros.clone();
         let mut call_index: usize = 0;
         let mut index_offset: usize = 0;
 
@@ -82,9 +90,11 @@ impl Compiler {
         }
 
         if new_tokens.contains(&Token::CallMacro) {
-            self.parse_macros(new_tokens)
+            self.parse_macros(new_tokens, return_macros, existing_macros)
+        } else if return_macros {
+            (new_tokens, Some(macros))
         } else {
-            new_tokens
+            (new_tokens, None)
         }
     }
 

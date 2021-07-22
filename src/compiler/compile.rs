@@ -17,6 +17,7 @@
  */
 use super::Compiler;
 
+use crate::compiler::macros::Macro;
 use crate::token::Token;
 use std::collections::HashMap;
 
@@ -27,10 +28,12 @@ use std::collections::HashMap;
 /// - `file_contents` - A list of file contents
 /// - `filename_map` - A map of filenames to indexes in the file_contents Vec
 /// - `tag_map` - A map of tags to functions
+#[derive(Debug, Clone)]
 pub struct CompileReturn {
     pub file_contents: Vec<String>,
     pub filename_map: HashMap<String, usize>,
     pub tag_map: HashMap<String, Vec<String>>,
+    pub global_macros: Option<HashMap<String, Macro>>,
 }
 
 impl Compiler {
@@ -45,11 +48,18 @@ impl Compiler {
         tokens: Vec<Token>,
         namespace: Option<&str>,
         subfolder: &str,
+        global_macros: &HashMap<String, Macro>,
+        return_macros: bool,
     ) -> CompileReturn {
+        let returned_macros;
+
         // Parse macros if there are any calls
-        let tokens = if tokens.contains(&Token::CallMacro) {
-            self.parse_macros(tokens)
+        let tokens = if tokens.contains(&Token::CallMacro) || return_macros {
+            let ret = self.parse_macros(tokens, return_macros, global_macros);
+            returned_macros = if return_macros { ret.1 } else { None };
+            ret.0
         } else {
+            returned_macros = None;
             tokens
         };
         // Parse while loops if there are any
@@ -125,7 +135,7 @@ impl Compiler {
                 Token::FuncName(name) => {
                     // Function definition
                     if !calling_function {
-                        files.push("# Compiled with MysteryBlokHed/databind".into());
+                        files.push("# Compiled with MysteryBlokHed/databind\n".into());
                         filename_to_index.insert(name.clone(), files.len() - 1);
                         current_functions.push(name.clone());
                     // Function call
@@ -134,11 +144,11 @@ impl Compiler {
                         let has_namespace = name.contains(':');
 
                         if has_namespace {
-                            let to_add = format!("function {}", name);
+                            let to_add = format!("function {}\n", name);
 
                             current_file!().push_str(&to_add[..]);
                         } else if let Some(ns) = namespace {
-                            let to_add = format!("function {}:{}", ns, name);
+                            let to_add = format!("function {}:{}\n", ns, name);
 
                             current_file!().push_str(&to_add[..]);
                         } else {
@@ -187,7 +197,7 @@ impl Compiler {
                                 current_file!().push_str(&to_add[..]);
 
                                 let to_add = format!(
-                                    "scoreboard players set --databind {} {}",
+                                    "scoreboard players set --databind {} {}\n",
                                     current_var, int
                                 );
 
@@ -201,7 +211,7 @@ impl Compiler {
                                 };
 
                                 let to_add = format!(
-                                    "scoreboard players {} --databind {} {}",
+                                    "scoreboard players {} --databind {} {}\n",
                                     action, &current_var, int
                                 );
 
@@ -219,7 +229,7 @@ impl Compiler {
                                 };
 
                                 let to_add = format!(
-                                    "scoreboard players {} {} {} {}",
+                                    "scoreboard players {} {} {} {}\n",
                                     action, objective_target, &current_objective, int
                                 );
 
@@ -249,6 +259,7 @@ impl Compiler {
             file_contents: files,
             filename_map: filename_to_index,
             tag_map,
+            global_macros: returned_macros,
         }
     }
 }

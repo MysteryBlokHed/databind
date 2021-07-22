@@ -197,6 +197,7 @@ fn main() -> std::io::Result<()> {
 
     if datapack_is_dir {
         let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
+        let mut global_macros: HashMap<String, compiler::macros::Macro> = HashMap::new();
         let target_folder = &compiler_settings.output;
 
         if fs::metadata(target_folder).is_ok() {
@@ -267,11 +268,33 @@ fn main() -> std::io::Result<()> {
                         .expect(&format!("Failed to read file {}", entry.path().display())[..]);
                     let mut compile = compiler::Compiler::new(content);
                     let tokens = compile.tokenize();
-                    let mut compiled = compile.compile(
-                        tokens,
-                        Some(get_namespace(&entry.path()).unwrap()),
-                        &get_subfolder_prefix(&entry.path()),
-                    );
+
+                    let mut compiled = if entry
+                        .path()
+                        .file_name()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .starts_with('@')
+                    {
+                        let ret = compile.compile(
+                            tokens,
+                            Some(get_namespace(&entry.path()).unwrap()),
+                            &get_subfolder_prefix(&entry.path()),
+                            &global_macros,
+                            true,
+                        );
+                        global_macros.extend(ret.global_macros.clone().unwrap());
+                        ret.clone()
+                    } else {
+                        compile.compile(
+                            tokens,
+                            Some(get_namespace(&entry.path()).unwrap()),
+                            &get_subfolder_prefix(&entry.path()),
+                            &global_macros,
+                            false,
+                        )
+                    };
 
                     for (key, value) in compiled.filename_map.iter() {
                         let full_path = format!("{}/{}.mcfunction", target_path, key);
