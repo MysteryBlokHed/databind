@@ -20,16 +20,24 @@ use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 
 impl Compiler {
-    /// Replace while loops with databind function definitions and expand
-    /// other shorthand
+    /// Replace macro calls with the contents of a macro
     ///
     /// # Arguments
     ///
-    /// - `tokens` - A list of tokens that may include while loops
+    /// - `tokens` - A list of tokens to look for macro calls in
+    pub fn parse_macros(&self, tokens: Vec<Token>) -> Vec<Token> {
+        tokens // Temporary return
+    }
+
+    /// Replace while loops with databind function definitions
+    ///
+    /// # Arguments
+    ///
+    /// - `tokens` - A list of tokens to look for while loops in
     /// - `subfolder` - If the while loop is in a subfolder, the prefix
     ///   to put before the function name (eg. should be `Some("cmd/")` for
     ///   a subfolder called `cmd`). Can be an empty string if there is no prefix
-    pub fn parse_shorthand(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
+    pub fn parse_while_loops(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
         let mut new_tokens = tokens.clone();
 
         let mut while_index: usize = 0;

@@ -46,7 +46,18 @@ impl Compiler {
         namespace: Option<&str>,
         subfolder: &str,
     ) -> CompileReturn {
-        let tokens = self.parse_shorthand(tokens, subfolder);
+        // Parse macros if there are any calls
+        let tokens = if tokens.contains(&Token::CallMacro) {
+            self.parse_macros(tokens)
+        } else {
+            tokens
+        };
+        // Parse while loops if there are any
+        let tokens = if tokens.contains(&Token::WhileLoop) {
+            self.parse_while_loops(tokens, subfolder)
+        } else {
+            tokens
+        };
 
         let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
 

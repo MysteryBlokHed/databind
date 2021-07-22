@@ -79,7 +79,7 @@ pub enum Token {
     /// Define a Databind macro
     DefineMacro,
     /// Call a Databind macro
-    CallMacro(String),
+    CallMacro,
     /// The name of a Databind macro
     MacroName(String),
     /// The contents of a macro
