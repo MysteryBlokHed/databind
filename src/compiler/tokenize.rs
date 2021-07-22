@@ -124,6 +124,17 @@ impl Compiler {
             };
         }
 
+        /// Code to start building a macro
+        macro_rules! building_macro {
+            () => {
+                building_first_token = false;
+                calling_macro = true;
+                macro_name = current_token.strip_prefix('?').unwrap().into();
+                no_args_add!(Token::CallMacro);
+                tokens.push(Token::MacroName(macro_name.clone()));
+            };
+        }
+
         /// Try to find an assignment operator
         ///
         /// # Returns
@@ -295,6 +306,13 @@ impl Compiler {
             }
 
             if building_first_token {
+                // Macro call
+                // Detects macros without a space before the args
+                // eg. ?macro_name("arg")
+                if self.current_char == '(' && current_token.starts_with('?') {
+                    building_macro!();
+                    continue;
+                }
                 if self.current_char.is_whitespace() {
                     if !current_token.is_empty() {
                         match &current_token[..] {
@@ -329,12 +347,10 @@ impl Compiler {
                                         current_token.strip_prefix('%').unwrap()
                                     )));
                                 // Macro call
+                                // This will detect macro calls with a space before the args
+                                // eg. ?macro_name ("arg")
                                 } else if current_token.starts_with('?') {
-                                    building_first_token = false;
-                                    calling_macro = true;
-                                    macro_name = current_token.strip_prefix('?').unwrap().into();
-                                    no_args_add!(Token::CallMacro);
-                                    tokens.push(Token::MacroName(macro_name.clone()));
+                                    building_macro!();
                                 } else {
                                     no_args_add!(Token::NonDatabind(format!("{} ", current_token)));
                                 }
