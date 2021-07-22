@@ -177,3 +177,52 @@ When compiled to a datapack, if we wanted to run our toggle function
 in-game, we could run the following:
 
 ``/function namespace:astand_toggle``
+
+Files for macros
+----------------
+
+Any file whose name starts with an ``@`` symbol is able to define macros
+that work anywhere in the project. These files, if they only contain macros,
+should generally be placed right in the ``src/`` directory as opposed to
+in a namespace's ``functions/`` directory, however you can place them wherever
+you'd like.
+
+It's important to note that the reason the ``@`` was chosen is that the compiler
+goes through the ``src/`` directory in alphabetical order. This means that if you,
+for example, have two namespaces, ``abc`` and ``xyz``, macros defined in ``xyz``
+will not be available in ``abc``. A good idea is to begin the names of any folders
+containing macro definitions with an ``@``, similar to the files. That way, they are
+always compiled first.
+
+Macros that contain calls to other macros can be defined in any order. If you have
+the following two macros:
+
+.. code-block:: databind
+
+   !def macro_1()
+       say Macro 1
+   !end
+
+.. code-block:: databind
+
+   !def macro_2()
+       say Macro 2
+       ?macro_1()
+   !end
+
+You don't have to define ``macro_1`` before ``macro_2``; it's only important that
+they're both defined before ``macro_2`` is called. A project using macros might
+have a file structure similar to this:
+
+.. code-block:: text
+
+   project_root
+   │   databind.toml
+   └───src
+       │   pack.mcmeta
+       ├───@macros
+       │       @my_macro.databind
+       └───data
+           └───namespace
+               └───functions
+                       main.databind
