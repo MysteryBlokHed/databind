@@ -176,7 +176,7 @@ impl Compiler {
             if building_macro {
                 // Find the macro's name
                 if !macro_name_built {
-                    if self.current_char == ' ' {
+                    if self.current_char.is_whitespace() {
                         continue;
                     }
 
