@@ -86,6 +86,7 @@ impl Compiler {
         if new_tokens.contains(&Token::CallMacro) {
             self.parse_macros(new_tokens)
         } else {
+            println!("FINAL RESULT: {:?}", new_tokens);
             new_tokens
         }
     }

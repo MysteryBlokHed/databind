@@ -241,7 +241,7 @@ impl Compiler {
                 if !building_macro_arg {
                     if self.current_char == '(' {
                         building_macro_arg = true;
-                    } else if self.current_char != ' ' {
+                    } else if !self.current_char.is_whitespace() {
                         println!(
                             "[ERROR] A '(' was expected to start the argument list for call of macro {}",
                             macro_name
@@ -271,7 +271,7 @@ impl Compiler {
                             building_macro_arg = false;
                             building_first_token = true;
                             self.next_char();
-                        } else if self.current_char != ',' && self.current_char != ' ' {
+                        } else if self.current_char != ',' && !self.current_char.is_whitespace() {
                             println!(
                                 "[ERROR] Unexpected character {:?} found in macro call",
                                 self.current_char
@@ -419,7 +419,6 @@ impl Compiler {
             }
         }
 
-        println!("{:?}", tokens);
         tokens
     }
 }
