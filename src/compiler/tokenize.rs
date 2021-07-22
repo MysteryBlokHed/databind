@@ -45,6 +45,12 @@ impl Compiler {
         let mut current_macro_arg = String::new();
         let mut macro_content = String::new();
 
+        // Used to tokenize macro calls
+        let mut calling_macro = false;
+        let mut in_string = false;
+        let mut current_string = String::new();
+        let mut escaping_string = false;
+
         let mut building_for = Token::None;
         let mut params_left = 0;
 
@@ -211,11 +217,54 @@ impl Compiler {
                             building_macro = false;
                             macro_name_built = false;
                             marco_args_built = false;
+                            building_macro_arg = false;
                             building_first_token = true;
                             self.next_char();
                         } else {
                             macro_content.push_str(&current_token);
                             current_token = String::new();
+                        }
+                    }
+                }
+            } else if calling_macro {
+                if !building_macro_arg {
+                    if self.current_char == '(' {
+                        building_macro_arg = true;
+                    } else if self.current_char != ' ' {
+                        println!(
+                            "[ERROR] A '(' was expected to start the argument list for call of macro {}",
+                            macro_name
+                        );
+                        std::process::exit(1);
+                    }
+                } else {
+                    if in_string {
+                        if self.current_char == '\\' {
+                            escaping_string = true;
+                        } else if self.current_char == '"' && !escaping_string {
+                            in_string = false;
+                            macro_args.push(current_string);
+                            current_string = String::new();
+                            self.next_char();
+                            continue;
+                        } else {
+                            current_string.push(self.current_char);
+                        }
+                    } else {
+                        if self.current_char == '"' {
+                            in_string = true;
+                        } else if self.current_char == ')' {
+                            tokens.push(Token::CallArgList(macro_args));
+                            macro_args = Vec::new();
+                            calling_macro = false;
+                            building_first_token = true;
+                            self.next_char();
+                        } else if self.current_char != ',' && self.current_char != ' ' {
+                            println!(
+                                "[ERROR] Unexpected character {:?} found in macro call",
+                                self.current_char
+                            );
+                            std::process::exit(1);
                         }
                     }
                 }
@@ -280,7 +329,12 @@ impl Compiler {
                                         current_token.strip_prefix('%').unwrap()
                                     )));
                                 // Macro call
-                                // } else if current_token.starts_with('?') {
+                                } else if current_token.starts_with('?') {
+                                    building_first_token = false;
+                                    calling_macro = true;
+                                    macro_name = current_token.strip_prefix('?').unwrap().into();
+                                    no_args_add!(Token::CallMacro);
+                                    tokens.push(Token::MacroName(macro_name.clone()));
                                 } else {
                                     no_args_add!(Token::NonDatabind(format!("{} ", current_token)));
                                 }

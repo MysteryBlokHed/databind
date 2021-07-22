@@ -83,7 +83,11 @@ impl Compiler {
             }
         }
 
-        tokens // Temporary return
+        if new_tokens.contains(&Token::CallMacro) {
+            self.parse_macros(new_tokens)
+        } else {
+            new_tokens
+        }
     }
 
     /// Replace while loops with databind function definitions and replaces
