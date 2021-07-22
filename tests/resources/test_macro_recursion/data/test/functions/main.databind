@@ -1,0 +1,11 @@
+!def macro_1($arg1)
+    say Macro 1 - $arg1
+!end
+
+!def macro_2($arg1)
+    ?macro_1("$arg1")
+!end
+
+func main
+    ?macro_2("Test")
+end
