@@ -268,6 +268,7 @@ impl Compiler {
                             tokens.push(Token::CallArgList(macro_args));
                             macro_args = Vec::new();
                             calling_macro = false;
+                            building_macro_arg = false;
                             building_first_token = true;
                             self.next_char();
                         } else if self.current_char != ',' && self.current_char != ' ' {
