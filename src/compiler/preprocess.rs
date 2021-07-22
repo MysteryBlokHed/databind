@@ -29,76 +29,72 @@ impl Compiler {
         tokens // Temporary return
     }
 
-    /// Replace while loops with databind function definitions
+    /// Replace while loops with databind function definitions and replaces
+    /// `sbop` with `scoreboard players operation`
     ///
     /// # Arguments
     ///
-    /// - `tokens` - A list of tokens to look for while loops in
+    /// - `tokens` - A list of tokens to look for while loops or `sbop`'s in
     /// - `subfolder` - If the while loop is in a subfolder, the prefix
-    ///   to put before the function name (eg. should be `Some("cmd/")` for
-    ///   a subfolder called `cmd`). Can be an empty string if there is no prefix
-    pub fn parse_while_loops(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
+    ///   to put before the function name (eg. `"cmd/"` for a subfolder named `cmd`)
+    pub fn parse_while_and_sbop(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
         let mut new_tokens = tokens.clone();
 
         let mut while_index: usize = 0;
         let mut index_offset: usize = 0;
-        let mut looping = true;
         let mut new_contents = String::new();
         let mut chars = Compiler::get_chars();
 
         for i in 0..tokens.len() {
             let token = tokens.get(i).unwrap();
-            if looping {
-                match token {
-                    Token::WhileCondition(condition) => new_contents.push_str(
-                        &format!(
-                            "func while_{chars}\n\
+            match token {
+                Token::WhileCondition(condition) => new_contents.push_str(
+                    &format!(
+                        "func while_{chars}\n\
                              execute if {condition} run call {subfolder}condition_{chars}\n\
                              end\n",
-                            chars = chars,
-                            condition = condition,
-                            subfolder = subfolder
-                        )[..],
-                    ),
-                    Token::WhileContents(contents) => new_contents.push_str(
-                        &format!(
-                            "func condition_{chars}\n\
+                        chars = chars,
+                        condition = condition,
+                        subfolder = subfolder
+                    )[..],
+                ),
+                Token::WhileContents(contents) => new_contents.push_str(
+                    &format!(
+                        "func condition_{chars}\n\
                          {contents}\n\
                          call {subfolder}while_{chars}\n\
                          end\n",
-                            chars = chars,
-                            contents = contents,
-                            subfolder = subfolder
-                        )[..],
-                    ),
-                    Token::EndWhileLoop => {
-                        new_contents.push_str(&format!("call {}while_{}\n", subfolder, chars)[..]);
+                        chars = chars,
+                        contents = contents,
+                        subfolder = subfolder
+                    )[..],
+                ),
+                Token::EndWhileLoop => {
+                    new_contents.push_str(&format!("call {}while_{}\n", subfolder, chars)[..]);
 
-                        chars = Compiler::get_chars();
+                    chars = Compiler::get_chars();
 
-                        // Tokenize new contents
-                        let tks = Compiler::new(new_contents.clone()).tokenize();
-                        new_contents = String::new();
+                    // Tokenize new contents
+                    let tks = Compiler::new(new_contents.clone()).tokenize();
+                    new_contents = String::new();
 
-                        // When gettings indexes in the new tokens vector,
-                        // the length and position of elements will have changed
-                        // due to new things being added
-                        new_tokens.splice(
-                            while_index + index_offset..while_index + index_offset + 4,
-                            tks.iter().cloned(),
-                        );
-                        index_offset += tks.len() - 4;
-                    }
-                    Token::ScoreboardOperation => {
-                        new_tokens[i + index_offset] =
-                            Token::NonDatabind("scoreboard players operation ".into());
-                    }
-                    _ => {}
+                    // When gettings indexes in the new tokens vector,
+                    // the length and position of elements will have changed
+                    // due to new things being added
+                    new_tokens.splice(
+                        while_index + index_offset..while_index + index_offset + 4,
+                        tks.iter().cloned(),
+                    );
+                    index_offset += tks.len() - 4;
                 }
+                Token::ScoreboardOperation => {
+                    new_tokens[i + index_offset] =
+                        Token::NonDatabind("scoreboard players operation ".into());
+                }
+                _ => {}
             }
 
             if token == &Token::WhileLoop {
-                looping = true;
                 while_index = i;
             }
         }
