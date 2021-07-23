@@ -194,7 +194,7 @@ impl Compiler {
                             "%# If statement\n\
                              execute if {condition} run sobj {obj} --databind-{chars} = 1\n\
                              execute unless {condition} run sobj {obj} --databind-{chars} = 0\n\
-                             execute if score --databind-{chars} {obj} matches 1 run call {subfolder}if_true_{chars}\n",
+                             execute if score {obj} --databind-{chars} matches 1 run call {subfolder}if_true_{chars}\n",
                             condition = condition,
                             obj = IF_INIT_OBJ,
                             chars = chars,
@@ -209,7 +209,7 @@ impl Compiler {
                                 "func if_false_{chars}\n\
                                      {}\n\
                                  end\n\
-                                 execute if score --databind-{chars} {} matches 0 run call {}if_false_{chars}\n",
+                                 execute if score {} --databind-{chars} matches 0 run call {}if_false_{chars}\n",
                                 contents,
                                 IF_INIT_OBJ,
                                 subfolder,
