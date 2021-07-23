@@ -21,6 +21,11 @@ use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
 use std::collections::HashMap;
 
+/// Whether a function to set up an if statement objective has been created
+static mut IF_INIT_CREATED: bool = false;
+/// The objective used to store the results of if condition tests
+static mut IF_INIT_OBJ: String = String::new();
+
 impl Compiler {
     /// Replace macro calls with the contents of a macro.
     /// Recursively calls itself until no macro calls are left
@@ -112,7 +117,7 @@ impl Compiler {
         let mut active_index: usize = 0;
         let mut index_offset: usize = 0;
         let mut new_contents = String::new();
-        let mut chars = Compiler::get_chars();
+        let mut chars = Compiler::random_chars();
         // Whether the IfContents token is referring to an else
         let mut on_else = false;
 
@@ -120,7 +125,7 @@ impl Compiler {
         /// compiled versions
         macro_rules! replace_tokens {
             ($tks_length: expr) => {
-                chars = Compiler::get_chars();
+                chars = Compiler::random_chars();
 
                 // Tokenize new contents
                 let tks = Compiler::new(new_contents.clone()).tokenize();
@@ -145,7 +150,7 @@ impl Compiler {
                     &format!(
                         "func while_{chars}\n\
                              execute if {condition} run call {subfolder}condition_{chars}\n\
-                             end\n",
+                         end\n",
                         chars = chars,
                         condition = condition,
                         subfolder = subfolder
@@ -156,7 +161,7 @@ impl Compiler {
                     "func condition_{chars}\n\
                          {contents}\n\
                          call {subfolder}while_{chars}\n\
-                         end\n",
+                     end\n",
                     chars = chars,
                     contents = contents,
                     subfolder = subfolder
@@ -167,21 +172,49 @@ impl Compiler {
                     }
                     replace_tokens!(4);
                 }
-                Token::IfCondition(condition) => new_contents.push_str(&format!(
-                    "execute if {condition} run call {subfolder}if_true_{chars}\n\
-                     execute unless {condition} run call {subfolder}if_false_{chars}\n",
-                    condition = condition,
-                    subfolder = subfolder,
-                    chars = chars
-                )),
+                Token::IfCondition(condition) => {
+                    // Unsafe due to check of IF_INIT_CREATED
+                    unsafe {
+                        if !IF_INIT_CREATED {
+                            let chars = Compiler::random_chars();
+                            IF_INIT_OBJ = format!("if_init_{}", chars);
+                            new_contents.push_str(&format!(
+                                "func {obj}\n\
+                                     obj {obj} dummy\n\
+                                 end\n",
+                                obj = IF_INIT_OBJ,
+                            ));
+                            IF_INIT_CREATED = true
+                        }
+                    }
+
+                    unsafe {
+                        new_contents.push_str(&format!(
+                            "%# If statement\n\
+                             execute if {condition} run sobj {obj} --databind-{chars} = 1\n\
+                             execute unless {condition} run sobj {obj} --databind-{chars} = 0\n\
+                             execute if score --databind-{chars} {obj} matches 1 run call {subfolder}if_true_{chars}\n",
+                            condition = condition,
+                            obj = IF_INIT_OBJ,
+                            chars = chars,
+                            subfolder = subfolder,
+                        ));
+                    }
+                }
                 Token::IfContents(contents) => {
                     if on_else {
-                        new_contents.push_str(&format!(
-                            "func if_false_{}\n\
-                                {}\n\
-                            end\n",
-                            chars, contents
-                        ))
+                        unsafe {
+                            new_contents.push_str(&format!(
+                                "func if_false_{chars}\n\
+                                     {}\n\
+                                 end\n\
+                                 execute if score --databind-{chars} {} matches 0 run call {}if_false_{chars}\n",
+                                contents,
+                                IF_INIT_OBJ,
+                                subfolder,
+                                chars = chars,
+                            ));
+                        }
                     } else {
                         new_contents.push_str(&format!(
                             "func if_true_{}\n\
@@ -215,8 +248,8 @@ impl Compiler {
         }
     }
 
-    /// Randomly generate characters
-    fn get_chars() -> String {
+    /// Return a random string of 4 lowercase alphanumeric characters
+    fn random_chars() -> String {
         rand::thread_rng()
             .sample_iter(&Alphanumeric)
             .take(4)
