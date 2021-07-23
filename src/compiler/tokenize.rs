@@ -477,7 +477,7 @@ impl Compiler {
                     Token::DeleteVar => add_token_and_reset!(Token::DelVarName(current_token)),
                     _ => {}
                 };
-                if self.current_char == '\n' {
+                if self.current_char == '\n' && !building_if && !building_while {
                     tokens.push(Token::NewLine);
                 }
                 self.next_char();
