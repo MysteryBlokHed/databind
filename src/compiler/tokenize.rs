@@ -176,13 +176,9 @@ impl Compiler {
             if building_macro {
                 // Find the macro's name
                 if !macro_name_built {
-                    if self.current_char.is_whitespace() {
-                        continue;
-                    }
-
-                    if self.current_char != '(' {
+                    if self.current_char != '(' && !self.current_char.is_whitespace() {
                         macro_name.push(self.current_char);
-                    } else {
+                    } else if self.current_char == '(' {
                         tokens.push(Token::MacroName(macro_name));
                         macro_name = String::new();
                         macro_name_built = true;
@@ -198,7 +194,7 @@ impl Compiler {
                         macro_args = Vec::new();
                     // Make sure that arguments start with $
                     } else if !building_macro_arg {
-                        if self.current_char == ' ' {
+                        if self.current_char.is_whitespace() {
                             self.next_char();
                             continue;
                         } else if self.current_char != '$' {
