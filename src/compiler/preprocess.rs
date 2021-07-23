@@ -23,8 +23,6 @@ use std::collections::HashMap;
 
 /// Whether a function to set up an if statement objective has been created
 static mut IF_INIT_CREATED: bool = false;
-/// The objective used to store the results of if condition tests
-static mut IF_INIT_OBJ: String = String::new();
 
 impl Compiler {
     /// Replace macro calls with the contents of a macro.
@@ -176,46 +174,37 @@ impl Compiler {
                     // Unsafe due to check of IF_INIT_CREATED
                     unsafe {
                         if !IF_INIT_CREATED {
-                            let chars = Compiler::random_chars();
-                            IF_INIT_OBJ = format!("if_res_{}", chars);
                             new_contents.push_str(&format!(
                                 "func if_init\n\
                                  tag load\n\
-                                     obj {} dummy\n\
+                                     obj db_if_res dummy\n\
                                  end\n",
-                                IF_INIT_OBJ,
                             ));
                             IF_INIT_CREATED = true
                         }
                     }
 
-                    unsafe {
-                        new_contents.push_str(&format!(
+                    new_contents.push_str(&format!(
                             "%# If statement\n\
-                             execute if {condition} run sobj --databind-{chars} {obj} = 1\n\
-                             execute unless {condition} run sobj --databind-{chars} {obj} = 0\n\
-                             execute if score --databind-{chars} {obj} matches 1 run call {subfolder}if_true_{chars}\n",
+                             execute if {condition} run sobj --databind-{chars} db_if_res = 1\n\
+                             execute unless {condition} run sobj --databind-{chars} db_if_res = 0\n\
+                             execute if score --databind-{chars} db_if_res matches 1 run call {subfolder}if_true_{chars}\n",
                             condition = condition,
-                            obj = IF_INIT_OBJ,
                             chars = chars,
                             subfolder = subfolder,
                         ));
-                    }
                 }
                 Token::IfContents(contents) => {
                     if on_else {
-                        unsafe {
-                            new_contents.push_str(&format!(
+                        new_contents.push_str(&format!(
                                 "func if_false_{chars}\n\
                                      {}\n\
                                  end\n\
-                                 execute if score --databind-{chars} {} matches 0 run call {}if_false_{chars}\n",
+                                 execute if score --databind-{chars} db_if_res matches 0 run call {}if_false_{chars}\n",
                                 contents,
-                                IF_INIT_OBJ,
                                 subfolder,
                                 chars = chars,
                             ));
-                        }
                     } else {
                         new_contents.push_str(&format!(
                             "func if_true_{}\n\
