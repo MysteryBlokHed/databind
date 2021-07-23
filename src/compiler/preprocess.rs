@@ -113,6 +113,8 @@ impl Compiler {
         let mut index_offset: usize = 0;
         let mut new_contents = String::new();
         let mut chars = Compiler::get_chars();
+        // Whether the IfContents token is referring to an else
+        let mut on_else = false;
 
         /// Replace tokens such as while loops or if statements with their
         /// compiled versions
@@ -149,6 +151,7 @@ impl Compiler {
                         subfolder = subfolder
                     )[..],
                 ),
+                Token::ElseStatement => on_else = true,
                 Token::WhileContents(contents) => new_contents.push_str(&format!(
                     "func condition_{chars}\n\
                          {contents}\n\
@@ -166,17 +169,28 @@ impl Compiler {
                 }
                 Token::IfCondition(condition) => new_contents.push_str(&format!(
                     "execute if {condition} run call {subfolder}if_true_{chars}\n\
-                     # execute unless {condition} run call {subfolder}if_false_{chars}\n",
+                     execute unless {condition} run call {subfolder}if_false_{chars}\n",
                     condition = condition,
                     subfolder = subfolder,
                     chars = chars
                 )),
-                Token::IfContents(contents) => new_contents.push_str(&format!(
-                    "func if_true_{}\n\
-                         {}\n\
-                     end\n",
-                    chars, contents
-                )),
+                Token::IfContents(contents) => {
+                    if on_else {
+                        new_contents.push_str(&format!(
+                            "func if_false_{}\n\
+                                {}\n\
+                            end\n",
+                            chars, contents
+                        ))
+                    } else {
+                        new_contents.push_str(&format!(
+                            "func if_true_{}\n\
+                                {}\n\
+                            end\n",
+                            chars, contents
+                        ))
+                    }
+                }
                 Token::ScoreboardOperation => {
                     new_tokens[i + index_offset] =
                         Token::NonDatabind("scoreboard players operation ".into());

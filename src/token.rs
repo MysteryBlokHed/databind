@@ -44,7 +44,7 @@ pub enum Token {
     IfStatement,
     /// The condition for an if statement
     IfCondition(String),
-    /// The contents of an if statement
+    /// The contents of an if or else statement
     IfContents(String),
     /// An else statement if the if statement condition
     /// was not true

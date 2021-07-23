@@ -197,20 +197,33 @@ impl Compiler {
         ///
         /// # Arguments
         ///
-        /// - `statement_bool` - The `bool` that controls whether a statement is
-        /// currently being tokenized. Gets set to `false`
         /// - `contents_tk` - The token (without parenthesis) that stores the contents
         /// of the statement
         /// - `end_tk` - The token that marks the end of the statement
         macro_rules! statement_end {
-            ($statement_bool: expr, $contents_tk: expr, $end_tk: expr) => {
-                $statement_bool = false;
-                building_first_token = true;
+            ($contents_tk: expr, $end_tk: expr) => {
                 tokens.push($contents_tk(statement_lines.join("\n")));
                 tokens.push($end_tk);
                 current_token = String::new();
                 statement_line = String::new();
                 statement_lines = Vec::new();
+            };
+        }
+
+        /// End a statement and reset the variables used by it, including the
+        /// "building" variable (eg. `building_if`)
+        ///
+        /// # Arguments
+        /// - `statement_bool` - The `bool` that controls whether a statement is
+        /// currently being tokenized. Gets set to `false`
+        /// - `contents_tk` - The token (without parenthesis) that stores the contents
+        /// of the statement
+        /// - `end_tk` - The token that marks the end of the statement
+        macro_rules! statement_final {
+            ($statement_bool: expr, $contents_tk: expr, $end_tk: expr) => {
+                $statement_bool = false;
+                building_first_token = true;
+                statement_end!($contents_tk, $end_tk);
                 self.next_char();
             };
         }
@@ -332,10 +345,13 @@ impl Compiler {
                 current_token.push(self.current_char);
                 if building_condition {
                     build_statement_condition!(Token::IfCondition);
-                } else if current_token.trim() != "end" {
-                    add_statement_lines!();
+                } else if current_token.trim() == "else" {
+                    statement_end!(Token::IfContents, Token::ElseStatement);
+                // self.next_char();
+                } else if current_token.trim() == "end" {
+                    statement_final!(building_if, Token::IfContents, Token::EndIf);
                 } else {
-                    statement_end!(building_if, Token::IfContents, Token::EndIf);
+                    add_statement_lines!();
                 }
             } else if building_while {
                 current_token.push(self.current_char);
@@ -344,7 +360,7 @@ impl Compiler {
                 } else if current_token.trim() != "end" {
                     add_statement_lines!();
                 } else {
-                    statement_end!(building_while, Token::WhileContents, Token::EndWhileLoop);
+                    statement_final!(building_while, Token::WhileContents, Token::EndWhileLoop);
                 }
             }
 
@@ -375,11 +391,7 @@ impl Compiler {
                                 self.next_char();
                             }
                             "runif" => {
-                                // if current_token == "if" {
                                 no_args_add!(Token::IfStatement);
-                                // } else {
-                                //     no_args_add!(Token::ElseStatement);
-                                // }
                                 building_first_token = false;
                                 building_if = true;
                                 building_condition = true;
