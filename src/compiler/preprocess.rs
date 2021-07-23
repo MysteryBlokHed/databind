@@ -177,12 +177,13 @@ impl Compiler {
                     unsafe {
                         if !IF_INIT_CREATED {
                             let chars = Compiler::random_chars();
-                            IF_INIT_OBJ = format!("if_init_{}", chars);
+                            IF_INIT_OBJ = format!("if_res_{}", chars);
                             new_contents.push_str(&format!(
-                                "func {obj}\n\
-                                     obj {obj} dummy\n\
+                                "func if_init\n\
+                                 tag load\n\
+                                     obj {} dummy\n\
                                  end\n",
-                                obj = IF_INIT_OBJ,
+                                IF_INIT_OBJ,
                             ));
                             IF_INIT_CREATED = true
                         }
