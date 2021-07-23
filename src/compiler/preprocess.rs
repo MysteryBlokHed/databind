@@ -99,7 +99,7 @@ impl Compiler {
     }
 
     /// Replace while loops, if statements, and scoreboard operations.
-    /// Called recursively until none are left <-- This actually isn't true yet -->
+    /// Called recursively until none are left
     ///
     /// # Arguments
     ///
