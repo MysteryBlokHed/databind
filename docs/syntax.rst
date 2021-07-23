@@ -6,11 +6,9 @@ Syntax
 +=========================================================================+========================================================================================+
 | ``var varName := <int>``                                                | Define a new variable                                                                  |
 +-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
-| ``obj objectiveName <objective>``                                       | Define a new scoreboard objective                                                      |
+| ``obj <objective_name> <objective>``                                    | Define a new scoreboard objective                                                      |
 +-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
-| ``sobj objectiveName <target> <objective> <assignment operator> <int>`` | Set the value of an objective for a given target (eg. ``@a`` or ``PlayerName``)        |
-+-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
-| ``!def defName <text replacement>``                                     | Define a text replacement for the preprocessor. See examples for more information      |
+| ``sobj <target> <objective> <assignment operator> <int>``               | Set the value of an objective for a given target (eg. ``@a`` or ``PlayerName``)        |
 +-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
 | ``var varName <assignment operator> <int>``                             | Update the value of an existing variable                                               |
 +-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
