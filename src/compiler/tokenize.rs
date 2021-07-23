@@ -35,6 +35,10 @@ impl Compiler {
         let mut statement_line = String::new();
         let mut escaped = false;
         let mut building_if = false;
+        // Keep track of the amount of other statements inside the
+        // statement being built
+        // Avoids "end" tokens prematurely closing a loop
+        let mut other_statements = 0;
 
         // Used to tokenize macro definitions
         let mut building_macro = false;
@@ -207,6 +211,7 @@ impl Compiler {
                 current_token = String::new();
                 statement_line = String::new();
                 statement_lines = Vec::new();
+                self.next_char();
             };
         }
 
@@ -224,7 +229,6 @@ impl Compiler {
                 $statement_bool = false;
                 building_first_token = true;
                 statement_end!($contents_tk, $end_tk);
-                self.next_char();
             };
         }
 
@@ -347,20 +351,34 @@ impl Compiler {
                     build_statement_condition!(Token::IfCondition);
                 } else if current_token.trim() == "else" {
                     statement_end!(Token::IfContents, Token::ElseStatement);
-                // self.next_char();
                 } else if current_token.trim() == "end" {
-                    statement_final!(building_if, Token::IfContents, Token::EndIf);
+                    if other_statements == 0 {
+                        statement_final!(building_if, Token::IfContents, Token::EndIf);
+                    } else {
+                        other_statements -= 1
+                    };
                 } else {
                     add_statement_lines!();
                 }
+                if current_token.trim() == "runif" || current_token.trim() == "while" {
+                    other_statements += 1;
+                }
             } else if building_while {
                 current_token.push(self.current_char);
+
                 if building_condition {
                     build_statement_condition!(Token::WhileCondition);
-                } else if current_token.trim() != "end" {
-                    add_statement_lines!();
+                } else if current_token.trim() == "end" {
+                    if other_statements == 0 {
+                        statement_final!(building_while, Token::WhileContents, Token::EndWhileLoop);
+                    } else {
+                        other_statements -= 1;
+                    }
                 } else {
-                    statement_final!(building_while, Token::WhileContents, Token::EndWhileLoop);
+                    add_statement_lines!();
+                }
+                if current_token.trim() == "runif" || current_token.trim() == "while" {
+                    other_statements += 1;
                 }
             }
 
