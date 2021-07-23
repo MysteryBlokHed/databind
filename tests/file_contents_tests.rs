@@ -246,13 +246,31 @@ fn test_while_creation() {
     assert!(condition_contents.contains(&format!("function {}", while_func)));
 }
 
-/// Test that text replacement text is properly replaced
+/// Test that macros are properly replaced using different
+/// formatting
 #[test]
-fn test_replacement() {
+fn test_macro_replacement() {
     let mut path = tests::resources();
-    path.push("test_replacement");
+    path.push("test_macro_replacement");
 
-    let out = TempDir::new("test_replacement").expect("Could not create tempdir for test");
+    let out = TempDir::new("test_macro_replacement").expect("Could not create tempdir for test");
+
+    let expected_lines = [
+        "say Call Test 1",
+        "say Call Test 2",
+        "say Call Test 3",
+        "say Call Test 4",
+        "say Call Test 5",
+        "say Call Test 6",
+        "say Call Test 7",
+        "say Call Test 8",
+        "say Call Test 9",
+        "say Def Test 1",
+        "say Def Test 2",
+        "say Def Test 3",
+        "say Def Test 4",
+        "say Def Test 5",
+    ];
 
     tests::run_with_args(
         "cargo",
@@ -267,12 +285,43 @@ fn test_replacement() {
         None,
     );
 
-    // Test that the two replacements were done
-    let contents = fs::read_to_string(format!(
+    let out_path = format!(
         "{}/data/test/functions/main.mcfunction",
         out.path().display()
-    ))
-    .unwrap();
-    assert!(contents.contains("say Replaced 1: REPLACED_1"));
-    assert!(contents.contains("say Replaced 2: REPLACED_2"));
+    );
+    let contents = fs::read_to_string(&out_path).unwrap();
+
+    for line in expected_lines.iter() {
+        assert!(contents.contains(line));
+        println!("Has line {}", line);
+    }
+}
+
+/// Test that macros calling other macros work properly
+#[test]
+fn test_macro_recursion() {
+    let mut path = tests::resources();
+    path.push("test_macro_recursion");
+
+    let out = TempDir::new("test_macro_recursion").expect("Could not create tempdir for test");
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path.to_str().unwrap(),
+            "--ignore-config",
+            "--out",
+            out.path().to_str().unwrap(),
+        ],
+        None,
+    );
+
+    let out_path = format!(
+        "{}/data/test/functions/main.mcfunction",
+        out.path().display()
+    );
+    let contents = fs::read_to_string(&out_path).unwrap();
+    assert!(contents.contains("say Macro 1 - Test"));
 }

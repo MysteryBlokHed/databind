@@ -15,125 +15,153 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+use super::macros::Macro;
 use super::Compiler;
 use crate::token::Token;
 use rand::{distributions::Alphanumeric, Rng};
-use regex::Regex;
 use std::collections::HashMap;
 
 impl Compiler {
-    /// Get text replacement definitions and replace matches.
-    /// Definitions that are not at the top of the file will be ignored
-    /// and cause errors
+    /// Replace macro calls with the contents of a macro.
+    /// Recursively calls itself until no macro calls are left
+    /// in case a macro definition contains a macro call
+    ///
+    /// This function leaves macro definition tokens in the token list
+    /// as they are ignored by the compiler
     ///
     /// # Arguments
     ///
-    /// - `content` - The contents of a file
-    pub fn replace_definitions(contents: &str) -> String {
-        let mut compiler = Compiler::new(contents.to_string(), false);
-        let mut new_contents = &*contents.to_string();
+    /// - `tokens` - A list of tokens to look for macro calls in
+    /// - `return_macros` - Whether to return the HashMap of macros.
+    ///   Used for global macros (files beginning with `@`)
+    /// - `existing_macros` - Global macros to use
+    pub fn parse_macros(
+        &self,
+        tokens: Vec<Token>,
+        return_macros: bool,
+        existing_macros: &HashMap<String, Macro>,
+    ) -> (Vec<Token>, Option<HashMap<String, Macro>>) {
+        let mut new_tokens = tokens.clone();
 
-        let replacement_tokens = compiler.tokenize(true);
+        let mut macros: HashMap<String, Macro> = existing_macros.clone();
+        let mut call_index: usize = 0;
+        let mut index_offset: usize = 0;
 
-        let mut replacement_map: HashMap<String, String> = HashMap::new();
-        let mut current_name = &String::new();
+        let mut active_macro_name = String::new();
+        let mut macro_def_args: Vec<String> = Vec::new();
 
-        for token in replacement_tokens.iter() {
+        for i in 0..tokens.len() {
+            let token = tokens.get(i).unwrap();
             match token {
-                Token::ReplaceName(name) => current_name = name,
-                Token::ReplaceContents(contents) => {
-                    replacement_map
-                        .entry(current_name.to_owned())
-                        .or_insert_with(|| contents.clone());
+                Token::CallMacro => call_index = i,
+                Token::MacroName(name) => active_macro_name = name.clone(),
+                Token::DefArgList(args) => {
+                    macro_def_args = args.clone();
+                }
+                Token::CallArgList(args) => {
+                    if !macros.contains_key(&active_macro_name) {
+                        println!("A non-existant macro {} was called", active_macro_name);
+                        std::process::exit(1);
+                    }
+
+                    let tks = {
+                        let new_contents = macros[&active_macro_name].replace(args);
+                        Compiler::new(new_contents.clone()).tokenize()
+                    };
+
+                    // Remove the tokens CallMacro, MacroName, and CallArgList
+                    let tks_len = tks.len();
+                    new_tokens.splice(
+                        call_index + index_offset..call_index + index_offset + 3,
+                        tks,
+                    );
+                    index_offset += tks_len - 3;
+                }
+                Token::MacroContents(contents) => {
+                    macros.insert(
+                        active_macro_name,
+                        Macro::new(macro_def_args, contents.clone()),
+                    );
+                    active_macro_name = String::new();
+                    macro_def_args = Vec::new();
                 }
                 _ => {}
             }
         }
 
-        // Replace text
-        let mut replaced;
-        for (name, replacement) in replacement_map.iter() {
-            replaced = new_contents.replace(name, replacement);
-            new_contents = &replaced;
+        if new_tokens.contains(&Token::CallMacro) {
+            self.parse_macros(new_tokens, return_macros, existing_macros)
+        } else if return_macros {
+            (new_tokens, Some(macros))
+        } else {
+            (new_tokens, None)
         }
-
-        // Remove :def lines
-        let re = Regex::new("!def.*\n").unwrap();
-        re.replace(new_contents, "").to_string()
     }
 
-    /// Replace while loops with databind function definitions and expand
-    /// other shorthand
+    /// Replace while loops with databind function definitions and replaces
+    /// `sbop` with `scoreboard players operation`
     ///
     /// # Arguments
     ///
-    /// - `tokens` - A list of tokens that may include while loops
+    /// - `tokens` - A list of tokens to look for while loops or `sbop`'s in
     /// - `subfolder` - If the while loop is in a subfolder, the prefix
-    ///   to put before the function name (eg. should be `Some("cmd/")` for
-    ///   a subfolder called `cmd`). Can be an empty string if there is no prefix
-    pub fn parse_shorthand(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
+    ///   to put before the function name (eg. `"cmd/"` for a subfolder named `cmd`)
+    pub fn parse_while_and_sbop(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
         let mut new_tokens = tokens.clone();
 
         let mut while_index: usize = 0;
         let mut index_offset: usize = 0;
-        let mut looping = true;
         let mut new_contents = String::new();
         let mut chars = Compiler::get_chars();
 
         for i in 0..tokens.len() {
             let token = tokens.get(i).unwrap();
-            if looping {
-                match token {
-                    Token::WhileCondition(condition) => new_contents.push_str(
-                        &format!(
-                            "func while_{chars}\n\
+            match token {
+                Token::WhileLoop => while_index = i,
+                Token::WhileCondition(condition) => new_contents.push_str(
+                    &format!(
+                        "func while_{chars}\n\
                              execute if {condition} run call {subfolder}condition_{chars}\n\
                              end\n",
-                            chars = chars,
-                            condition = condition,
-                            subfolder = subfolder
-                        )[..],
-                    ),
-                    Token::WhileContents(contents) => new_contents.push_str(
-                        &format!(
-                            "func condition_{chars}\n\
+                        chars = chars,
+                        condition = condition,
+                        subfolder = subfolder
+                    )[..],
+                ),
+                Token::WhileContents(contents) => new_contents.push_str(
+                    &format!(
+                        "func condition_{chars}\n\
                          {contents}\n\
                          call {subfolder}while_{chars}\n\
                          end\n",
-                            chars = chars,
-                            contents = contents,
-                            subfolder = subfolder
-                        )[..],
-                    ),
-                    Token::EndWhileLoop => {
-                        new_contents.push_str(&format!("call {}while_{}\n", subfolder, chars)[..]);
+                        chars = chars,
+                        contents = contents,
+                        subfolder = subfolder
+                    )[..],
+                ),
+                Token::EndWhileLoop => {
+                    new_contents.push_str(&format!("call {}while_{}\n", subfolder, chars)[..]);
 
-                        chars = Compiler::get_chars();
+                    chars = Compiler::get_chars();
 
-                        // Tokenize new contents
-                        let tks = Compiler::new(new_contents.clone(), false).tokenize(false);
-                        new_contents = String::new();
+                    // Tokenize new contents
+                    let tks = Compiler::new(new_contents.clone()).tokenize();
+                    new_contents = String::new();
 
-                        // When gettings indexes in the new tokens vector,
-                        // the length and position of elements will have changed
-                        // due to new things being added
-                        new_tokens.splice(
-                            while_index + index_offset..while_index + index_offset + 4,
-                            tks.iter().cloned(),
-                        );
-                        index_offset += tks.len() - 4;
-                    }
-                    Token::ScoreboardOperation => {
-                        new_tokens[i + index_offset] =
-                            Token::NonDatabind("scoreboard players operation ".into());
-                    }
-                    _ => {}
+                    // When gettings indexes in the new tokens vector,
+                    // the length and position of elements will have changed
+                    // due to new things being added
+                    new_tokens.splice(
+                        while_index + index_offset..while_index + index_offset + 4,
+                        tks.iter().cloned(),
+                    );
+                    index_offset += tks.len() - 4;
                 }
-            }
-
-            if token == &Token::WhileLoop {
-                looping = true;
-                while_index = i;
+                Token::ScoreboardOperation => {
+                    new_tokens[i + index_offset] =
+                        Token::NonDatabind("scoreboard players operation ".into());
+                }
+                _ => {}
             }
         }
 

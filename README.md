@@ -9,11 +9,11 @@ page on the docs.
 
 ## Features
 
-- Multiple function definitions in a single file
+- Multiple mcfunction definitions in a single file
+- Custom functions (macros) that can take arguments
 - Tagging functions in-code
 - Shorthand to call functions without namespace prefix (`func_1` instead of `namespace:func_1`)
 - Subcommand to create new projects easily
-- Define text replacements for long and repeated lines of code
 - While loops
 - Variable definitions via scoreboards
 - Shorthand for objective creation

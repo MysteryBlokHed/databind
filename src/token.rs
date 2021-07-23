@@ -28,12 +28,6 @@ pub enum Token {
     /// Used before a variable (`Token::VarName`) to get.
     /// Meant for scoreboard operations (`:varop`)
     GetVar,
-    /// Define a text replacement
-    DefineReplace,
-    /// The name of a replacement
-    ReplaceName(String),
-    /// The contents of a replacement
-    ReplaceContents(String),
     /// Define a function
     DefineFunc,
     /// The name of a function
@@ -82,6 +76,20 @@ pub enum Token {
     ScoreboardOperation,
     /// An integer
     Int(i32),
+    /// Define a Databind macro
+    DefineMacro,
+    /// Call a Databind macro
+    CallMacro,
+    /// The name of a Databind macro
+    MacroName(String),
+    /// The contents of a macro
+    MacroContents(String),
+    /// Close a Databind macro definition
+    EndMacro,
+    /// A list of either argument names for a macro definition
+    DefArgList(Vec<String>),
+    /// A list of argument values for a macro call
+    CallArgList(Vec<String>),
     /// Commands, etc. that are not by databind
     ///
     /// In the command `execute if :tvar variable #etc`

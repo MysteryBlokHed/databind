@@ -23,7 +23,7 @@ const ASSIGNMENT_OPERATORS: [&str; 4] = [":=", "=", "+=", "-="];
 
 impl Compiler {
     /// Convert the provided file contents into a list of tokens
-    pub fn tokenize(&mut self, get_definitions: bool) -> Vec<Token> {
+    pub fn tokenize(&mut self) -> Vec<Token> {
         let mut tokens: Vec<Token> = Vec::new();
         let mut comment = false;
         let mut building_first_token = true;
@@ -34,6 +34,22 @@ impl Compiler {
         let mut while_lines: Vec<String> = Vec::new();
         let mut while_line = String::new();
         let mut escaped = false;
+
+        // Used to tokenize macro definitions
+        let mut building_macro = false;
+        let mut macro_name = String::new();
+        let mut macro_name_built = false;
+        let mut macro_args: Vec<String> = Vec::new();
+        let mut marco_args_built = false;
+        let mut building_macro_arg = false;
+        let mut current_macro_arg = String::new();
+        let mut macro_content = String::new();
+
+        // Used to tokenize macro calls
+        let mut calling_macro = false;
+        let mut in_string = false;
+        let mut current_string = String::new();
+        let mut escaping_string = false;
 
         let mut building_for = Token::None;
         let mut params_left = 0;
@@ -108,6 +124,17 @@ impl Compiler {
             };
         }
 
+        /// Code to start building a macro
+        macro_rules! building_macro {
+            () => {
+                building_first_token = false;
+                calling_macro = true;
+                macro_name = current_token.strip_prefix('?').unwrap().into();
+                no_args_add!(Token::CallMacro);
+                tokens.push(Token::MacroName(macro_name.clone()));
+            };
+        }
+
         /// Try to find an assignment operator
         ///
         /// # Returns
@@ -146,17 +173,112 @@ impl Compiler {
                 }
             }
 
-            if get_definitions && !tokens.is_empty() {
-                match tokens.last().unwrap() {
-                    Token::DefineReplace
-                    | Token::ReplaceName(_)
-                    | Token::ReplaceContents(_)
-                    | Token::NewLine => {}
-                    _ => break,
+            if building_macro {
+                // Find the macro's name
+                if !macro_name_built {
+                    if self.current_char != '(' && !self.current_char.is_whitespace() {
+                        macro_name.push(self.current_char);
+                    } else if self.current_char == '(' {
+                        tokens.push(Token::MacroName(macro_name));
+                        macro_name = String::new();
+                        macro_name_built = true;
+                    }
+                // Get the args the macro takes
+                } else if !marco_args_built {
+                    // A closing ) closes the arg list
+                    if self.current_char == ')' {
+                        marco_args_built = true;
+                        macro_args.push(current_macro_arg);
+                        tokens.push(Token::DefArgList(macro_args));
+                        current_macro_arg = String::new();
+                        macro_args = Vec::new();
+                    // Make sure that arguments start with $
+                    } else if !building_macro_arg {
+                        if self.current_char.is_whitespace() {
+                            self.next_char();
+                            continue;
+                        } else if self.current_char != '$' {
+                            println!("[ERROR] Macro arguments must be preceded by a '$', eg. !def macro($arg1 $arg2)");
+                            std::process::exit(1);
+                        }
+                        building_macro_arg = true;
+                    // Add to the comma-separated list of macro args
+                    } else if building_macro_arg {
+                        if !self.current_char.is_whitespace() {
+                            if self.current_char != ',' {
+                                current_macro_arg.push(self.current_char);
+                            } else {
+                                macro_args.push(current_macro_arg);
+                                current_macro_arg = String::new();
+                                building_macro_arg = false;
+                            }
+                        }
+                    }
+                // The contents of the macro
+                } else {
+                    current_token.push(self.current_char);
+                    if self.current_char.is_whitespace() {
+                        if current_token.trim() == "!end" {
+                            tokens.push(Token::MacroContents(macro_content));
+                            tokens.push(Token::EndMacro);
+                            macro_content = String::new();
+                            current_token = String::new();
+                            building_macro = false;
+                            macro_name_built = false;
+                            marco_args_built = false;
+                            building_macro_arg = false;
+                            building_first_token = true;
+                            self.next_char();
+                        } else {
+                            macro_content.push_str(&current_token);
+                            current_token = String::new();
+                        }
+                    }
                 }
-            }
-
-            if building_while {
+            } else if calling_macro {
+                if !building_macro_arg {
+                    if self.current_char == '(' {
+                        building_macro_arg = true;
+                    } else if !self.current_char.is_whitespace() {
+                        println!(
+                            "[ERROR] A '(' was expected to start the argument list for call of macro {}",
+                            macro_name
+                        );
+                        std::process::exit(1);
+                    }
+                } else {
+                    if in_string {
+                        if self.current_char == '\\' {
+                            escaping_string = true;
+                        } else if self.current_char == '"' && !escaping_string {
+                            in_string = false;
+                            macro_args.push(current_string);
+                            current_string = String::new();
+                            self.next_char();
+                            continue;
+                        } else {
+                            current_string.push(self.current_char);
+                        }
+                    } else {
+                        if self.current_char == '"' {
+                            in_string = true;
+                        } else if self.current_char == ')' {
+                            tokens.push(Token::CallArgList(macro_args));
+                            macro_args = Vec::new();
+                            calling_macro = false;
+                            building_macro_arg = false;
+                            building_first_token = true;
+                            self.next_char();
+                        } else if self.current_char != ',' && !self.current_char.is_whitespace() {
+                            println!(
+                                "[ERROR] Unexpected character {:?} found in macro call",
+                                self.current_char
+                            );
+                            std::process::exit(1);
+                        }
+                    }
+                }
+            } else if building_while {
                 current_token.push(self.current_char);
                 if building_while_condition {
                     if self.current_char == '\n' {
@@ -183,6 +305,13 @@ impl Compiler {
             }
 
             if building_first_token {
+                // Macro call
+                // Detects macros without a space before the args
+                // eg. ?macro_name("arg")
+                if self.current_char == '(' && current_token.starts_with('?') {
+                    building_macro!();
+                    continue;
+                }
                 if self.current_char.is_whitespace() {
                     if !current_token.is_empty() {
                         match &current_token[..] {
@@ -195,7 +324,12 @@ impl Compiler {
                             "call" => set_building!(Token::CallFunc, 1),
                             "tvar" => set_building!(Token::TestVar, 1),
                             "gvar" => set_building!(Token::GetVar, 1),
-                            "!def" => set_building!(Token::DefineReplace, 2),
+                            "!def" => {
+                                no_args_add!(Token::DefineMacro);
+                                building_macro = true;
+                                building_first_token = false;
+                                self.next_char();
+                            }
                             "while" => {
                                 no_args_add!(Token::WhileLoop);
                                 building_first_token = false;
@@ -211,6 +345,11 @@ impl Compiler {
                                         "{} ",
                                         current_token.strip_prefix('%').unwrap()
                                     )));
+                                // Macro call
+                                // This will detect macro calls with a space before the args
+                                // eg. ?macro_name ("arg")
+                                } else if current_token.starts_with('?') {
+                                    building_macro!();
                                 } else {
                                     no_args_add!(Token::NonDatabind(format!("{} ", current_token)));
                                 }
@@ -267,21 +406,6 @@ impl Compiler {
                         _ => add_int_and_reset!(),
                     },
                     Token::Tag => add_token_and_reset!(Token::TagName(current_token)),
-                    Token::DefineReplace => match params_left {
-                        2 => {
-                            add_token!(Token::ReplaceName(current_token));
-                        }
-                        _ => {
-                            if ['\r', '\n'].contains(&self.current_char) {
-                                tokens.push(Token::ReplaceContents(current_token));
-                                building_for = Token::None;
-                                building_first_token = true;
-                                current_token = String::new();
-                            } else {
-                                current_token.push(self.current_char);
-                            }
-                        }
-                    },
                     Token::GetVar => add_token_and_reset!(Token::OpVarName(current_token)),
                     Token::DeleteVar => add_token_and_reset!(Token::DelVarName(current_token)),
                     _ => {}

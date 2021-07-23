@@ -1,7 +1,0 @@
-!def REPLACEMENT_1 REPLACED_1
-!def REPLACEMENT_2 REPLACED_2
-
-func main
-    say Replaced 1: REPLACEMENT_1
-    say Replaced 2: REPLACEMENT_2
-end

@@ -1,0 +1,55 @@
+!def macro($arg1)
+    say $arg1
+!end
+
+!def def1($arg1)
+    say $arg1
+!end
+
+!def def2
+    ($arg1)
+    say $arg1
+!end
+
+!def def3(
+    $arg1,
+)
+    say $arg1
+!end
+
+!def def4 ($arg1)
+    say $arg1
+!end
+
+!def def5( $arg1 )
+    say $arg1
+!end
+
+func main
+    # Test calling
+    ?macro("Call Test 1")
+    ?macro ("Call Test 2")
+    ?macro
+        ("Call Test 3")
+    ?macro(
+        "Call Test 4"
+    )
+    ?macro(
+        "Call Test 5",
+    )
+    ?macro (
+        "Call Test 6"
+    )
+    ?macro (
+        "Call Test 7",
+    )
+    ?macro( "Call Test 8" )
+    ?macro ( "Call Test 9" )
+
+    # Test that definitions work
+    ?def1("Def Test 1")
+    ?def2("Def Test 2")
+    ?def3("Def Test 3")
+    ?def4("Def Test 4")
+    ?def5("Def Test 5")
+end
