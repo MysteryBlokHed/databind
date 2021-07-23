@@ -265,8 +265,11 @@ fn test_macro_replacement() {
         "say Call Test 7",
         "say Call Test 8",
         "say Call Test 9",
-        // "say Def Test 1",
-        // "say Def Test 2",
+        "say Def Test 1",
+        "say Def Test 2",
+        "say Def Test 3",
+        "say Def Test 4",
+        "say Def Test 5",
     ];
 
     tests::run_with_args(
@@ -290,6 +293,7 @@ fn test_macro_replacement() {
 
     for line in expected_lines.iter() {
         assert!(contents.contains(line));
+        println!("Has line {}", line);
     }
 }
 

@@ -204,12 +204,14 @@ impl Compiler {
                         building_macro_arg = true;
                     // Add to the comma-separated list of macro args
                     } else if building_macro_arg {
-                        if self.current_char != ',' {
-                            current_macro_arg.push(self.current_char);
-                        } else {
-                            macro_args.push(current_macro_arg);
-                            current_macro_arg = String::new();
-                            building_macro_arg = false;
+                        if !self.current_char.is_whitespace() {
+                            if self.current_char != ',' {
+                                current_macro_arg.push(self.current_char);
+                            } else {
+                                macro_args.push(current_macro_arg);
+                                current_macro_arg = String::new();
+                                building_macro_arg = false;
+                            }
                         }
                     }
                 // The contents of the macro
