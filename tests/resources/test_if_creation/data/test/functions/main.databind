@@ -1,0 +1,7 @@
+func main
+    if condition
+        say true
+    else
+        say false
+    end
+end

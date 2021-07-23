@@ -63,8 +63,8 @@ impl Compiler {
             tokens
         };
         // Parse while loops if there are any
-        let tokens = if tokens.contains(&Token::WhileLoop) {
-            self.parse_while_and_sbop(tokens, subfolder)
+        let tokens = if tokens.contains(&Token::IfStatement) || tokens.contains(&Token::WhileLoop) {
+            self.parse_shorthand(tokens, subfolder)
         } else {
             tokens
         };

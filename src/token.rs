@@ -40,6 +40,17 @@ pub enum Token {
     TagName(String),
     /// Call a funcition
     CallFunc,
+    /// Start an if statement
+    IfStatement,
+    /// The condition for an if statement
+    IfCondition(String),
+    /// The contents of an if or else statement
+    IfContents(String),
+    /// An else statement if the if statement condition
+    /// was not true
+    ElseStatement,
+    /// Close an if statement
+    EndIf,
     /// Start a while loop
     WhileLoop,
     /// The condition for a while loop

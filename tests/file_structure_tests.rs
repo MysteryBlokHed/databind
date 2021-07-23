@@ -325,3 +325,55 @@ fn test_while_structure() {
         }
     }
 }
+
+/// Test that if statements create files in the right place
+#[test]
+fn test_if_structure() {
+    let mut path = tests::resources();
+    path.push("test_if_creation");
+
+    let out = TempDir::new("test_if_structure").expect("Could not create tempdir for test");
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path.to_str().unwrap(),
+            "--ignore-config",
+            "--out",
+            out.path().to_str().unwrap(),
+        ],
+        None,
+    );
+
+    let files: Vec<PathBuf> = glob(&format!(
+        "{}/data/test/functions/*.mcfunction",
+        out.path().display()
+    ))
+    .unwrap()
+    .filter_map(Result::ok)
+    .collect();
+
+    for file in files.iter() {
+        let file_str = file
+            .to_str()
+            .unwrap()
+            .split(|x: char| ['\\', '/'].contains(&x))
+            .last()
+            .unwrap();
+
+        if file_str.starts_with("if_init") {
+            let re = Regex::new("if_init_[0-9a-z]{4}.mcfunction").unwrap();
+            assert!(re.is_match(file_str));
+        } else if file_str.starts_with("if_true_") {
+            let re = Regex::new("if_true_[0-9a-z]{4}.mcfunction").unwrap();
+            assert!(re.is_match(file_str));
+        } else if file_str.starts_with("if_false_") {
+            let re = Regex::new("if_false_[0-9a-z]{4}.mcfunction").unwrap();
+            assert!(re.is_match(file_str));
+        } else {
+            assert!(file_str == "main.mcfunction");
+        }
+    }
+}
