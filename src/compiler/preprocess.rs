@@ -98,18 +98,18 @@ impl Compiler {
         }
     }
 
-    /// Replace while loops with databind function definitions and replaces
-    /// `sbop` with `scoreboard players operation`
+    /// Replace while loops, if statements, and scoreboard operations.
+    /// Called recursively until none are left <-- This actually isn't true yet -->
     ///
     /// # Arguments
     ///
     /// - `tokens` - A list of tokens to look for while loops or `sbop`'s in
     /// - `subfolder` - If the while loop is in a subfolder, the prefix
     ///   to put before the function name (eg. `"cmd/"` for a subfolder named `cmd`)
-    pub fn parse_while_and_sbop(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
+    pub fn parse_shorthand(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
         let mut new_tokens = tokens.clone();
 
-        let mut while_index: usize = 0;
+        let mut active_index: usize = 0;
         let mut index_offset: usize = 0;
         let mut new_contents = String::new();
         let mut chars = Compiler::get_chars();
@@ -117,7 +117,7 @@ impl Compiler {
         for i in 0..tokens.len() {
             let token = tokens.get(i).unwrap();
             match token {
-                Token::WhileLoop => while_index = i,
+                Token::WhileLoop | Token::IfStatement => active_index = i,
                 Token::WhileCondition(condition) => new_contents.push_str(
                     &format!(
                         "func while_{chars}\n\
@@ -128,19 +128,19 @@ impl Compiler {
                         subfolder = subfolder
                     )[..],
                 ),
-                Token::WhileContents(contents) => new_contents.push_str(
-                    &format!(
-                        "func condition_{chars}\n\
+                Token::WhileContents(contents) => new_contents.push_str(&format!(
+                    "func condition_{chars}\n\
                          {contents}\n\
                          call {subfolder}while_{chars}\n\
                          end\n",
-                        chars = chars,
-                        contents = contents,
-                        subfolder = subfolder
-                    )[..],
-                ),
-                Token::EndWhileLoop => {
-                    new_contents.push_str(&format!("call {}while_{}\n", subfolder, chars)[..]);
+                    chars = chars,
+                    contents = contents,
+                    subfolder = subfolder
+                )),
+                Token::EndWhileLoop | Token::EndIf => {
+                    if token == &Token::EndWhileLoop {
+                        new_contents.push_str(&format!("call {}while_{}\n", subfolder, chars)[..]);
+                    }
 
                     chars = Compiler::get_chars();
 
@@ -152,11 +152,24 @@ impl Compiler {
                     // the length and position of elements will have changed
                     // due to new things being added
                     new_tokens.splice(
-                        while_index + index_offset..while_index + index_offset + 4,
+                        active_index + index_offset..active_index + index_offset + 4,
                         tks.iter().cloned(),
                     );
                     index_offset += tks.len() - 4;
                 }
+                Token::IfCondition(condition) => new_contents.push_str(&format!(
+                    "execute if {condition} run call {subfolder}if_true_{chars}\n\
+                     execute unless {condition} run call {subfolder}if_false_{chars}\n",
+                    condition = condition,
+                    subfolder = subfolder,
+                    chars = chars
+                )),
+                Token::IfContents(contents) => new_contents.push_str(&format!(
+                    "func if_true_{}\n\
+                         {}\n\
+                     end\n",
+                    chars, contents
+                )),
                 Token::ScoreboardOperation => {
                     new_tokens[i + index_offset] =
                         Token::NonDatabind("scoreboard players operation ".into());

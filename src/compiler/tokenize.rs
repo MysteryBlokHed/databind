@@ -35,6 +35,11 @@ impl Compiler {
         let mut while_line = String::new();
         let mut escaped = false;
 
+        let mut building_if = false;
+        let mut building_if_condition = false;
+        let mut if_lines: Vec<String> = Vec::new();
+        let mut if_line = String::new();
+
         // Used to tokenize macro definitions
         let mut building_macro = false;
         let mut macro_name = String::new();
@@ -278,6 +283,30 @@ impl Compiler {
                         }
                     }
                 }
+            } else if building_if {
+                current_token.push(self.current_char);
+                if building_if_condition {
+                    if self.current_char == '\n' {
+                        add_token!(Token::IfCondition(current_token.trim().into()));
+                        building_if_condition = false;
+                    }
+                } else if current_token.trim() != "end" {
+                    if_line.push(self.current_char);
+                    if self.current_char == '\n' {
+                        current_token = String::new();
+                        if_lines.push(if_line.trim().into());
+                        if_line = String::new();
+                    }
+                } else {
+                    building_if = false;
+                    building_first_token = true;
+                    tokens.push(Token::IfContents(if_lines.join("\n")));
+                    tokens.push(Token::EndIf);
+                    current_token = String::new();
+                    if_line = String::new();
+                    if_lines = Vec::new();
+                    self.next_char();
+                }
             } else if building_while {
                 current_token.push(self.current_char);
                 if building_while_condition {
@@ -328,6 +357,17 @@ impl Compiler {
                                 no_args_add!(Token::DefineMacro);
                                 building_macro = true;
                                 building_first_token = false;
+                                self.next_char();
+                            }
+                            "runif" => {
+                                // if current_token == "if" {
+                                no_args_add!(Token::IfStatement);
+                                // } else {
+                                //     no_args_add!(Token::ElseStatement);
+                                // }
+                                building_first_token = false;
+                                building_if = true;
+                                building_if_condition = true;
                                 self.next_char();
                             }
                             "while" => {
