@@ -166,7 +166,7 @@ impl Compiler {
                 }
                 Token::IfCondition(condition) => new_contents.push_str(&format!(
                     "execute if {condition} run call {subfolder}if_true_{chars}\n\
-                     execute unless {condition} run call {subfolder}if_false_{chars}\n",
+                     # execute unless {condition} run call {subfolder}if_false_{chars}\n",
                     condition = condition,
                     subfolder = subfolder,
                     chars = chars

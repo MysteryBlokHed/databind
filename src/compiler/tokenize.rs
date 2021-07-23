@@ -30,15 +30,11 @@ impl Compiler {
         let mut current_token = String::new();
 
         let mut building_while = false;
-        let mut building_while_condition = false;
-        let mut while_lines: Vec<String> = Vec::new();
-        let mut while_line = String::new();
+        let mut building_condition = false;
+        let mut statement_lines: Vec<String> = Vec::new();
+        let mut statement_line = String::new();
         let mut escaped = false;
-
         let mut building_if = false;
-        let mut building_if_condition = false;
-        let mut if_lines: Vec<String> = Vec::new();
-        let mut if_line = String::new();
 
         // Used to tokenize macro definitions
         let mut building_macro = false;
@@ -170,6 +166,55 @@ impl Compiler {
             };
         }
 
+        /// Build the condition of a statement
+        ///
+        /// # Arguments
+        ///
+        /// - `condition_tk` - The token (without parenthesis) that stores the condition
+        /// of the statement
+        macro_rules! build_statement_condition {
+            ($condition_tk: expr) => {
+                if self.current_char == '\n' {
+                    add_token!($condition_tk(current_token.trim().into()));
+                    building_condition = false;
+                }
+            };
+        }
+
+        /// Add the contents of a statement to a `Vec` of lines
+        macro_rules! add_statement_lines {
+            () => {
+                statement_line.push(self.current_char);
+                if self.current_char == '\n' {
+                    current_token = String::new();
+                    statement_lines.push(statement_line.trim().into());
+                    statement_line = String::new();
+                }
+            };
+        }
+
+        /// End a statement and reset the variables used by it
+        ///
+        /// # Arguments
+        ///
+        /// - `statement_bool` - The `bool` that controls whether a statement is
+        /// currently being tokenized. Gets set to `false`
+        /// - `contents_tk` - The token (without parenthesis) that stores the contents
+        /// of the statement
+        /// - `end_tk` - The token that marks the end of the statement
+        macro_rules! statement_end {
+            ($statement_bool: expr, $contents_tk: expr, $end_tk: expr) => {
+                $statement_bool = false;
+                building_first_token = true;
+                tokens.push($contents_tk(statement_lines.join("\n")));
+                tokens.push($end_tk);
+                current_token = String::new();
+                statement_line = String::new();
+                statement_lines = Vec::new();
+                self.next_char();
+            };
+        }
+
         while self.current_char != '\u{0}' {
             while comment {
                 self.next_char();
@@ -285,51 +330,21 @@ impl Compiler {
                 }
             } else if building_if {
                 current_token.push(self.current_char);
-                if building_if_condition {
-                    if self.current_char == '\n' {
-                        add_token!(Token::IfCondition(current_token.trim().into()));
-                        building_if_condition = false;
-                    }
+                if building_condition {
+                    build_statement_condition!(Token::IfCondition);
                 } else if current_token.trim() != "end" {
-                    if_line.push(self.current_char);
-                    if self.current_char == '\n' {
-                        current_token = String::new();
-                        if_lines.push(if_line.trim().into());
-                        if_line = String::new();
-                    }
+                    add_statement_lines!();
                 } else {
-                    building_if = false;
-                    building_first_token = true;
-                    tokens.push(Token::IfContents(if_lines.join("\n")));
-                    tokens.push(Token::EndIf);
-                    current_token = String::new();
-                    if_line = String::new();
-                    if_lines = Vec::new();
-                    self.next_char();
+                    statement_end!(building_if, Token::IfContents, Token::EndIf);
                 }
             } else if building_while {
                 current_token.push(self.current_char);
-                if building_while_condition {
-                    if self.current_char == '\n' {
-                        add_token!(Token::WhileCondition(current_token.trim().into()));
-                        building_while_condition = false;
-                    }
+                if building_condition {
+                    build_statement_condition!(Token::WhileCondition);
                 } else if current_token.trim() != "end" {
-                    while_line.push(self.current_char);
-                    if self.current_char == '\n' {
-                        current_token = String::new();
-                        while_lines.push(while_line.trim().into());
-                        while_line = String::new();
-                    }
+                    add_statement_lines!();
                 } else {
-                    building_while = false;
-                    building_first_token = true;
-                    tokens.push(Token::WhileContents(while_lines.join("\n")));
-                    tokens.push(Token::EndWhileLoop);
-                    current_token = String::new();
-                    while_line = String::new();
-                    while_lines = Vec::new();
-                    self.next_char();
+                    statement_end!(building_while, Token::WhileContents, Token::EndWhileLoop);
                 }
             }
 
@@ -367,14 +382,14 @@ impl Compiler {
                                 // }
                                 building_first_token = false;
                                 building_if = true;
-                                building_if_condition = true;
+                                building_condition = true;
                                 self.next_char();
                             }
                             "while" => {
                                 no_args_add!(Token::WhileLoop);
                                 building_first_token = false;
                                 building_while = true;
-                                building_while_condition = true;
+                                building_condition = true;
                                 self.next_char();
                             }
                             "sbop" => no_args_add!(Token::ScoreboardOperation),
