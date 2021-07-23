@@ -349,7 +349,7 @@ impl Compiler {
                 current_token.push(self.current_char);
                 if building_condition {
                     build_statement_condition!(Token::IfCondition);
-                } else if current_token.trim() == "else" {
+                } else if current_token.trim() == "else" && other_statements == 0 {
                     statement_end!(Token::IfContents, Token::ElseStatement);
                 } else if current_token.trim() == "end" {
                     if other_statements == 0 {
