@@ -114,6 +114,27 @@ impl Compiler {
         let mut new_contents = String::new();
         let mut chars = Compiler::get_chars();
 
+        /// Replace tokens such as while loops or if statements with their
+        /// compiled versions
+        macro_rules! replace_tokens {
+            ($tks_length: expr) => {
+                chars = Compiler::get_chars();
+
+                // Tokenize new contents
+                let tks = Compiler::new(new_contents.clone()).tokenize();
+                new_contents = String::new();
+
+                // When gettings indexes in the new tokens vector,
+                // the length and position of elements will have changed
+                // due to new things being added
+                new_tokens.splice(
+                    active_index + index_offset..active_index + index_offset + $tks_length,
+                    tks.iter().cloned(),
+                );
+                index_offset += tks.len() - $tks_length;
+            };
+        }
+
         for i in 0..tokens.len() {
             let token = tokens.get(i).unwrap();
             match token {
@@ -141,21 +162,7 @@ impl Compiler {
                     if token == &Token::EndWhileLoop {
                         new_contents.push_str(&format!("call {}while_{}\n", subfolder, chars)[..]);
                     }
-
-                    chars = Compiler::get_chars();
-
-                    // Tokenize new contents
-                    let tks = Compiler::new(new_contents.clone()).tokenize();
-                    new_contents = String::new();
-
-                    // When gettings indexes in the new tokens vector,
-                    // the length and position of elements will have changed
-                    // due to new things being added
-                    new_tokens.splice(
-                        active_index + index_offset..active_index + index_offset + 4,
-                        tks.iter().cloned(),
-                    );
-                    index_offset += tks.len() - 4;
+                    replace_tokens!(4);
                 }
                 Token::IfCondition(condition) => new_contents.push_str(&format!(
                     "execute if {condition} run call {subfolder}if_true_{chars}\n\
