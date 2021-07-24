@@ -20,7 +20,7 @@ use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-fn make_pack_mcmeta(description: String) -> Result<String, serde_json::Error> {
+fn make_pack_mcmeta(description: String, version: u8) -> Result<String, serde_json::Error> {
     #[derive(Serialize)]
     struct Pack {
         pack_format: u8,
@@ -34,7 +34,7 @@ fn make_pack_mcmeta(description: String) -> Result<String, serde_json::Error> {
 
     let pack = PackMcMeta {
         pack: Pack {
-            pack_format: 6,
+            pack_format: version,
             description,
         },
     };
@@ -67,6 +67,7 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
     } else {
         name
     };
+    let version: u8 = args.value_of("version").unwrap().parse().unwrap();
 
     let mut path = PathBuf::from(base_path);
 
@@ -102,7 +103,7 @@ pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
     path.pop();
 
     // Create pack.mcmeta
-    let pack_mcmeta = make_pack_mcmeta(description)?;
+    let pack_mcmeta = make_pack_mcmeta(description, version)?;
     path.push("pack.mcmeta");
     fs::write(&path, pack_mcmeta)?;
 
