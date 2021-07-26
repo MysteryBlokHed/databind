@@ -27,10 +27,17 @@ jobs:
           toolchain: stable
 
       - name: Build
-        run: cargo build --all-features
+        run: cargo build --release --all-features
 
       - name: Test
-        run: cargo test --all-features
+        run: cargo test --release --all-features
+
+      - name: Upload Artifacts
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-binary
+          path: ./target/release/databind.exe
 
   macos_build:
     name: macOS Build
@@ -45,10 +52,17 @@ jobs:
           toolchain: stable
 
       - name: Build
-        run: cargo build --all-features
+        run: cargo build --release --all-features
 
       - name: Test
-        run: cargo test --all-features
+        run: cargo test --release --all-features
+
+      - name: Upload Artifacts
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: macos-binary
+          path: ./target/release/databind
 
   ubuntu_build:
     name: Ubuntu Build
@@ -63,7 +77,14 @@ jobs:
           toolchain: stable
 
       - name: Build
-        run: cargo build --all-features
+        run: cargo build --release --all-features
 
       - name: Test
-        run: cargo test --all-features
+        run: cargo test --release --all-features
+
+      - name: Upload Artifacts
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-binary
+          path: ./target/release/databind
