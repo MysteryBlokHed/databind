@@ -32,11 +32,11 @@ jobs:
       - name: Test
         run: cargo test --release --all-features
 
-      - name: Upload Artifacts
+      - name: Upload release binary
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: actions/upload-artifact@v2
         with:
-          name: windows-binary
+          name: windows-build
           path: ./target/release/databind.exe
 
   macos_build:
@@ -57,11 +57,11 @@ jobs:
       - name: Test
         run: cargo test --release --all-features
 
-      - name: Upload Artifacts
+      - name: Upload release binary
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: actions/upload-artifact@v2
         with:
-          name: macos-binary
+          name: macos-build
           path: ./target/release/databind
 
   ubuntu_build:
@@ -82,9 +82,9 @@ jobs:
       - name: Test
         run: cargo test --release --all-features
 
-      - name: Upload Artifacts
+      - name: Upload release binary
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: actions/upload-artifact@v2
         with:
-          name: linux-binary
+          name: linux-build
           path: ./target/release/databind
