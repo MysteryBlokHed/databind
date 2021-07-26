@@ -19,6 +19,7 @@ jobs:
         with:
           workflow: build_and_test.yaml
           workflow_conclusion: success
+          event: push
           path: ./binaries
 
       - name: Add Windows binary
