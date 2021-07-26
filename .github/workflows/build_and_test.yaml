@@ -38,6 +38,7 @@ jobs:
         with:
           name: windows-build
           path: ./target/release/databind.exe
+          if-no-files-found: error
 
   macos_build:
     name: macOS Build
@@ -63,6 +64,7 @@ jobs:
         with:
           name: macos-build
           path: ./target/release/databind
+          if-no-files-found: error
 
   ubuntu_build:
     name: Ubuntu Build
@@ -88,3 +90,4 @@ jobs:
         with:
           name: linux-build
           path: ./target/release/databind
+          if-no-files-found: error
