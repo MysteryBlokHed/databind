@@ -19,7 +19,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
@@ -27,17 +27,25 @@ jobs:
           toolchain: stable
 
       - name: Build
-        run: cargo build --all-features
+        run: cargo build --release --all-features
 
       - name: Test
-        run: cargo test --all-features
+        run: cargo test --release --all-features
+
+      - name: Upload release binary
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-build
+          path: ./target/release/databind.exe
+          if-no-files-found: error
 
   macos_build:
     name: macOS Build
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
@@ -45,17 +53,25 @@ jobs:
           toolchain: stable
 
       - name: Build
-        run: cargo build --all-features
+        run: cargo build --release --all-features
 
       - name: Test
-        run: cargo test --all-features
+        run: cargo test --release --all-features
+
+      - name: Upload release binary
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: macos-build
+          path: ./target/release/databind
+          if-no-files-found: error
 
   ubuntu_build:
     name: Ubuntu Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
@@ -63,7 +79,15 @@ jobs:
           toolchain: stable
 
       - name: Build
-        run: cargo build --all-features
+        run: cargo build --release --all-features
 
       - name: Test
-        run: cargo test --all-features
+        run: cargo test --release --all-features
+
+      - name: Upload release binary
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-build
+          path: ./target/release/databind
+          if-no-files-found: error
