@@ -15,8 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-// Test 1
-// Test 2
 #![warn(clippy::all)]
 
 use glob::glob;
