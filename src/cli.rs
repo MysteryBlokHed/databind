@@ -76,6 +76,14 @@ pub fn get_app<'a, 'b>() -> App<'a, 'b> {
                         .long("path")
                         .takes_value(true)
                         .value_name("PATH"),
+                )
+                .arg(
+                    Arg::with_name("version")
+                        .help("The pack_format for the pack.mcmeta file")
+                        .long("version")
+                        .takes_value(true)
+                        .default_value("7")
+                        .value_name("VERSION"),
                 ),
         )
 }
