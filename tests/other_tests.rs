@@ -98,7 +98,7 @@ fn test_create_structure() {
         let contents_pack: PackMcMeta = serde_json::from_str(&contents).unwrap();
         let expected_pack = PackMcMeta {
             pack: Pack {
-                pack_format: 6,
+                pack_format: 7,
                 description: "test_create_structure description".into(),
             },
         };
