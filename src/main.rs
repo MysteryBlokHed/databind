@@ -18,12 +18,14 @@
 #![warn(clippy::all)]
 
 use glob::glob;
+use ini::Ini;
 use same_file::is_same_file;
 use serde::Serialize;
-use std::collections::HashMap;
-use std::env;
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashMap,
+    env, fs,
+    path::{Path, PathBuf},
+};
 use walkdir::WalkDir;
 
 mod cli;
@@ -221,6 +223,27 @@ fn main() -> std::io::Result<()> {
             src_dir.as_path()
         };
 
+        // Read vars.ini if present
+        let vars = {
+            let path = format!("{}/vars.ini", datapack);
+            let vars_ini = Path::new(&path);
+            if vars_ini.exists() && vars_ini.is_file() {
+                let i = Ini::load_from_file(vars_ini).unwrap();
+                let vars: HashMap<String, String> = i
+                    .iter()
+                    .next()
+                    .unwrap()
+                    .1
+                    .iter()
+                    // Replace each mapping of `"var": "value"` with `"&var": "value"`
+                    .map(|x| (format!("&{}", x.0), x.1.into()))
+                    .collect();
+                Some(vars)
+            } else {
+                None
+            }
+        };
+
         for entry in WalkDir::new(&src_dir).into_iter().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
                 // Do not add config file to output folder
@@ -264,9 +287,17 @@ fn main() -> std::io::Result<()> {
                 }
 
                 if compile {
-                    let content = fs::read_to_string(entry.path())
-                        .expect(&format!("Failed to read file {}", entry.path().display())[..]);
-                    let mut compile = compiler::Compiler::new(content);
+                    let contents = {
+                        let mut file_contents = fs::read_to_string(entry.path())
+                            .expect(&format!("Failed to read file {}", entry.path().display())[..]);
+                        if let Some(vars_map) = &vars {
+                            for (k, v) in vars_map.iter() {
+                                file_contents = file_contents.replace(k, v);
+                            }
+                        }
+                        file_contents
+                    };
+                    let mut compile = compiler::Compiler::new(contents);
                     let tokens = compile.tokenize();
 
                     let mut compiled = if entry

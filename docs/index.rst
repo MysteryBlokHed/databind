@@ -11,5 +11,6 @@ Contents:
    cli.rst
    config.rst
    macros.rst
+   global_vars.rst
    folder_structure.rst
    examples.rst
