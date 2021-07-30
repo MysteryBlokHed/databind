@@ -15,6 +15,7 @@ page on the docs.
 - Shorthand to call functions without namespace prefix (`func_1` instead of `namespace:func_1`)
 - Subcommand to create new projects easily
 - While loops
+- A file to define variables that can be used anywhere
 - Variable definitions via scoreboards
 - Shorthand for objective creation
 - Shorthand for testing variables in `if` commands
