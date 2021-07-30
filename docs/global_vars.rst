@@ -1,9 +1,8 @@
 Global Vars
 ===========
 
-You can define global variables with a file called ``vars.ini``
-in the project root. Keys and values aren't put in a section of the ``.ini``,
-they're just in the root. For example:
+You can define global variables with a file called ``vars.ini`` in the project root.
+Keys and values aren't put in a section of the ``.ini``, they're just in the file. For example:
 
 .. code-block:: ini
 
@@ -52,5 +51,5 @@ of your datapack. This does mean that the project must be recompiled
 whenever the configuration is changed, and that users must have Databind
 downloaded to use the project. If you are only configuring number values,
 eg. an amount of time to wait for something, then it might be easier for
-users of your datapack to have a ``config.mcfunction`` file somewhere in the
+people using your datapack to have a ``config.mcfunction`` file somewhere in the
 project that sets scoreboard values.
