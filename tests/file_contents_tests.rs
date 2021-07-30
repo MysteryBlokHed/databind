@@ -325,3 +325,33 @@ fn test_macro_recursion() {
     let contents = fs::read_to_string(&out_path).unwrap();
     assert!(contents.contains("say Macro 1 - Test"));
 }
+
+/// Test that global macros are properly dealt with
+#[test]
+fn test_global_macros() {
+    let mut path = tests::resources();
+    path.push("test_global_macros");
+
+    let out = TempDir::new("test_global_macros").expect("Could not create tempdir for test");
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path.to_str().unwrap(),
+            "--ignore-config",
+            "--out",
+            out.path().to_str().unwrap(),
+        ],
+        None,
+    );
+
+    let out_path = format!(
+        "{}/data/test/functions/main.mcfunction",
+        out.path().display()
+    );
+    let contents = fs::read_to_string(&out_path).unwrap();
+    println!("contents:\n{}", contents);
+    assert!(contents.contains("say Global Macro Test"));
+}

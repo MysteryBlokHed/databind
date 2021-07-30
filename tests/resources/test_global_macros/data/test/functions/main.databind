@@ -1,0 +1,3 @@
+func main
+    ?test("Global Macro Test")
+end
