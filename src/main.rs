@@ -306,7 +306,7 @@ fn main() -> std::io::Result<()> {
                         .unwrap()
                         .to_str()
                         .unwrap()
-                        .starts_with('@')
+                        .starts_with('!')
                     {
                         let ret = compile.compile(
                             tokens,

@@ -36,7 +36,7 @@ impl Compiler {
     ///
     /// - `tokens` - A list of tokens to look for macro calls in
     /// - `return_macros` - Whether to return the HashMap of macros.
-    ///   Used for global macros (files beginning with `@`)
+    ///   Used for global macros (files beginning with `!`)
     /// - `existing_macros` - Global macros to use
     pub fn parse_macros(
         &self,
