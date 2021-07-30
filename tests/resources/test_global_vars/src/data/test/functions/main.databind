@@ -1,0 +1,4 @@
+func main
+    say &var1
+    tellraw @a "&var2"
+end
