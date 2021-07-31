@@ -18,6 +18,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
+use tempdir::TempDir;
 
 pub fn run_with_args(cmd: &str, args: &[&str], path: Option<&dyn AsRef<Path>>) -> Output {
     if let Some(p) = path {
@@ -86,4 +87,31 @@ pub fn check_files_dont_exist<P: AsRef<Path>>(
         );
         base.pop();
     }
+}
+
+/// Run Databind on a path and send output to a path
+pub fn run<P: AsRef<Path>>(out: P, path: P) {
+    run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path.as_ref().to_str().unwrap(),
+            "--ignore-config",
+            "--out",
+            out.as_ref().to_str().unwrap(),
+        ],
+        None,
+    );
+}
+
+/// Create a temporary output directory for a test and run
+/// Databind there
+pub fn run_in_tempdir(directory: &str) -> (TempDir, PathBuf) {
+    let mut path = resources();
+    path.push(directory);
+
+    let out = TempDir::new(directory).expect("Could not create tempdir for test");
+    run(out.path(), &path);
+    (out, path)
 }
