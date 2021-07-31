@@ -101,7 +101,25 @@ fn test_config() {
 
 #[test]
 fn test_no_config_out() {
-    let (out, mut path) = tests::run_in_tempdir("test_no_config_out");
+    let mut path = tests::resources();
+    path.push("test_no_config_out");
+    let path_str = path.to_str().unwrap();
+
+    let out = TempDir::new("test_no_config_out").expect("Could not create tempdir for test");
+
+    tests::run_with_args(
+        "cargo",
+        &[
+            "run",
+            "--",
+            path_str,
+            "--config",
+            &format!("{}/should_not_be_made.toml", path_str)[..],
+            "--out",
+            out.path().to_str().unwrap(),
+        ],
+        None,
+    );
 
     let expected_funcs = ["tick.mcfunction"];
     let expected_toml = ["should_be_made.toml"];
