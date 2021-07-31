@@ -102,7 +102,6 @@ fn test_config() {
 #[test]
 fn test_no_config_out() {
     let mut path = tests::resources();
-    let (out, mut path) = tests::run_in_tempdir("test_no_config_out");
     path.push("test_no_config_out");
     let path_str = path.to_str().unwrap();
 
