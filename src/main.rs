@@ -378,6 +378,14 @@ fn main() -> std::io::Result<()> {
             .into_iter()
             .filter_map(|e| e.ok())
             .filter(|e| e.path().is_file())
+            .filter(|e| {
+                !e.path()
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .starts_with('!')
+            })
         {
             compile_files!(entry);
         }
