@@ -205,7 +205,7 @@ fn main() -> std::io::Result<()> {
         if fs::metadata(target_folder).is_ok() {
             println!("Deleting old databind folder...");
             fs::remove_dir_all(&target_folder)?;
-            println!("Done.");
+            println!("Deleted.");
         }
 
         let mut inclusions = merge_globs(&compiler_settings.inclusions, datapack);
@@ -244,150 +244,130 @@ fn main() -> std::io::Result<()> {
             }
         };
 
-        macro_rules! compile_files {
-            ($entry: expr) => {
-                // Do not add config file to output folder
-                if config_path.exists() && is_same_file($entry.path(), config_path).unwrap() {
-                    continue;
-                }
+        // Get filepaths with global macros appearing first
+        let paths = {
+            // Store global macro filepaths
+            let mut global_macros: Vec<PathBuf> = Vec::new();
+            // Store normal filepaths
+            let mut normal: Vec<PathBuf> = Vec::new();
+            // Sort filepaths into each vector
+            let unsorted_paths = WalkDir::new(&src_dir)
+                .into_iter()
+                .filter_map(|e| e.ok())
+                .filter(|e| e.path().is_file())
+                .map(|e| e.path().to_path_buf());
 
-                let new_path_str =
-                    $entry
-                        .path()
-                        .to_str()
-                        .unwrap()
-                        .replacen(src_dir.to_str().unwrap(), "", 1);
-                let path = Path::new(&new_path_str);
-
-                let mut target_path: String = target_folder.to_string();
-                target_path.push('/');
-                target_path.push_str(path.parent().unwrap().to_str().unwrap());
-
-                fs::create_dir_all(&target_path)?;
-
-                let mut compile = false;
-                let mut continue_loop = false;
-
-                for file in inclusions.iter() {
-                    if is_same_file(file, $entry.path()).expect("Failed to check file paths") {
-                        compile = true;
-                        break;
-                    }
-                }
-
-                for file in exclusions.iter() {
-                    if is_same_file(file, $entry.path()).expect("Failed to check file paths") {
-                        continue_loop = true;
-                        break;
-                    }
-                }
-
-                if continue_loop {
-                    continue;
-                }
-
-                if compile {
-                    let contents = {
-                        let mut file_contents = fs::read_to_string($entry.path()).expect(
-                            &format!("Failed to read file {}", $entry.path().display())[..],
-                        );
-                        if let Some(vars_map) = &vars {
-                            for (k, v) in vars_map.iter() {
-                                file_contents = file_contents.replace(k, v);
-                            }
-                        }
-                        file_contents
-                    };
-                    let mut compile = compiler::Compiler::new(contents);
-                    let tokens = compile.tokenize();
-
-                    let mut compiled = if $entry
-                        .path()
-                        .file_name()
-                        .unwrap()
-                        .to_str()
-                        .unwrap()
-                        .starts_with('!')
-                    {
-                        let ret = compile.compile(
-                            tokens,
-                            Some(get_namespace(&$entry.path()).unwrap()),
-                            &get_subfolder_prefix(&$entry.path()),
-                            &global_macros,
-                            true,
-                        );
-                        global_macros.extend(ret.global_macros.clone().unwrap());
-                        ret.clone()
-                    } else {
-                        compile.compile(
-                            tokens,
-                            Some(get_namespace(&$entry.path()).unwrap()),
-                            &get_subfolder_prefix(&$entry.path()),
-                            &global_macros,
-                            false,
-                        )
-                    };
-
-                    for (key, value) in compiled.filename_map.iter() {
-                        let full_path = format!("{}/{}.mcfunction", target_path, key);
-
-                        fs::write(full_path, &compiled.file_contents[*value])?;
-
-                        // Add namespace prefix to function in tag map
-                        for (_, funcs) in compiled.tag_map.iter_mut() {
-                            if funcs.contains(key) {
-                                let i = funcs.iter().position(|x| x == key).unwrap();
-                                funcs[i] = format!(
-                                    "{}:{}{}",
-                                    get_namespace(&$entry.path()).unwrap(),
-                                    get_subfolder_prefix(&$entry.path()),
-                                    key
-                                );
-                            }
-                        }
-                    }
-
-                    tag_map.extend(compiled.tag_map);
+            for path in unsorted_paths {
+                if path.file_name().unwrap().to_str().unwrap().starts_with('!') {
+                    global_macros.push(path);
                 } else {
-                    let filename = path.file_name().unwrap().to_str().unwrap();
-                    let full_path = format!("{}/{}", target_path, filename);
-                    fs::copy($entry.path(), full_path)?;
+                    normal.push(path);
                 }
-            };
-        }
+            }
 
-        // Compile only files beginning with !
-        for entry in WalkDir::new(&src_dir)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.path().is_file())
-            .filter(|e| {
-                e.path()
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .starts_with('!')
-            })
-        {
-            compile_files!(entry);
-        }
+            global_macros.append(&mut normal);
+            global_macros
+        };
 
-        // Compile everything else
-        for entry in WalkDir::new(&src_dir)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.path().is_file())
-            .filter(|e| {
-                !e.path()
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .starts_with('!')
-            })
-        {
-            compile_files!(entry);
+        for path in paths.iter() {
+            // Do not add config file to output folder
+            if config_path.exists() && is_same_file(path, config_path).unwrap() {
+                continue;
+            }
+
+            let new_path_str = path
+                .to_str()
+                .unwrap()
+                .replacen(src_dir.to_str().unwrap(), "", 1);
+
+            let relative_path = Path::new(&new_path_str);
+
+            let mut target_path: String = target_folder.to_string();
+            target_path.push('/');
+            target_path.push_str(relative_path.parent().unwrap().to_str().unwrap());
+
+            fs::create_dir_all(&target_path)?;
+
+            let mut compile = false;
+            let mut continue_loop = false;
+
+            for file in inclusions.iter() {
+                if is_same_file(file, path).expect("Failed to check file paths") {
+                    compile = true;
+                    break;
+                }
+            }
+
+            for file in exclusions.iter() {
+                if is_same_file(file, path).expect("Failed to check file paths") {
+                    continue_loop = true;
+                    break;
+                }
+            }
+
+            if continue_loop {
+                continue;
+            }
+
+            if compile {
+                let contents = {
+                    let mut file_contents = fs::read_to_string(path)
+                        .expect(&format!("Failed to read file {}", path.display())[..]);
+                    if let Some(vars_map) = &vars {
+                        for (k, v) in vars_map.iter() {
+                            file_contents = file_contents.replace(k, v);
+                        }
+                    }
+                    file_contents
+                };
+                let mut compile = compiler::Compiler::new(contents);
+                let tokens = compile.tokenize();
+
+                let mut compiled = if path.file_name().unwrap().to_str().unwrap().starts_with('!') {
+                    let ret = compile.compile(
+                        tokens,
+                        Some(get_namespace(&path).unwrap()),
+                        &get_subfolder_prefix(&path),
+                        &global_macros,
+                        true,
+                    );
+                    global_macros.extend(ret.global_macros.clone().unwrap());
+                    ret.clone()
+                } else {
+                    compile.compile(
+                        tokens,
+                        Some(get_namespace(&path).unwrap()),
+                        &get_subfolder_prefix(&path),
+                        &global_macros,
+                        false,
+                    )
+                };
+
+                for (key, value) in compiled.filename_map.iter() {
+                    let full_path = format!("{}/{}.mcfunction", target_path, key);
+
+                    fs::write(full_path, &compiled.file_contents[*value])?;
+
+                    // Add namespace prefix to function in tag map
+                    for (_, funcs) in compiled.tag_map.iter_mut() {
+                        if funcs.contains(key) {
+                            let i = funcs.iter().position(|x| x == key).unwrap();
+                            funcs[i] = format!(
+                                "{}:{}{}",
+                                get_namespace(&path).unwrap(),
+                                get_subfolder_prefix(&path),
+                                key
+                            );
+                        }
+                    }
+                }
+
+                tag_map.extend(compiled.tag_map);
+            } else {
+                let filename = relative_path.file_name().unwrap().to_str().unwrap();
+                let full_path = format!("{}/{}", target_path, filename);
+                fs::copy(path, full_path)?;
+            }
         }
 
         // Write tag files
