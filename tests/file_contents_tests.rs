@@ -20,7 +20,6 @@ use serde::Deserialize;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str;
-use tempdir::TempDir;
 
 mod tests;
 
@@ -32,23 +31,7 @@ fn test_tag_syntax() {
         pub values: Vec<String>,
     }
 
-    let mut path = tests::resources();
-    path.push("test_tag_syntax");
-
-    let out = TempDir::new("test_tag_syntax").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    let (out, mut path) = tests::run_in_tempdir("test_tag_syntax");
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
     let expected_tags = [
@@ -98,23 +81,7 @@ fn test_tag_syntax() {
 /// is not removed by comments
 #[test]
 fn test_tags_and_comments() {
-    let mut path = tests::resources();
-    path.push("test_tags_and_comments");
-
-    let out = TempDir::new("test_tags_and_comments").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    let (out, mut path) = tests::run_in_tempdir("test_tags_and_comments");
 
     let expected_funcs = ["func1.mcfunction"];
     let expected_include = "kill @e[type=#test:tag_should_be_included]";
@@ -133,30 +100,7 @@ fn test_tags_and_comments() {
 /// Test that escaped keywords are properly escaped
 #[test]
 fn test_escape() {
-    let mut path = tests::resources();
-    path.push("test_escape");
-
-    let out = TempDir::new("test_escape").expect("Could not create tempdir for test");
-
-    println!(
-        "{}",
-        str::from_utf8(
-            &tests::run_with_args(
-                "cargo",
-                &[
-                    "run",
-                    "--",
-                    path.to_str().unwrap(),
-                    "--ignore-config",
-                    "--out",
-                    out.path().to_str().unwrap(),
-                ],
-                None,
-            )
-            .stdout
-        )
-        .unwrap()
-    );
+    let (out, mut path) = tests::run_in_tempdir("test_escape");
 
     let expected_funcs = [
         "main.mcfunction",
@@ -203,23 +147,7 @@ fn get_while_files<P: AsRef<Path>>(functions_path: P) -> WhileFiles {
 /// Test that the contents of generated while loop functions are correct
 #[test]
 fn test_while_creation() {
-    let mut path = tests::resources();
-    path.push("test_while_creation");
-
-    let out = TempDir::new("test_while_creation").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    let out = tests::run_in_tempdir("test_while_creation").0;
 
     // Get the randomly-named while loop files
     let files = get_while_files(format!("{}/data/test/functions", out.path().display()));
@@ -250,10 +178,7 @@ fn test_while_creation() {
 /// formatting
 #[test]
 fn test_macro_replacement() {
-    let mut path = tests::resources();
-    path.push("test_macro_replacement");
-
-    let out = TempDir::new("test_macro_replacement").expect("Could not create tempdir for test");
+    let out = tests::run_in_tempdir("test_macro_replacement").0;
 
     let expected_lines = [
         "say Call Test 1",
@@ -272,19 +197,6 @@ fn test_macro_replacement() {
         "say Def Test 5",
     ];
 
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
-
     let out_path = format!(
         "{}/data/test/functions/main.mcfunction",
         out.path().display()
@@ -300,23 +212,7 @@ fn test_macro_replacement() {
 /// Test that macros calling other macros work properly
 #[test]
 fn test_macro_recursion() {
-    let mut path = tests::resources();
-    path.push("test_macro_recursion");
-
-    let out = TempDir::new("test_macro_recursion").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    let out = tests::run_in_tempdir("test_macro_recursion").0;
 
     let out_path = format!(
         "{}/data/test/functions/main.mcfunction",
@@ -329,23 +225,7 @@ fn test_macro_recursion() {
 /// Test that global variables are properly read and replaced
 #[test]
 fn test_global_vars() {
-    let mut path = tests::resources();
-    path.push("test_global_vars");
-
-    let out = TempDir::new("test_global_vars").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    let out = tests::run_in_tempdir("test_global_vars").0;
 
     let out_path = format!(
         "{}/data/test/functions/main.mcfunction",
@@ -360,23 +240,7 @@ fn test_global_vars() {
 /// Test that global macros are properly dealt with
 #[test]
 fn test_global_macros() {
-    let mut path = tests::resources();
-    path.push("test_global_macros");
-
-    let out = TempDir::new("test_global_macros").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    let out = tests::run_in_tempdir("test_global_macros").0;
 
     let out_path = format!(
         "{}/data/test/functions/main.mcfunction",

@@ -29,23 +29,7 @@ mod tests;
 /// Uses `tests/resources/test_file_structure`
 #[test]
 fn test_file_structure() {
-    let mut path = tests::resources();
-    path.push("test_file_structure");
-
-    let out = TempDir::new("test_file_structure").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    let (out, mut path) = tests::run_in_tempdir("test_file_structure");
 
     let expected_funcs = [
         "load.mcfunction",
@@ -73,23 +57,7 @@ fn test_file_structure() {
 /// Test that nested functions are properly generated
 #[test]
 fn test_nested_funcs() {
-    let mut path = tests::resources();
-    path.push("test_nested_funcs");
-
-    let out = TempDir::new("test_nested_funcs").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    let (out, mut path) = tests::run_in_tempdir("test_nested_funcs");
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
 
@@ -133,25 +101,7 @@ fn test_config() {
 
 #[test]
 fn test_no_config_out() {
-    let mut path = tests::resources();
-    path.push("test_no_config_out");
-    let path_str = path.to_str().unwrap();
-
-    let out = TempDir::new("test_no_config_out").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path_str,
-            "--config",
-            &format!("{}/should_not_be_made.toml", path_str)[..],
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    let (out, mut path) = tests::run_in_tempdir("test_no_config_out");
 
     let expected_funcs = ["tick.mcfunction"];
     let expected_toml = ["should_be_made.toml"];
@@ -178,23 +128,7 @@ fn test_tag_generation() {
         pub values: Vec<String>,
     }
 
-    let mut path = tests::resources();
-    path.push("test_tag_generation");
-
-    let out = TempDir::new("test_tag_generation").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    let (out, mut path) = tests::run_in_tempdir("test_tag_generation");
 
     let expected_funcs = ["load.mcfunction", "tick.mcfunction", "func3.mcfunction"];
     let expected_tags = ["load.json", "tick.json", "second_tag.json", "func3.json"];
@@ -284,19 +218,7 @@ fn test_while_structure() {
     path.push("test_while_creation");
 
     let out = TempDir::new("test_while_structure").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    tests::run(out.path(), &path);
 
     let files: Vec<PathBuf> = glob(&format!(
         "{}/data/test/functions/*.mcfunction",
@@ -333,19 +255,7 @@ fn test_if_structure() {
     path.push("test_if_creation");
 
     let out = TempDir::new("test_if_structure").expect("Could not create tempdir for test");
-
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--",
-            path.to_str().unwrap(),
-            "--ignore-config",
-            "--out",
-            out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+    tests::run(out.path(), &path);
 
     let files: Vec<PathBuf> = glob(&format!(
         "{}/data/test/functions/*.mcfunction",
