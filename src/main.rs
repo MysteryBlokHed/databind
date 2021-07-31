@@ -244,15 +244,15 @@ fn main() -> std::io::Result<()> {
             }
         };
 
-        for entry in WalkDir::new(&src_dir).into_iter().filter_map(|e| e.ok()) {
-            if entry.path().is_file() {
+        macro_rules! compile_files {
+            ($entry: expr) => {
                 // Do not add config file to output folder
-                if config_path.exists() && is_same_file(entry.path(), config_path).unwrap() {
+                if config_path.exists() && is_same_file($entry.path(), config_path).unwrap() {
                     continue;
                 }
 
                 let new_path_str =
-                    entry
+                    $entry
                         .path()
                         .to_str()
                         .unwrap()
@@ -269,14 +269,14 @@ fn main() -> std::io::Result<()> {
                 let mut continue_loop = false;
 
                 for file in inclusions.iter() {
-                    if is_same_file(file, entry.path()).expect("Failed to check file paths") {
+                    if is_same_file(file, $entry.path()).expect("Failed to check file paths") {
                         compile = true;
                         break;
                     }
                 }
 
                 for file in exclusions.iter() {
-                    if is_same_file(file, entry.path()).expect("Failed to check file paths") {
+                    if is_same_file(file, $entry.path()).expect("Failed to check file paths") {
                         continue_loop = true;
                         break;
                     }
@@ -288,8 +288,9 @@ fn main() -> std::io::Result<()> {
 
                 if compile {
                     let contents = {
-                        let mut file_contents = fs::read_to_string(entry.path())
-                            .expect(&format!("Failed to read file {}", entry.path().display())[..]);
+                        let mut file_contents = fs::read_to_string($entry.path()).expect(
+                            &format!("Failed to read file {}", $entry.path().display())[..],
+                        );
                         if let Some(vars_map) = &vars {
                             for (k, v) in vars_map.iter() {
                                 file_contents = file_contents.replace(k, v);
@@ -300,7 +301,7 @@ fn main() -> std::io::Result<()> {
                     let mut compile = compiler::Compiler::new(contents);
                     let tokens = compile.tokenize();
 
-                    let mut compiled = if entry
+                    let mut compiled = if $entry
                         .path()
                         .file_name()
                         .unwrap()
@@ -310,8 +311,8 @@ fn main() -> std::io::Result<()> {
                     {
                         let ret = compile.compile(
                             tokens,
-                            Some(get_namespace(&entry.path()).unwrap()),
-                            &get_subfolder_prefix(&entry.path()),
+                            Some(get_namespace(&$entry.path()).unwrap()),
+                            &get_subfolder_prefix(&$entry.path()),
                             &global_macros,
                             true,
                         );
@@ -320,8 +321,8 @@ fn main() -> std::io::Result<()> {
                     } else {
                         compile.compile(
                             tokens,
-                            Some(get_namespace(&entry.path()).unwrap()),
-                            &get_subfolder_prefix(&entry.path()),
+                            Some(get_namespace(&$entry.path()).unwrap()),
+                            &get_subfolder_prefix(&$entry.path()),
                             &global_macros,
                             false,
                         )
@@ -338,8 +339,8 @@ fn main() -> std::io::Result<()> {
                                 let i = funcs.iter().position(|x| x == key).unwrap();
                                 funcs[i] = format!(
                                     "{}:{}{}",
-                                    get_namespace(&entry.path()).unwrap(),
-                                    get_subfolder_prefix(&entry.path()),
+                                    get_namespace(&$entry.path()).unwrap(),
+                                    get_subfolder_prefix(&$entry.path()),
                                     key
                                 );
                             }
@@ -350,9 +351,43 @@ fn main() -> std::io::Result<()> {
                 } else {
                     let filename = path.file_name().unwrap().to_str().unwrap();
                     let full_path = format!("{}/{}", target_path, filename);
-                    fs::copy(entry.path(), full_path)?;
+                    fs::copy($entry.path(), full_path)?;
                 }
-            }
+            };
+        }
+
+        // Compile only files beginning with !
+        for entry in WalkDir::new(&src_dir)
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().is_file())
+            .filter(|e| {
+                e.path()
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .starts_with('!')
+            })
+        {
+            compile_files!(entry);
+        }
+
+        // Compile everything else
+        for entry in WalkDir::new(&src_dir)
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().is_file())
+            .filter(|e| {
+                !e.path()
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .starts_with('!')
+            })
+        {
+            compile_files!(entry);
         }
 
         // Write tag files
