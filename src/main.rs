@@ -378,24 +378,33 @@ fn main() -> std::io::Result<()> {
                 values: funcs.clone(),
             };
 
-            // Path to generated JSON file
-            let path_string = format!(
-                "{}/data/minecraft/tags/functions/{}.json",
-                target_folder, tag
-            );
-            let path = Path::new(&path_string);
+            {
+                // Path to potential source JSON file
+                let path_str = format!(
+                    "{}/data/minecraft/tags/functions/{}.json",
+                    src_dir.display(),
+                    tag
+                );
+                let path = Path::new(&path_str);
 
-            // Read existing tags if present
-            if path.exists() && path.is_file() {
-                let contents = fs::read_to_string(&path)?;
-                let mut existing_tags: TagFile = serde_json::from_str(&contents)?;
-                tag_file.values.append(&mut existing_tags.values);
+                // Read existing tags if present
+                if path.exists() && path.is_file() {
+                    let contents = fs::read_to_string(&path)?;
+                    let mut existing_tags: TagFile = serde_json::from_str(&contents)?;
+                    tag_file.values.append(&mut existing_tags.values);
+                }
             }
 
             let json = serde_json::to_string(&tag_file)?;
 
             // Write tag file
-            fs::write(path, json)?;
+            fs::write(
+                &format!(
+                    "{}/data/minecraft/tags/functions/{}.json",
+                    target_folder, tag
+                ),
+                json,
+            )?;
         }
     } else {
         println!("Databind does not support single-file compilation.");
