@@ -23,14 +23,14 @@ use std::str;
 
 mod tests;
 
-/// Test multiple ways to format :tag code
+#[derive(Debug, PartialEq, Deserialize)]
+struct TagFile {
+    pub values: Vec<String>,
+}
+
+/// Test multiple ways to format tag code
 #[test]
 fn test_tag_syntax() {
-    #[derive(Debug, PartialEq, Deserialize)]
-    struct TagFile {
-        pub values: Vec<String>,
-    }
-
     let (out, mut path) = tests::run_in_tempdir("test_tag_syntax");
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
@@ -75,6 +75,24 @@ fn test_tag_syntax() {
 
     // Ensure unexpected tag files do not exist
     tests::check_files_dont_exist(&path, &unexpected_tags, "test_tag_syntax");
+}
+
+/// Test that existing function tags defined with a JSON file aren't
+/// overwritten by Databind's function tags
+#[test]
+fn test_existing_tags() {
+    let out = tests::run_in_tempdir("test_existing_tags").0;
+
+    let path = format!(
+        "{}/data/minecraft/tags/functions/test.json",
+        out.path().display()
+    );
+
+    let contents = fs::read_to_string(&path).unwrap();
+    let tags: TagFile = serde_json::from_str(&contents).unwrap();
+
+    assert!(tags.values.contains(&"test:databind_tagged".into()));
+    assert!(tags.values.contains(&"test:mcfunction_tagged".into()));
 }
 
 /// Test that use of tags such as `kill @e[type=#namespace:tag]`

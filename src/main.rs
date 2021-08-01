@@ -20,7 +20,7 @@
 use glob::glob;
 use ini::Ini;
 use same_file::is_same_file;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     env, fs,
@@ -34,9 +34,9 @@ mod create_project;
 mod settings;
 mod token;
 
-#[derive(Serialize)]
-struct TagFile<'a> {
-    values: &'a Vec<String>,
+#[derive(Deserialize, Serialize)]
+struct TagFile {
+    values: Vec<String>,
 }
 
 /// Get namespace (name of folder containing the main /functions)
@@ -366,20 +366,44 @@ fn main() -> std::io::Result<()> {
             } else {
                 let filename = relative_path.file_name().unwrap().to_str().unwrap();
                 let full_path = format!("{}/{}", target_path, filename);
-                fs::copy(path, full_path)?;
+                // Only copy if the file doesn't exist yet
+                // Intended to stop overwriting of Databind tags
+                if fs::metadata(&full_path).is_err() {
+                    fs::copy(&path, &full_path)?;
+                }
             }
         }
 
-        // Write tag files
+        // Create tags directory
         fs::create_dir_all(format!("{}/data/minecraft/tags/functions", target_folder))?;
 
         for (tag, funcs) in tag_map.iter() {
-            let tag_file = TagFile { values: funcs };
+            let mut tag_file = TagFile {
+                values: funcs.clone(),
+            };
+
+            {
+                // Path to potential source JSON file
+                let path_str = format!(
+                    "{}/data/minecraft/tags/functions/{}.json",
+                    src_dir.display(),
+                    tag
+                );
+                let path = Path::new(&path_str);
+
+                // Read existing tags if present
+                if path.exists() && path.is_file() {
+                    let contents = fs::read_to_string(&path)?;
+                    let mut existing_tags: TagFile = serde_json::from_str(&contents)?;
+                    tag_file.values.append(&mut existing_tags.values);
+                }
+            }
+
             let json = serde_json::to_string(&tag_file)?;
 
             // Write tag file
             fs::write(
-                format!(
+                &format!(
                     "{}/data/minecraft/tags/functions/{}.json",
                     target_folder, tag
                 ),
