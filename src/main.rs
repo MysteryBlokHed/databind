@@ -366,7 +366,11 @@ fn main() -> std::io::Result<()> {
             } else {
                 let filename = relative_path.file_name().unwrap().to_str().unwrap();
                 let full_path = format!("{}/{}", target_path, filename);
-                fs::copy(path, full_path)?;
+                // Only copy if the file doesn't exist yet
+                // Intended to stop overwriting of Databind tags
+                if fs::metadata(&full_path).is_err() {
+                    fs::copy(&path, &full_path)?;
+                }
             }
         }
 
