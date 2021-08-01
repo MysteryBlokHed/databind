@@ -1,0 +1,2 @@
+func databind_tagged tag test end
+func mcfunction_tagged end
