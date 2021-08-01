@@ -20,7 +20,7 @@
 use glob::glob;
 use ini::Ini;
 use same_file::is_same_file;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     env, fs,
@@ -34,9 +34,9 @@ mod create_project;
 mod settings;
 mod token;
 
-#[derive(Serialize)]
-struct TagFile<'a> {
-    values: &'a Vec<String>,
+#[derive(Deserialize, Serialize)]
+struct TagFile {
+    values: Vec<String>,
 }
 
 /// Get namespace (name of folder containing the main /functions)
@@ -370,21 +370,32 @@ fn main() -> std::io::Result<()> {
             }
         }
 
-        // Write tag files
+        // Create tags directory
         fs::create_dir_all(format!("{}/data/minecraft/tags/functions", target_folder))?;
 
         for (tag, funcs) in tag_map.iter() {
-            let tag_file = TagFile { values: funcs };
+            let mut tag_file = TagFile {
+                values: funcs.clone(),
+            };
+
+            // Path to generated JSON file
+            let path_string = format!(
+                "{}/data/minecraft/tags/functions/{}.json",
+                target_folder, tag
+            );
+            let path = Path::new(&path_string);
+
+            // Read existing tags if present
+            if path.exists() && path.is_file() {
+                let contents = fs::read_to_string(&path)?;
+                let mut existing_tags: TagFile = serde_json::from_str(&contents)?;
+                tag_file.values.append(&mut existing_tags.values);
+            }
+
             let json = serde_json::to_string(&tag_file)?;
 
             // Write tag file
-            fs::write(
-                format!(
-                    "{}/data/minecraft/tags/functions/{}.json",
-                    target_folder, tag
-                ),
-                json,
-            )?;
+            fs::write(path, json)?;
         }
     } else {
         println!("Databind does not support single-file compilation.");
