@@ -9,6 +9,7 @@ page on the docs.
 
 ## Features
 
+- Can be integrated with existing datapacks/mcfunctions
 - Multiple mcfunction definitions in a single file
 - Custom functions (macros) that can take arguments
 - Tagging functions in-code
