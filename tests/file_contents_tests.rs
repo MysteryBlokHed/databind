@@ -292,6 +292,19 @@ fn test_global_macros() {
         out.path().display()
     );
     let contents = fs::read_to_string(&out_path).unwrap();
-    println!("contents:\n{}", contents);
     assert!(contents.contains("say Global Macro Test"));
+}
+
+/// Test that macro definitions in other macro definitions
+/// work properly
+#[test]
+fn test_macro_defs_in_defs() {
+    let out = tests::run_in_tempdir("test_macro_defs_in_defs").0;
+    let out_path = format!(
+        "{}/data/test/functions/main.mcfunction",
+        out.path().display()
+    );
+
+    let contents = fs::read_to_string(&out_path).unwrap();
+    assert!(contents.contains("say Hello from new macro"));
 }

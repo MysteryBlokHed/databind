@@ -286,17 +286,26 @@ impl Compiler {
                     current_token.push(self.current_char);
                     if self.current_char.is_whitespace() {
                         if current_token.trim() == "!end" {
-                            tokens.push(Token::MacroContents(macro_content));
-                            tokens.push(Token::EndMacro);
-                            macro_content = String::new();
-                            current_token = String::new();
-                            building_macro = false;
-                            macro_name_built = false;
-                            marco_args_built = false;
-                            building_macro_arg = false;
-                            building_first_token = true;
-                            self.next_char();
+                            if other_statements == 0 {
+                                tokens.push(Token::MacroContents(macro_content));
+                                tokens.push(Token::EndMacro);
+                                macro_content = String::new();
+                                current_token = String::new();
+                                building_macro = false;
+                                macro_name_built = false;
+                                marco_args_built = false;
+                                building_macro_arg = false;
+                                building_first_token = true;
+                                self.next_char();
+                            } else {
+                                other_statements -= 1;
+                                macro_content.push_str(&current_token);
+                                current_token = String::new();
+                            }
                         } else {
+                            if current_token.trim() == "!def" {
+                                other_statements += 1;
+                            }
                             macro_content.push_str(&current_token);
                             current_token = String::new();
                         }
@@ -495,7 +504,7 @@ impl Compiler {
                     Token::DeleteVar => add_token_and_reset!(Token::DelVarName(current_token)),
                     _ => {}
                 };
-                if self.current_char == '\n' && !building_if && !building_while {
+                if self.current_char == '\n' && !building_if && !building_macro && !building_while {
                     tokens.push(Token::NewLine);
                 }
                 self.next_char();

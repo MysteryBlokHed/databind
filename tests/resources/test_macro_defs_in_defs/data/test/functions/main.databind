@@ -1,0 +1,11 @@
+!def create_macro($name)
+    !def macro_$name()
+        Hello from new macro
+    !end
+!end
+
+func main
+tag load
+    ?create_macro("test")
+    say ?macro_test()
+end
