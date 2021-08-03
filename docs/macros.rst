@@ -220,8 +220,8 @@ have a file structure similar to this:
    │   databind.toml
    └───src
        │   pack.mcmeta
-       ├───@macros
-       │       @my_macro.databind
+       ├───!macros
+       │       !my_macro.databind
        └───data
            └───namespace
                └───functions
