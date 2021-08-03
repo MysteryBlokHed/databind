@@ -1,0 +1,7 @@
+func main
+    say string=&string
+    say int=&int
+    say float=&float
+    say bool_true=&bool_true
+    say bool_false=&bool_false
+end

@@ -18,7 +18,6 @@
 #![warn(clippy::all)]
 
 use glob::glob;
-use ini::Ini;
 use same_file::is_same_file;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -26,6 +25,7 @@ use std::{
     env, fs,
     path::{Path, PathBuf},
 };
+use toml::Value;
 use walkdir::WalkDir;
 
 mod cli;
@@ -223,21 +223,38 @@ fn main() -> std::io::Result<()> {
             src_dir.as_path()
         };
 
-        // Read vars.ini if present
+        // Read vars.toml if present
         let vars = {
-            let path = format!("{}/vars.ini", datapack);
-            let vars_ini = Path::new(&path);
-            if vars_ini.exists() && vars_ini.is_file() {
-                let i = Ini::load_from_file(vars_ini).unwrap();
-                let vars: HashMap<String, String> = i
-                    .iter()
-                    .next()
-                    .unwrap()
-                    .1
-                    .iter()
-                    // Replace each mapping of `"var": "value"` with `"&var": "value"`
-                    .map(|x| (format!("&{}", x.0), x.1.into()))
-                    .collect();
+            // Path to toml file
+            let path = format!("{}/vars.toml", datapack);
+            let vars_toml = Path::new(&path);
+            // Check if file exists
+            if vars_toml.exists() && vars_toml.is_file() {
+                let contents = fs::read_to_string(vars_toml)?;
+                // Read toml file into HashMap with multiple types
+                let vars_multi_type: HashMap<String, Value> = toml::from_str(&contents).unwrap();
+                let mut vars: HashMap<String, String> = HashMap::new();
+                for (k, v) in vars_multi_type.iter() {
+                    // Try to convert the value into a string
+                    let new_v: String = match v {
+                        Value::String(value) => value.clone(),
+                        Value::Boolean(value) => {
+                            if *value {
+                                "1".into()
+                            } else {
+                                "0".into()
+                            }
+                        }
+                        Value::Float(value) => value.to_string(),
+                        Value::Integer(value) => value.to_string(),
+                        Value::Datetime(value) => value.to_string(),
+                        _ => {
+                            println!("[ERROR] Unsupported type found in vars.toml file (key: {}, value: {})", k, v);
+                            std::process::exit(1);
+                        }
+                    };
+                    vars.entry(format!("&{}", k)).or_insert(new_v);
+                }
                 Some(vars)
             } else {
                 None
