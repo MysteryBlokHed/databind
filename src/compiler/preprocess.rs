@@ -29,9 +29,6 @@ impl Compiler {
     /// Recursively calls itself until no macro calls are left
     /// in case a macro definition contains a macro call
     ///
-    /// This function leaves macro definition tokens in the token list
-    /// as they are ignored by the compiler
-    ///
     /// # Arguments
     ///
     /// - `tokens` - A list of tokens to look for macro calls in
@@ -112,7 +109,7 @@ impl Compiler {
         new_tokens.retain(|x| *x != Token::None);
 
         if new_tokens.contains(&Token::CallMacro) {
-            self.parse_macros(new_tokens, return_macros, existing_macros)
+            self.parse_macros(new_tokens, return_macros, &macros)
         } else if return_macros {
             (new_tokens, Some(macros))
         } else {
