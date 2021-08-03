@@ -1,14 +1,23 @@
 Global Vars
 ===========
 
-You can define global variables with a file called ``vars.ini`` in the project root.
-Keys and values aren't put in a section of the ``.ini``, they're just in the file. For example:
+You can define global variables with a file called ``vars.toml`` in the project root.
+Keys and values aren't put in a section of the ``.toml``, they're just in the file. For example:
 
-.. code-block:: ini
+.. code-block:: toml
 
-   name=World
+   name="World"
 
 This defines a global variable ``name`` that can be used in your code.
+
+Types
+-----
+
+The TOML format supports datatypes other than just strings, such as
+booleans and integers. Types that aren't strings are converted to
+strings. Booleans that are ``true`` are turned into ``1``, and
+``false`` ones are turned into ``0``. Floats like ``1.0`` are
+truncated, but floats with non-zero decimals are left alone.
 
 Using Global Vars
 -----------------
@@ -20,7 +29,7 @@ by the variable name. Like this:
 
    say Hello, &name!
 
-Which, with the ``vars.ini`` defined above, becomes:
+Which, with the ``vars.toml`` defined above, becomes:
 
 .. code-block:: mcfunction
 
@@ -34,14 +43,7 @@ the following code:
 
    say Hello, %&name!
 
-Just becomes:
-
-.. code-block:: databind
-
-   say Hello, %World!
-
-``%World`` is effectively the same as ``World``, so the ``%`` symbol
-won't appear in the compiled output.
+won't stop the replacement of ``&name``.
 
 When to use
 -----------
