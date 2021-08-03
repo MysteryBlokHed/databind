@@ -255,6 +255,33 @@ fn test_global_vars() {
     assert!(contents.contains("tellraw @a \"Variable 2\""));
 }
 
+/// Test that multiple TOML types are properly supported by
+/// global vars
+#[test]
+fn test_types_global_vars() {
+    let out = tests::run_in_tempdir("test_types_global_vars").0;
+
+    let out_path = format!(
+        "{}/data/test/functions/main.mcfunction",
+        out.path().display()
+    );
+
+    let expected_lines = [
+        "say string=String",
+        "say int=1",
+        "say float=3.14",
+        "say bool_true=1",
+        "say bool_false=0",
+    ];
+
+    let contents = fs::read_to_string(&out_path).unwrap();
+
+    for line in expected_lines.iter() {
+        assert!(contents.contains(line));
+        println!("Line {:?} found", line);
+    }
+}
+
 /// Test that global macros are properly dealt with
 #[test]
 fn test_global_macros() {
