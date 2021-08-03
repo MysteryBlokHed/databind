@@ -13,8 +13,9 @@ page on the docs.
 - Multiple mcfunction definitions in a single file
 - Custom functions (macros) that can take arguments
 - Tagging functions in-code
-- Shorthand to call functions without namespace prefix (`func_1` instead of `namespace:func_1`)
+- Shorthand to call functions without namespace prefix (eg. `func_1` instead of `namespace:func_1`)
 - Subcommand to create new projects easily
+- If/else statements
 - While loops
 - A file to define variables that can be used anywhere
 - Variable definitions via scoreboards
