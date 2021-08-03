@@ -48,6 +48,7 @@ impl Compiler {
 
         let mut macros: HashMap<String, Macro> = existing_macros.clone();
         let mut call_index: usize = 0;
+        let mut define_index: usize = 0;
         let mut index_offset: usize = 0;
 
         let mut active_macro_name = String::new();
@@ -57,14 +58,21 @@ impl Compiler {
             let token = tokens.get(i).unwrap();
             match token {
                 Token::CallMacro => call_index = i,
+                Token::DefineMacro => define_index = i,
                 Token::MacroName(name) => active_macro_name = name.clone(),
                 Token::DefArgList(args) => {
                     macro_def_args = args.clone();
                 }
                 Token::CallArgList(args) => {
                     if !macros.contains_key(&active_macro_name) {
-                        println!("A non-existant macro {} was called", active_macro_name);
-                        std::process::exit(1);
+                        // If there are definitions left, continue instead of erroring
+                        // The macro might not exist yet, but will be defined at some point
+                        if new_tokens.contains(&Token::DefineMacro) {
+                            continue;
+                        } else {
+                            println!("A non-existant macro {} was called", active_macro_name);
+                            std::process::exit(1);
+                        }
                     }
 
                     let tks = {
@@ -88,9 +96,20 @@ impl Compiler {
                     active_macro_name = String::new();
                     macro_def_args = Vec::new();
                 }
+                Token::EndMacro => {
+                    // Replace definition-related macros with Token::None
+                    // This prevents the check for Token::CallArgList from always
+                    // making the code continue
+                    new_tokens.splice(
+                        define_index + index_offset..define_index + 5,
+                        vec![Token::None; 5],
+                    );
+                }
                 _ => {}
             }
         }
+
+        new_tokens.retain(|x| *x != Token::None);
 
         if new_tokens.contains(&Token::CallMacro) {
             self.parse_macros(new_tokens, return_macros, existing_macros)
