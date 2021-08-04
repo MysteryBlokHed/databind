@@ -18,7 +18,6 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: build_and_test.yaml
-          workflow_conclusion: success
           event: push
           path: ./binaries
 
