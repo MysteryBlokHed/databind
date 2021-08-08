@@ -1,5 +1,5 @@
 [package]
-version = "0.6.0"
+version = "0.6.1"
 name = "databind"
 authors = ["Adam Thompson-Sharpe <adamthompsonsharpe@gmail.com>"]
 edition = "2018"
