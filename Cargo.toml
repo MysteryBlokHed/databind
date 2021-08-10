@@ -10,7 +10,7 @@ repository = "https://github.com/MysteryBlokHed/databind"
 license = "GPL-3.0+"
 keywords = ["compilers", "datapacks", "minecraft", "transpilers"]
 categories = ["command-line-utilities", "compilers"]
-include = ["/src/**", "LICENSE", "README.md"]
+include = ["/src/", "LICENSE", "README.md"]
 
 [dependencies]
 clap = "2.33"
