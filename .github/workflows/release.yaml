@@ -1,8 +1,7 @@
 name: Add Binaries to Release
 on:
   release:
-    types:
-      - published
+    types: [published]
 
 jobs:
   add_binaries:
