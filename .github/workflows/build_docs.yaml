@@ -4,12 +4,12 @@ on:
     branches:
       - master
     paths:
-      - docs/**
+      - docs/**/*
   push:
     branches:
       - master
     paths:
-      - docs/**
+      - docs/**/*
 
 jobs:
   build_docs:
