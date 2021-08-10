@@ -4,10 +4,10 @@ on:
     branches:
       - master
     paths:
-      - src/**/*
-      - docs/**/*
-      - tests/**/*
-      - .github/workflows/**/*
+      - src/**
+      - docs/**
+      - tests/**
+      - .github/workflows/**
       - .github/labeler.yaml
 
 jobs:
