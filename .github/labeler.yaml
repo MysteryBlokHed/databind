@@ -1,7 +1,7 @@
-source: src/**
+source: src/**/*
 databind create: src/create_project.rs
-documentation: docs/**
-tests: tests/**
+documentation: docs/**/*
+tests: tests/**/*
 workflows:
-  - .github/workflows/**
+  - .github/workflows/**/*
   - .github/labeler.yaml
