@@ -36,7 +36,7 @@ impl Compiler {
         };
 
         Compiler {
-            chars: text.chars().collect(),
+            chars: text.chars().filter(|x| *x != '\r').collect(),
             position: 0,
             current_char: first_char,
         }
