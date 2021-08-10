@@ -4,14 +4,14 @@ on:
     branches:
       - master
     paths:
-      - src/**
-      - tests/**
+      - src/**/*
+      - tests/**/*
   push:
     branches:
       - master
     paths:
-      - src/**
-      - tests/**
+      - src/**/*
+      - tests/**/*
 
 jobs:
   windows_build:
