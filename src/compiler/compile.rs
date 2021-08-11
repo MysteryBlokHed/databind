@@ -19,6 +19,7 @@ use super::Compiler;
 
 use crate::compiler::macros::Macro;
 use crate::token::Token;
+use regex::Regex;
 use std::collections::HashMap;
 
 /// Return from the compiler
@@ -250,9 +251,10 @@ impl Compiler {
         }
 
         // Remove leading/trailing whitespace from files as well as empty lines
+        let re = Regex::new(r"\n{2,}").unwrap();
         for file in files.iter_mut() {
             *file = file.trim().to_string();
-            *file = file.replace("\n\n", "\n");
+            *file = re.replace_all(file, "\n").into();
         }
 
         CompileReturn {
