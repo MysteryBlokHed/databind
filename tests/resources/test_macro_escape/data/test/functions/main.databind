@@ -1,0 +1,8 @@
+!def escape_test($msg)
+    say $msg
+!end
+
+func main
+    ?escape_test("Quote: \"")
+    ?escape_test("Backslash: \\")
+end

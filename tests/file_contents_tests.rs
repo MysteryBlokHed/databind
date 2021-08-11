@@ -308,3 +308,17 @@ fn test_macro_defs_in_defs() {
     let contents = fs::read_to_string(&out_path).unwrap();
     assert!(contents.contains("say Hello from new macro"));
 }
+
+/// Test that ecaped characters work in macros
+#[test]
+fn test_macro_escape() {
+    let out = tests::run_in_tempdir("test_macro_escape").0;
+    let out_path = format!(
+        "{}/data/test/functions/main.mcfunction",
+        out.path().display()
+    );
+
+    let contents = fs::read_to_string(&out_path).unwrap();
+    assert!(contents.contains("say Quote: \""));
+    assert!(contents.contains("say Backslash: \\"));
+}
