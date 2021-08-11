@@ -254,7 +254,9 @@ impl Compiler {
         let re = Regex::new(r"\n{2,}").unwrap();
         for file in files.iter_mut() {
             *file = file.trim().to_string();
-            *file = re.replace_all(file, "\n").into();
+            if file.contains("\n\n") {
+                *file = re.replace_all(file, "\n").into();
+            }
         }
 
         CompileReturn {
