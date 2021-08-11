@@ -325,7 +325,12 @@ impl Compiler {
                 } else {
                     if in_string {
                         if self.current_char == '\\' {
-                            escaping_string = true;
+                            if escaping_string {
+                                escaping_string = false;
+                                current_string.push(self.current_char);
+                            } else {
+                                escaping_string = true;
+                            }
                         } else if self.current_char == '"' && !escaping_string {
                             in_string = false;
                             macro_args.push(current_string);
@@ -334,6 +339,7 @@ impl Compiler {
                             continue;
                         } else {
                             current_string.push(self.current_char);
+                            escaping_string = false;
                         }
                     } else {
                         if self.current_char == '"' {
