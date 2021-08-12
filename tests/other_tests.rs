@@ -30,9 +30,8 @@ fn test_create_structure() {
     let out = TempDir::new("test_create_structure").expect("Could not create tempdir for test");
     let mut path = PathBuf::from(out.path());
 
-    tests::run_with_args(
-        "cargo",
-        &[
+    let args = if cfg!(debug_assertions) {
+        vec![
             "run",
             "--",
             "create",
@@ -41,9 +40,22 @@ fn test_create_structure() {
             out.path().to_str().unwrap(),
             "--desc",
             "test_create_structure description",
-        ],
-        None,
-    );
+        ]
+    } else {
+        vec![
+            "run",
+            "--release",
+            "--",
+            "create",
+            "test_create_structure",
+            "--path",
+            out.path().to_str().unwrap(),
+            "--desc",
+            "test_create_structure description",
+        ]
+    };
+
+    tests::run_with_args("cargo", &args, None);
     // Check that the folder was created
     assert!(path.exists() && path.is_dir());
 

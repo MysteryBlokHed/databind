@@ -77,19 +77,32 @@ fn test_config() {
 
     let out = TempDir::new("test_config").expect("Could not create tempdir for test");
 
-    tests::run_with_args(
-        "cargo",
-        &[
+    let toml_path = format!("{}/databind.toml", path_str);
+
+    let args = if cfg!(debug_assertions) {
+        vec![
             "run",
             "--",
             path_str,
             "--config",
-            &format!("{}/databind.toml", path_str)[..],
+            &toml_path,
             "--out",
             out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+        ]
+    } else {
+        vec![
+            "run",
+            "--release",
+            "--",
+            path_str,
+            "--config",
+            &toml_path,
+            "--out",
+            out.path().to_str().unwrap(),
+        ]
+    };
+
+    tests::run_with_args("cargo", &args, None);
 
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
 
@@ -107,19 +120,32 @@ fn test_no_config_out() {
 
     let out = TempDir::new("test_no_config_out").expect("Could not create tempdir for test");
 
-    tests::run_with_args(
-        "cargo",
-        &[
+    let toml_path = format!("{}/should_not_be_made.toml", path_str);
+
+    let args = if cfg!(debug_assertions) {
+        vec![
             "run",
             "--",
             path_str,
             "--config",
-            &format!("{}/should_not_be_made.toml", path_str)[..],
+            &toml_path,
             "--out",
             out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+        ]
+    } else {
+        vec![
+            "run",
+            "--release",
+            "--",
+            path_str,
+            "--config",
+            &toml_path,
+            "--out",
+            out.path().to_str().unwrap(),
+        ]
+    };
+
+    tests::run_with_args("cargo", &args, None);
 
     let expected_funcs = ["tick.mcfunction"];
     let expected_toml = ["should_be_made.toml"];
@@ -192,33 +218,43 @@ fn test_databind_alone() {
     let out = TempDir::new("test_databind_alone").expect("Could not create tempdir for test");
     let mut path = PathBuf::from(out.path());
 
-    // Create project
-    tests::run_with_args(
-        "cargo",
-        &[
+    let args = if cfg!(debug_assertions) {
+        vec![
             "run",
             "--",
             "create",
             "test_databind_alone",
             "--path",
             out.path().to_str().unwrap(),
-        ],
-        None,
-    );
+        ]
+    } else {
+        vec![
+            "run",
+            "--release",
+            "--",
+            "create",
+            "test_databind_alone",
+            "--path",
+            out.path().to_str().unwrap(),
+        ]
+    };
+
+    // Create project
+    tests::run_with_args("cargo", &args, None);
 
     path.push("src");
     println!("running in path: {}", path.display());
 
+    let manifest_path = format!("{}/Cargo.toml", env!("CARGO_MANIFEST_DIR"));
+
+    let args = if cfg!(debug_assertions) {
+        vec!["run", "--manifest-path", &manifest_path]
+    } else {
+        vec!["run", "--release", "--manifest-path", &manifest_path]
+    };
+
     // Run `databind` in directory
-    tests::run_with_args(
-        "cargo",
-        &[
-            "run",
-            "--manifest-path",
-            &format!("{}/Cargo.toml", env!("CARGO_MANIFEST_DIR"))[..],
-        ],
-        Some(&path),
-    );
+    tests::run_with_args("cargo", &args, Some(&path));
 
     // Pop /src from the path to check for /out in the project root
     path.pop();
