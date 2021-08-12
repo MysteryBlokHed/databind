@@ -91,18 +91,28 @@ pub fn check_files_dont_exist<P: AsRef<Path>>(
 
 /// Run Databind on a path and send output to a path
 pub fn run<P: AsRef<Path>>(out: P, path: P) {
-    run_with_args(
-        "cargo",
-        &[
+    let args = if cfg!(debug_assertions) {
+        vec![
             "run",
             "--",
             path.as_ref().to_str().unwrap(),
             "--ignore-config",
             "--out",
             out.as_ref().to_str().unwrap(),
-        ],
-        None,
-    );
+        ]
+    } else {
+        vec![
+            "run",
+            "--release",
+            "--",
+            path.as_ref().to_str().unwrap(),
+            "--ignore-config",
+            "--out",
+            out.as_ref().to_str().unwrap(),
+        ]
+    };
+
+    run_with_args("cargo", &args, None);
 }
 
 /// Create a temporary output directory for a test and run
