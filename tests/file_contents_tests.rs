@@ -322,3 +322,19 @@ fn test_macro_escape() {
     assert!(contents.contains("say Quote: \""));
     assert!(contents.contains("say Backslash: \\"));
 }
+
+/// Test that the modulus operator is not treated as an escaped
+/// equals sign
+#[test]
+fn test_modulus_operator() {
+    let out = tests::run_in_tempdir("test_modulus_operator").0;
+    let out_path = format!(
+        "{}/data/test/functions/main.mcfunction",
+        out.path().display()
+    );
+
+    let contents = fs::read_to_string(&out_path).unwrap();
+    assert!(
+        contents.contains("scoreboard players operation testplayer score1 %= testplayer score2")
+    );
+}
