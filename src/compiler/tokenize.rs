@@ -440,7 +440,9 @@ impl Compiler {
                             "sbop" => no_args_add!(Token::ScoreboardOperation),
                             "delvar" | "delobj" => set_building!(Token::DeleteVar, 1),
                             _ => {
-                                if current_token.starts_with('%') {
+                                if current_token.starts_with('%')
+                                    && !current_token.starts_with("%=")
+                                {
                                     no_args_add!(Token::NonDatabind(format!(
                                         "{} ",
                                         current_token.strip_prefix('%').unwrap()
