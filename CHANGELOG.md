@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix the modulus operator for scoreboard player operations (`%=`)
+  being replaced with an assignment operator (`=`)
+
 ## [0.6.3] - August 12, 2021
 
 ### Changed
