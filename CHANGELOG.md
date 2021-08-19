@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix the `sbop` keyword not outputting valid code
+
 ## [0.6.3] - August 12, 2021
 
 ### Changed
