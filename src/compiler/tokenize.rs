@@ -437,7 +437,9 @@ impl Compiler {
                                 building_condition = true;
                                 self.next_char();
                             }
-                            "sbop" => no_args_add!(Token::ScoreboardOperation),
+                            "sbop" => no_args_add!(Token::NonDatabind(
+                                "scoreboard players operation ".into()
+                            )),
                             "delvar" | "delobj" => set_building!(Token::DeleteVar, 1),
                             _ => {
                                 if current_token.starts_with('%') {
