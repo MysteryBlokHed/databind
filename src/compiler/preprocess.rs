@@ -117,12 +117,12 @@ impl Compiler {
         }
     }
 
-    /// Replace while loops, if statements, and scoreboard operations.
+    /// Replace while loops and if statements.
     /// Called recursively until none are left
     ///
     /// # Arguments
     ///
-    /// - `tokens` - A list of tokens to look for while loops or `sbop`'s in
+    /// - `tokens` - A list of tokens to look for while loops or if statements in
     /// - `subfolder` - If the while loop is in a subfolder, the prefix
     ///   to put before the function name (eg. `"cmd/"` for a subfolder named `cmd`)
     pub fn parse_shorthand(&self, tokens: Vec<Token>, subfolder: &str) -> Vec<Token> {
@@ -230,24 +230,16 @@ impl Compiler {
                         ))
                     }
                 }
-                Token::ScoreboardOperation => {
-                    new_tokens[i + index_offset] =
-                        Token::NonDatabind("scoreboard players operation ".into());
-                }
                 _ => {}
             }
         }
 
         // Run recursively until no if statements, while loops,
         // or scoreboard operations are left
-        if new_tokens.iter().any(|x| {
-            [
-                Token::IfStatement,
-                Token::WhileLoop,
-                Token::ScoreboardOperation,
-            ]
-            .contains(&x)
-        }) {
+        if new_tokens
+            .iter()
+            .any(|x| [Token::IfStatement, Token::WhileLoop].contains(&x))
+        {
             self.parse_shorthand(new_tokens, subfolder)
         } else {
             new_tokens

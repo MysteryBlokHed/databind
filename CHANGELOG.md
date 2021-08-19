@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix the `sbop` keyword not outputting valid code
 - Fix the modulus operator for scoreboard player operations (`%=`)
   being replaced with an assignment operator (`=`)
 
