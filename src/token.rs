@@ -83,8 +83,6 @@ pub enum Token {
     VarAdd,
     /// Subtract from the value of a variable or objective
     VarSub,
-    /// Shorthand for `scoreboard players operation`
-    ScoreboardOperation,
     /// An integer
     Int(i32),
     /// Define a Databind macro

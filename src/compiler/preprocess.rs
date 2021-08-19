@@ -236,14 +236,10 @@ impl Compiler {
 
         // Run recursively until no if statements, while loops,
         // or scoreboard operations are left
-        if new_tokens.iter().any(|x| {
-            [
-                Token::IfStatement,
-                Token::WhileLoop,
-                Token::ScoreboardOperation,
-            ]
-            .contains(&x)
-        }) {
+        if new_tokens
+            .iter()
+            .any(|x| [Token::IfStatement, Token::WhileLoop].contains(&x))
+        {
             self.parse_shorthand(new_tokens, subfolder)
         } else {
             new_tokens
