@@ -22,26 +22,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Cargo.toml `exclude` to `include`
-- Paths that trigger Build And Run workflow
+- Change Cargo.toml `exclude` to `include`
+- Update paths that trigger Build And Run workflow
 
 ### Fixed
 
-- NewLine token not being added with CRLF line endings
+- Fix NewLine token not being added with CRLF line endings
 
 ## [0.6.1] - August 8, 2021
 
 ### Changed
 
-- Docs link in Cargo.toml
+- Update docs link in Cargo.toml
 
 ### Removed
 
-- An unneeded condition from release.yaml
+- Remove an unneeded condition from release.yaml
 
 ### Fixed
 
-- Docs in macros.rst
+- Fix a problem with docs in macros.rst
 
 ## [0.6.0] - August 3, 2021
 
@@ -55,11 +55,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- `!def` (Replaced by macros)
+- Remove original `!def` (Replaced by macros)
 
 ### Fixed
 
-- Some lines missing newlines at the end
+- Fix some lines missing newlines at the end
 
 ## [0.5.0] - July 18, 2021
 
@@ -69,22 +69,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Both keywords `endfunc` and `endwhile` to `end`
-- Docs formatting to add indentation inside functions and while loops
+- Change both keywords `endfunc` and `endwhile` to `end`
+- Update docs formatting to add indentation inside functions and while loops
 
 ### Fixed
 
-- Multiple `!def`'s not working
+- Fix multiple `!def`'s not working
 
 ## [0.4.0] - July 1, 2021
 
 ### Changed
 
-- Rewrote the tokenizer
+- Rewrite the tokenizer
 
 ### Removed
 
-- Preceding `:` from all keywords
+- Remove preceding `:` from all keywords
 
 ## [0.3.0] - June 26, 2021
 
@@ -95,16 +95,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Syntax for `:sobj`
+- Update syntax for `:sobj`
 
 ### Removed
 
-- Unmaintained `random_var_names` and `var_display_names` settings
+- Remove nmaintained `random_var_names` and `var_display_names`
+  settings
 
 ### Fixed
 
-- Integers not being able to be negative
-- The only allowed assignment operator for objectives being `=`
+- Fix integers not being able to be negative
+- Fix the only allowed assignment operator for objectives being `=`
 
 ## [0.2.3] - June 25, 2021
 
@@ -114,14 +115,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Some old integration tests
+- Update some old integration tests
 
 ### Fixed
 
-- Output folder for `databind` with no args
-- Incorrect function tagging
-- Comments breaking tags
-- While loop problems
+- Fix output folder for `databind` with no args
+- Fix incorrect function tagging
+- Fix comments breaking tags
+- Fix while loop problems
 
 ## [0.2.2] - June 24, 2021
 
@@ -131,14 +132,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Incorrect version in some places
-- Docs license
+- Update incorrect version in some places
+- Update incorrect license
 
 ## [0.2.1] - June 23, 2021
 
 ### Fixed
 
-- A bug where running `databind` with no arguments would try to unwrap a `None` value
+- Fix a bug where running `databind` with no arguments would try to
+  unwrap a `None` value
 
 ## [0.2.0] - June 23, 2021
 
