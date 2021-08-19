@@ -1,0 +1,3 @@
+func main
+    scoreboard players operation testplayer score1 %= testplayer score2
+end
