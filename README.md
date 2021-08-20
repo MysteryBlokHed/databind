@@ -1,4 +1,4 @@
-![Databind Logo](img/logo.svg)
+![Databind Logo](img/logo.png)
 
 # Databind [![Crates.io Version](https://img.shields.io/crates/v/databind)](https://crates.io/crates/databind) [![License](https://img.shields.io/github/license/MysteryBlokHed/databind)](#license) [![Documentation](https://readthedocs.org/projects/databind/badge/?version=latest)](https://databind.readthedocs.io/en/stable/)
 
