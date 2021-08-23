@@ -337,7 +337,10 @@ fn main() -> std::io::Result<()> {
                     }
                     file_contents
                 };
-                let mut compile = compiler::Compiler::new(contents);
+                let mut compile = compiler::Compiler::new(
+                    contents,
+                    Some(path.canonicalize().unwrap().to_str().unwrap().into()),
+                );
                 let tokens = compile.tokenize();
 
                 let mut compiled = if path.file_name().unwrap().to_str().unwrap().starts_with('!') {

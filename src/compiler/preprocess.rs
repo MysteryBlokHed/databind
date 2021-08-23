@@ -68,8 +68,8 @@ impl Compiler {
                             continue;
                         } else {
                             println!(
-                                "error: A non-existant macro {} was called",
-                                active_macro_name
+                                "error: {} - A non-existant macro {} was called",
+                                self.path, active_macro_name
                             );
                             std::process::exit(1);
                         }
@@ -77,7 +77,7 @@ impl Compiler {
 
                     let tks = {
                         let new_contents = macros[&active_macro_name].replace(args);
-                        Compiler::new(new_contents.clone()).tokenize()
+                        Compiler::new(new_contents.clone(), None).tokenize()
                     };
 
                     // Remove the tokens CallMacro, MacroName, and CallArgList
@@ -145,7 +145,7 @@ impl Compiler {
                 chars = Compiler::random_chars();
 
                 // Tokenize new contents
-                let tks = Compiler::new(new_contents.clone()).tokenize();
+                let tks = Compiler::new(new_contents.clone(), None).tokenize();
                 new_contents = String::new();
 
                 // When gettings indexes in the new tokens vector,

@@ -22,6 +22,7 @@ pub struct Compiler {
     current_char: char,
     line: usize,
     col: usize,
+    path: String,
 }
 
 impl Compiler {
@@ -30,7 +31,8 @@ impl Compiler {
     /// # Arguments
     ///
     /// - `text` - The contents of the file to compile
-    pub fn new(text: String) -> Compiler {
+    /// - `path` - The path of the file being compiled. Used for error messages
+    pub fn new(text: String, path: Option<String>) -> Compiler {
         let first_char = if !text.is_empty() {
             text.chars().next().unwrap()
         } else {
@@ -43,6 +45,11 @@ impl Compiler {
             current_char: first_char,
             line: 1,
             col: 1,
+            path: if let Some(p) = path {
+                p
+            } else {
+                "INTERNAL".into()
+            },
         }
     }
 
@@ -62,7 +69,10 @@ impl Compiler {
     }
 
     pub fn make_syntax_error(&self, message: &str) -> String {
-        format!("error: {}:{} - {}", self.line, self.col, message)
+        format!(
+            "error: {}:{}:{} - {}",
+            self.path, self.line, self.col, message
+        )
     }
 }
 
