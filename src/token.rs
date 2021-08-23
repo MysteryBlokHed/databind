@@ -90,7 +90,10 @@ pub enum Token {
     /// Call a Databind macro
     CallMacro,
     /// The name of a Databind macro
-    MacroName(String),
+    ///
+    /// The first `usize` is for the line with the macro name,
+    /// and the second is for the column
+    MacroName(String, usize, usize),
     /// The contents of a macro
     MacroContents(String),
     /// Close a Databind macro definition

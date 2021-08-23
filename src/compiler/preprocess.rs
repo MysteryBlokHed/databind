@@ -47,6 +47,8 @@ impl Compiler {
         let mut call_index: usize = 0;
         let mut define_index: usize = 0;
         let mut index_offset: usize = 0;
+        let mut macro_line: usize = 0;
+        let mut macro_col: usize = 0;
 
         let mut active_macro_name = String::new();
         let mut macro_def_args: Vec<String> = Vec::new();
@@ -56,7 +58,12 @@ impl Compiler {
             match token {
                 Token::CallMacro => call_index = i,
                 Token::DefineMacro => define_index = i,
-                Token::MacroName(name) => active_macro_name = name.clone(),
+                Token::MacroName(name, line, col) => {
+                    active_macro_name = name.clone();
+                    macro_line = *line;
+                    macro_col = *col;
+                }
+
                 Token::DefArgList(args) => {
                     macro_def_args = args.clone();
                 }
@@ -67,14 +74,17 @@ impl Compiler {
                         if new_tokens.contains(&Token::DefineMacro) {
                             continue;
                         } else {
-                            println!("A non-existant macro {} was called", active_macro_name);
+                            println!(
+                                "error: {}:{}:{} - A non-existant macro {} was called",
+                                self.path, macro_line, macro_col, active_macro_name
+                            );
                             std::process::exit(1);
                         }
                     }
 
                     let tks = {
                         let new_contents = macros[&active_macro_name].replace(args);
-                        Compiler::new(new_contents.clone()).tokenize()
+                        Compiler::new(new_contents.clone(), None).tokenize()
                     };
 
                     // Remove the tokens CallMacro, MacroName, and CallArgList
@@ -142,7 +152,7 @@ impl Compiler {
                 chars = Compiler::random_chars();
 
                 // Tokenize new contents
-                let tks = Compiler::new(new_contents.clone()).tokenize();
+                let tks = Compiler::new(new_contents.clone(), None).tokenize();
                 new_contents = String::new();
 
                 // When gettings indexes in the new tokens vector,

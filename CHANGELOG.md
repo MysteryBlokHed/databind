@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Filenames and line/column numbers to error messages
+
 ## [0.6.4] - August 19, 2021
 
 ### Fixed

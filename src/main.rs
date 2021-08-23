@@ -249,7 +249,7 @@ fn main() -> std::io::Result<()> {
                         Value::Integer(value) => value.to_string(),
                         Value::Datetime(value) => value.to_string(),
                         _ => {
-                            println!("[ERROR] Unsupported type found in vars.toml file (key: {}, value: {})", k, v);
+                            println!("error: Unsupported type found in vars.toml file (key: {}, value: {})", k, v);
                             std::process::exit(1);
                         }
                     };
@@ -337,7 +337,10 @@ fn main() -> std::io::Result<()> {
                     }
                     file_contents
                 };
-                let mut compile = compiler::Compiler::new(contents);
+                let mut compile = compiler::Compiler::new(
+                    contents,
+                    Some(path.canonicalize().unwrap().to_str().unwrap().into()),
+                );
                 let tokens = compile.tokenize();
 
                 let mut compiled = if path.file_name().unwrap().to_str().unwrap().starts_with('!') {

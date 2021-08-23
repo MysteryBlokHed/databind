@@ -123,7 +123,10 @@ impl Compiler {
                 } else if DIGITS.contains(&self.current_char) {
                     current_token.push(self.current_char);
                 } else {
-                    println!("[ERROR] Variables can only store integers.");
+                    println!(
+                        "{}",
+                        self.make_syntax_error("Variables can only store integers")
+                    );
                     std::process::exit(1);
                 }
             };
@@ -136,7 +139,7 @@ impl Compiler {
                 calling_macro = true;
                 macro_name = current_token.strip_prefix('?').unwrap().into();
                 no_args_add!(Token::CallMacro);
-                tokens.push(Token::MacroName(macro_name.clone()));
+                tokens.push(Token::MacroName(macro_name.clone(), self.line, self.col));
             };
         }
 
@@ -159,7 +162,10 @@ impl Compiler {
                             }
                         };
                     } else {
-                        println!("Invalid assignment operator provided");
+                        println!(
+                            "{}",
+                            self.make_syntax_error("Invalid assignment operator provided")
+                        );
                         std::process::exit(1);
                     }
                     params_left -= 1;
@@ -246,7 +252,7 @@ impl Compiler {
                     if self.current_char != '(' && !self.current_char.is_whitespace() {
                         macro_name.push(self.current_char);
                     } else if self.current_char == '(' {
-                        tokens.push(Token::MacroName(macro_name));
+                        tokens.push(Token::MacroName(macro_name, self.line, self.col));
                         macro_name = String::new();
                         macro_name_built = true;
                     }
@@ -265,7 +271,10 @@ impl Compiler {
                             self.next_char();
                             continue;
                         } else if self.current_char != '$' {
-                            println!("[ERROR] Macro arguments must be preceded by a '$', eg. !def macro($arg1 $arg2)");
+                            println!(
+                                "{}",
+                                self.make_syntax_error("Macro arguments must be preceded by a '$', eg. !def macro($arg1, $arg2)")
+                            );
                             std::process::exit(1);
                         }
                         building_macro_arg = true;
@@ -317,8 +326,11 @@ impl Compiler {
                         building_macro_arg = true;
                     } else if !self.current_char.is_whitespace() {
                         println!(
-                            "[ERROR] A '(' was expected to start the argument list for call of macro {}",
-                            macro_name
+                            "{}",
+                            self.make_syntax_error(&format!(
+                                "'(' was expected to start the argument list for call of macro {}",
+                                macro_name
+                            ))
                         );
                         std::process::exit(1);
                     }
@@ -353,8 +365,11 @@ impl Compiler {
                             self.next_char();
                         } else if self.current_char != ',' && !self.current_char.is_whitespace() {
                             println!(
-                                "[ERROR] Unexpected character {:?} found in macro call",
-                                self.current_char
+                                "{}",
+                                self.make_syntax_error(&format!(
+                                    "Unexpected character {:?} found in macro call",
+                                    self.current_char
+                                ))
                             );
                             std::process::exit(1);
                         }
