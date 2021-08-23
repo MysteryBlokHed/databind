@@ -61,8 +61,9 @@ impl Compiler {
             if self.current_char == '\n' {
                 self.line += 1;
                 self.col = 0;
+            } else {
+                self.col += 1;
             }
-            self.col += 1;
         } else {
             self.current_char = '\u{0}'
         }
