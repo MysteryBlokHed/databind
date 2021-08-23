@@ -20,6 +20,8 @@ pub struct Compiler {
     chars: Vec<char>,
     position: usize,
     current_char: char,
+    line: usize,
+    col: usize,
 }
 
 impl Compiler {
@@ -39,6 +41,8 @@ impl Compiler {
             chars: text.chars().filter(|x| *x != '\r').collect(),
             position: 0,
             current_char: first_char,
+            line: 1,
+            col: 1,
         }
     }
 
@@ -47,9 +51,18 @@ impl Compiler {
         self.position += 1;
         if self.position < self.chars.len() {
             self.current_char = self.chars[self.position];
+            if self.current_char == '\n' {
+                self.line += 1;
+                self.col = 0;
+            }
+            self.col += 1;
         } else {
             self.current_char = '\u{0}'
         }
+    }
+
+    pub fn make_syntax_error(&self, message: &str) -> String {
+        format!("error: {}:{} - {}", self.line, self.col, message)
     }
 }
 

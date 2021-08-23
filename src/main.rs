@@ -249,7 +249,7 @@ fn main() -> std::io::Result<()> {
                         Value::Integer(value) => value.to_string(),
                         Value::Datetime(value) => value.to_string(),
                         _ => {
-                            println!("[ERROR] Unsupported type found in vars.toml file (key: {}, value: {})", k, v);
+                            println!("error: Unsupported type found in vars.toml file (key: {}, value: {})", k, v);
                             std::process::exit(1);
                         }
                     };

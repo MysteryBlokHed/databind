@@ -67,7 +67,10 @@ impl Compiler {
                         if new_tokens.contains(&Token::DefineMacro) {
                             continue;
                         } else {
-                            println!("A non-existant macro {} was called", active_macro_name);
+                            println!(
+                                "error: A non-existant macro {} was called",
+                                active_macro_name
+                            );
                             std::process::exit(1);
                         }
                     }
