@@ -139,7 +139,7 @@ impl Compiler {
                 calling_macro = true;
                 macro_name = current_token.strip_prefix('?').unwrap().into();
                 no_args_add!(Token::CallMacro);
-                tokens.push(Token::MacroName(macro_name.clone()));
+                tokens.push(Token::MacroName(macro_name.clone(), self.line, self.col));
             };
         }
 
@@ -252,7 +252,7 @@ impl Compiler {
                     if self.current_char != '(' && !self.current_char.is_whitespace() {
                         macro_name.push(self.current_char);
                     } else if self.current_char == '(' {
-                        tokens.push(Token::MacroName(macro_name));
+                        tokens.push(Token::MacroName(macro_name, self.line, self.col));
                         macro_name = String::new();
                         macro_name_built = true;
                     }

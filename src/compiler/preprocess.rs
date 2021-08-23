@@ -47,6 +47,8 @@ impl Compiler {
         let mut call_index: usize = 0;
         let mut define_index: usize = 0;
         let mut index_offset: usize = 0;
+        let mut macro_line: usize = 0;
+        let mut macro_col: usize = 0;
 
         let mut active_macro_name = String::new();
         let mut macro_def_args: Vec<String> = Vec::new();
@@ -56,7 +58,12 @@ impl Compiler {
             match token {
                 Token::CallMacro => call_index = i,
                 Token::DefineMacro => define_index = i,
-                Token::MacroName(name) => active_macro_name = name.clone(),
+                Token::MacroName(name, line, col) => {
+                    active_macro_name = name.clone();
+                    macro_line = *line;
+                    macro_col = *col;
+                }
+
                 Token::DefArgList(args) => {
                     macro_def_args = args.clone();
                 }
@@ -68,8 +75,8 @@ impl Compiler {
                             continue;
                         } else {
                             println!(
-                                "error: {} - A non-existant macro {} was called",
-                                self.path, active_macro_name
+                                "error: {}:{}:{} - A non-existant macro {} was called",
+                                self.path, macro_line, macro_col, active_macro_name
                             );
                             std::process::exit(1);
                         }
