@@ -167,8 +167,7 @@ impl Compiler {
                 }
                 Token::TagName(tag) => {
                     if func_depth == 0 {
-                        println!("error: {} - Tag found outside of function.", self.path);
-                        std::process::exit(1);
+                        panic!("error: Tag found outside function. This token should have been ignored");
                     }
 
                     tag_map
