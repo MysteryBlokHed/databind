@@ -25,3 +25,7 @@ walkdir = "2.3"
 
 [dev-dependencies]
 tempdir = "0.3"
+
+[[bin]]
+name = "databind"
+path = "src/main.rs"
