@@ -18,7 +18,7 @@
 use clap::{App, Arg, SubCommand};
 
 /// Set up Clap CLI and get arguments
-pub fn get_app<'a, 'b>() -> App<'a, 'b> {
+pub(crate) fn get_app<'a, 'b>() -> App<'a, 'b> {
     App::new("Databind")
         .setting(clap::AppSettings::SubcommandsNegateReqs)
         .version("0.6.4")
