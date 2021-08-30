@@ -24,7 +24,6 @@ use std::{
     path::{Path, PathBuf},
 };
 use toml::Value;
-use walkdir::WalkDir;
 
 mod cli;
 mod compiler;
@@ -170,29 +169,7 @@ fn main() -> std::io::Result<()> {
         };
 
         // Get filepaths with global macros appearing first
-        let paths = {
-            // Store global macro filepaths
-            let mut global_macros: Vec<PathBuf> = Vec::new();
-            // Store normal filepaths
-            let mut normal: Vec<PathBuf> = Vec::new();
-            // Sort filepaths into each vector
-            let unsorted_paths = WalkDir::new(&src_dir)
-                .into_iter()
-                .filter_map(|e| e.ok())
-                .filter(|e| e.path().is_file())
-                .map(|e| e.path().to_path_buf());
-
-            for path in unsorted_paths {
-                if path.file_name().unwrap().to_str().unwrap().starts_with('!') {
-                    global_macros.push(path);
-                } else {
-                    normal.push(path);
-                }
-            }
-
-            global_macros.append(&mut normal);
-            global_macros
-        };
+        let paths = files::prioritize_macro_files(src_dir);
 
         for path in paths.iter() {
             // Do not add config file to output folder

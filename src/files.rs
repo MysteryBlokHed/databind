@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-//! Contains functions used by the CLI to get information from filepaths or to
+//! Contains functions used by the CLI to get information from files or to
 //! create files
 use glob::glob;
 use serde::{Deserialize, Serialize};
@@ -24,6 +24,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
+use walkdir::WalkDir;
 
 /// Get the prefix of a subfolder before a function call (eg. `"cmd/"` for
 /// a subfolder called `cmd`)
@@ -172,4 +173,31 @@ pub fn create_tag_files<P: AsRef<Path>>(
     }
 
     Ok(())
+}
+
+/// Returns a vector of source files with files beginning with ! appearing first.
+/// This is used to ensure that files with global macros are ordered the same
+/// across platforms
+pub fn prioritize_macro_files<P: AsRef<Path>>(src_dir: P) -> Vec<PathBuf> {
+    // Store global macro filepaths
+    let mut global_macros: Vec<PathBuf> = Vec::new();
+    // Store normal filepaths
+    let mut normal: Vec<PathBuf> = Vec::new();
+    // Sort filepaths into each vector
+    let unsorted_paths = WalkDir::new(src_dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().is_file())
+        .map(|e| e.path().to_path_buf());
+
+    for path in unsorted_paths {
+        if path.file_name().unwrap().to_str().unwrap().starts_with('!') {
+            global_macros.push(path);
+        } else {
+            normal.push(path);
+        }
+    }
+
+    global_macros.append(&mut normal);
+    global_macros
 }
