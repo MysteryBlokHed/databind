@@ -17,12 +17,19 @@
  */
 //! Contains functions and structs used to tokenize and compile Databind
 //! source code
+/// Used to tokenize and compile Databind source code
 pub struct Compiler {
+    /// The characters in a source file
     chars: Vec<char>,
+    /// The current index in the characters vector
     position: usize,
+    /// The current character
     current_char: char,
+    /// The current line number (Used for errors)
     line: usize,
+    /// The current column number (Used for errors)
     col: usize,
+    /// The path of the file being compiled (Used for errors)
     path: String,
 }
 
