@@ -158,7 +158,7 @@ impl Compiler {
                             "+=" => tokens.push(Token::VarAdd),
                             "-=" => tokens.push(Token::VarSub),
                             _ => {
-                                panic!("Someone didn't update the assignment operator match!");
+                                panic!("internal: Unknown assignment operator tokenized");
                             }
                         };
                     } else {

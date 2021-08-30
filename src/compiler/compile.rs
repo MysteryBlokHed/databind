@@ -153,7 +153,7 @@ impl Compiler {
 
                             current_file!().push_str(&to_add[..]);
                         } else {
-                            panic!("No namespace provided for function call.");
+                            panic!("internal: No namespace provided for function call");
                         }
 
                         calling_function = false;
@@ -167,7 +167,7 @@ impl Compiler {
                 }
                 Token::TagName(tag) => {
                     if func_depth == 0 {
-                        panic!("error: Tag found outside function. This token should have been ignored");
+                        panic!("internal: Tag found outside function. This token should have been ignored");
                     }
 
                     tag_map
@@ -236,7 +236,7 @@ impl Compiler {
                                 current_file!().push_str(&to_add[..]);
                             }
                             _ => {
-                                panic!(":= operator was tokenized for objective");
+                                panic!("internal: := operator was tokenized for objective");
                             }
                         }
                     }
