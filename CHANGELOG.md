@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Filenames and line/column numbers to error messages
 
+### Changed
+
+- Converted the project into a Rust library with a binary, allowing Rust devs
+  to make their own frontend for Databind
+
 ## [0.6.4] - August 19, 2021
 
 ### Fixed

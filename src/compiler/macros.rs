@@ -15,12 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+//! Contains structs and functions used to define and replace macros in
+//! Databind source code
 use std::collections::HashMap;
 
 /// A definition of a Databind macrco
 #[derive(Debug, Clone)]
 pub struct Macro {
+    /// The names of the macro arguments
     arg_names: Vec<String>,
+    /// The contents of the macro
     content: String,
 }
 

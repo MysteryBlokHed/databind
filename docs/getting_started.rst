@@ -3,6 +3,12 @@ Getting Started
 
 Get started with Databind.
 
+Library
+-------
+
+If you're looking to use the Databind library in your own Rust project,
+then look at the docs hosted on `docs.rs <https://docs.rs/databind/>`_.
+
 Installation
 ------------
 

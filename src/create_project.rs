@@ -51,7 +51,7 @@ fn dir_empty(path: &dyn AsRef<Path>) -> std::io::Result<bool> {
 /// # Arguments
 ///
 /// - `args` - Matches from the create subcommand
-pub fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
+pub(crate) fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
     let allowed_chars = "abcdefghijklmnopqrstuvwxyz0123456789_-.";
 
     let name = args.value_of("name").unwrap();

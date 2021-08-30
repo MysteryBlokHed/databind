@@ -15,14 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+//! Contains the Settings struct used to serialize/deserialize the databind.toml
+//! configuration file
 use serde::{Deserialize, Serialize};
 
 /// Settings for the compiler
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
+    /// A list of globs of files to include in compilation
     pub inclusions: Vec<String>,
+    /// A list of globs of files to exclude in compilation
     pub exclusions: Vec<String>,
+    /// The output directory for compiled files
     pub output: String,
 }
 
