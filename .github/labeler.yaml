@@ -1,8 +1,7 @@
 source: src/**
 lib:
-  - src/**
-  - '!src/main.rs'
-  - '!src/create_project.rs'
+  - any: [src/**]
+    all: ['!src/main.rs', '!src/create_project.rs']
 cli:
   - src/main.rs
   - src/create_project.rs
