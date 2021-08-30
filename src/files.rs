@@ -15,9 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-//! Contains functions used to get information from filepaths for the Databind CLI
+//! Contains functions used by the CLI to get information from filepaths or to
+//! create files
 use glob::glob;
-use std::path::{Path, PathBuf};
+use serde::{Deserialize, Serialize};
+use std::{
+    collections::HashMap,
+    fs,
+    path::{Path, PathBuf},
+};
 
 /// Get the prefix of a subfolder before a function call (eg. `"cmd/"` for
 /// a subfolder called `cmd`)
@@ -109,4 +115,61 @@ pub fn find_config_in_parents(
     }
 
     Err("Did not find databind.toml in parents")
+}
+
+/// Creates tag files for compiled Databind code. Also checks if tags already
+/// exist and merges them
+///
+/// # Arguments
+///
+/// - `src_dir` - The directory of the Databind source files
+/// - `target_folder` - The output directory for compiled files
+/// - `tag_map` - A map of tags to a vector of functions with that tag
+///   (eg. `{"load": ["namespace:main"]}`)
+pub fn create_tag_files<P: AsRef<Path>>(
+    src_dir: P,
+    target_folder: P,
+    tag_map: &HashMap<String, Vec<String>>,
+) -> std::io::Result<()> {
+    #[derive(Deserialize, Serialize)]
+    struct TagFile {
+        values: Vec<String>,
+    }
+
+    let target = target_folder.as_ref().display();
+    // Create tags directory
+    fs::create_dir_all(format!("{}/data/minecraft/tags/functions", target))?;
+
+    for (tag, funcs) in tag_map.iter() {
+        let mut tag_file = TagFile {
+            values: funcs.clone(),
+        };
+
+        {
+            // Path to potential source JSON file
+            let path_str = format!(
+                "{}/data/minecraft/tags/functions/{}.json",
+                src_dir.as_ref().display(),
+                tag
+            );
+            let path = Path::new(&path_str);
+
+            // Read existing tags if present
+            if path.exists() && path.is_file() {
+                let contents = fs::read_to_string(&path)?;
+                let mut existing_tags: TagFile = serde_json::from_str(&contents)?;
+                tag_file.values.append(&mut existing_tags.values);
+            }
+        }
+
+        let json = serde_json::to_string(&tag_file)?;
+
+        // Write tag file
+        fs::write(
+            &format!("{}/data/minecraft/tags/functions/{}.json", target, tag),
+            json,
+        )?;
+    }
+
+    Ok(())
 }
