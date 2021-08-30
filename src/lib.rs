@@ -74,5 +74,6 @@
 //! ```
 
 pub mod compiler;
+pub mod files;
 pub mod settings;
 pub mod token;

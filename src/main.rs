@@ -17,7 +17,6 @@
  */
 #![warn(clippy::all)]
 
-use glob::glob;
 use same_file::is_same_file;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -31,98 +30,13 @@ use walkdir::WalkDir;
 mod cli;
 mod compiler;
 mod create_project;
+mod files;
 mod settings;
 mod token;
 
 #[derive(Deserialize, Serialize)]
 struct TagFile {
     values: Vec<String>,
-}
-
-/// Get namespace (name of folder containing the main /functions)
-fn get_namespace<P: AsRef<Path>>(functions_path: &P) -> Result<&str, &str> {
-    let namespace_folder = functions_path
-        .as_ref()
-        .to_str()
-        .unwrap()
-        .split("functions")
-        .next()
-        .unwrap();
-
-    let namespace_folder =
-        if let Some(new) = namespace_folder.strip_suffix(|x: char| ['\\', '/'].contains(&x)) {
-            new
-        } else {
-            namespace_folder
-        };
-
-    let folders = namespace_folder.split(|x: char| ['\\', '/'].contains(&x));
-    Ok(folders.last().unwrap())
-}
-
-/// Get the prefix of a subfolder before a function call (eg. `"cmd/"` for
-/// a subfolder called `cmd`)
-fn get_subfolder_prefix<P: AsRef<Path>>(functions_path: &P) -> String {
-    let mut after_functions = PathBuf::from(
-        functions_path
-            .as_ref()
-            .to_str()
-            .unwrap()
-            .split("functions")
-            .last()
-            .unwrap(),
-    );
-
-    after_functions.pop();
-
-    // Ensure no backslashes and remove leading slash, if present
-    let prefix = after_functions.to_str().unwrap().replace('\\', "/");
-
-    if prefix == "/" {
-        String::new()
-    } else if let Some(new) = prefix.strip_prefix('/') {
-        format!("{}/", new)
-    } else {
-        format!("{}/", prefix)
-    }
-}
-/// Convert multiple globs into a `Vec<PathBuf>`
-fn merge_globs(globs: &[String], prefix: &str) -> Vec<PathBuf> {
-    let mut merged_globs: Vec<PathBuf> = Vec::new();
-
-    for files_glob in globs.iter() {
-        let relative_files_glob = format!("{}/{}", prefix, files_glob);
-
-        let mut files: Vec<PathBuf> = glob(&relative_files_glob)
-            .expect(&format!("Failed to parse glob {}", files_glob)[..])
-            .filter_map(Result::ok)
-            .collect();
-        merged_globs.append(&mut files);
-    }
-
-    merged_globs
-}
-
-/// Try to find a config file
-///
-/// # Returns
-///
-/// Either the path to the config file or an error.
-fn find_config_in_parents(start: &dyn AsRef<Path>, config_file: String) -> Result<PathBuf, &str> {
-    let mut start = PathBuf::from(start.as_ref());
-    let mut last = PathBuf::new();
-
-    while start != last {
-        start.push(&config_file);
-        if start.exists() && start.is_file() {
-            return Ok(start);
-        }
-        start.pop();
-        last = start.clone();
-        start.pop();
-    }
-
-    Err("Did not find databind.toml in parents")
 }
 
 /// The main function
@@ -138,7 +52,7 @@ fn main() -> std::io::Result<()> {
         let mut args: Vec<String> = vec!["databind".into()];
         // Find config file
         let cd = &env::current_dir().unwrap();
-        let config_location = find_config_in_parents(&cd, "databind.toml".into());
+        let config_location = files::find_config_in_parents(&cd, "databind.toml".into());
         if let Ok(config) = config_location {
             // Get base directory of project from config file location
             let base_dir = config.parent().unwrap();
@@ -208,8 +122,8 @@ fn main() -> std::io::Result<()> {
             println!("Deleted.");
         }
 
-        let mut inclusions = merge_globs(&compiler_settings.inclusions, datapack);
-        let exclusions = merge_globs(&compiler_settings.exclusions, datapack);
+        let mut inclusions = files::merge_globs(&compiler_settings.inclusions, datapack);
+        let exclusions = files::merge_globs(&compiler_settings.exclusions, datapack);
         inclusions = inclusions
             .iter()
             .filter(|&x| !exclusions.contains(x))
@@ -346,8 +260,8 @@ fn main() -> std::io::Result<()> {
                 let mut compiled = if path.file_name().unwrap().to_str().unwrap().starts_with('!') {
                     let ret = compile.compile(
                         tokens,
-                        Some(get_namespace(&path).unwrap()),
-                        &get_subfolder_prefix(&path),
+                        Some(files::get_namespace(&path).unwrap()),
+                        &files::get_subfolder_prefix(&path),
                         &global_macros,
                         true,
                     );
@@ -356,8 +270,8 @@ fn main() -> std::io::Result<()> {
                 } else {
                     compile.compile(
                         tokens,
-                        Some(get_namespace(&path).unwrap()),
-                        &get_subfolder_prefix(&path),
+                        Some(files::get_namespace(&path).unwrap()),
+                        &files::get_subfolder_prefix(&path),
                         &global_macros,
                         false,
                     )
@@ -374,8 +288,8 @@ fn main() -> std::io::Result<()> {
                             let i = funcs.iter().position(|x| x == key).unwrap();
                             funcs[i] = format!(
                                 "{}:{}{}",
-                                get_namespace(&path).unwrap(),
-                                get_subfolder_prefix(&path),
+                                files::get_namespace(&path).unwrap(),
+                                files::get_subfolder_prefix(&path),
                                 key
                             );
                         }
