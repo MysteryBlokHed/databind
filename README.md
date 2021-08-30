@@ -47,17 +47,30 @@ To install Databind from a cloned repository, run `cargo install --path .` in th
 
 ## Documentation
 
+### CLI/Language Docs
+
 Documentation is build using reStructuredText and Sphinx. Requires Python.
 Built documentation is hosted on [Read The Docs](https://databind.readthedocs.io/en/stable/).
 
-### Building Docs
+#### Building Docs
 
 To build the documentation, go to the /docs folder and run `pip install -r requirements.txt`.
 Then run `make.bat html` or `make html`, depending on platform.
 
-### Viewing Docs
+#### Viewing Docs
 
 To view the documentation, open the `index.html` file generated in /docs/\_build/html.
+
+### Library Docs
+
+#### Building Docs
+
+To build the library documentation, run `cargo doc` or `cargo doc --release`.
+
+#### Viewing Docs
+
+To view the docs, open the generated `index.html` file at `target/doc/databind/index.html`.
+Built documentation is available at [docs.rs](docs.rs/databind/).
 
 ## License
 
