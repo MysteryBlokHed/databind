@@ -113,7 +113,7 @@ fn main() -> std::io::Result<()> {
 
     if datapack_is_dir {
         let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
-        let mut global_macros: HashMap<String, compiler::macros::Macro> = HashMap::new();
+        let mut global_macros: HashMap<String, compiler::Macro> = HashMap::new();
         let target_folder = &compiler_settings.output;
 
         if fs::metadata(target_folder).is_ok() {

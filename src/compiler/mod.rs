@@ -79,6 +79,7 @@ impl Compiler {
 }
 
 mod compile;
-pub mod macros;
+mod macros;
 mod preprocess;
 mod tokenize;
+pub use macros::Macro;
