@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+//! Contains the enum of tokens used for tokenization of Databind source files
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
     /// Used before a mention of a variable (`Token::VarName`)
