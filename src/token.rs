@@ -17,6 +17,7 @@
  */
 //! Contains the enum of tokens used for tokenization of Databind source files
 #[derive(Clone, Debug, PartialEq)]
+/// The enum of Databind tokens used for tokenization of Databind source files
 pub enum Token {
     /// Used before a mention of a variable (`Token::VarName`)
     Var,
@@ -27,7 +28,7 @@ pub enum Token {
     /// Used before a variable (`Token::VarName`) to test
     TestVar,
     /// Used before a variable (`Token::VarName`) to get.
-    /// Meant for scoreboard operations (`:varop`)
+    /// Meant for scoreboard operations (`sbop`)
     GetVar,
     /// Define a function
     DefineFunc,

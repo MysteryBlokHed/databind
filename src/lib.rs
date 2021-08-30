@@ -75,5 +75,8 @@
 
 pub mod compiler;
 pub mod files;
-pub mod settings;
-pub mod token;
+mod settings;
+mod token;
+
+pub use settings::Settings;
+pub use token::Token;
