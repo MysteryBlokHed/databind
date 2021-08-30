@@ -23,8 +23,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
+    /// A list of globs of files to include in compilation
     pub inclusions: Vec<String>,
+    /// A list of globs of files to exclude in compilation
     pub exclusions: Vec<String>,
+    /// The output directory for compiled files
     pub output: String,
 }
 
