@@ -17,6 +17,10 @@
  */
 //! Contains functions and structs used to tokenize and compile Databind
 //! source code
+use crate::{files, token::Token, types::GlobalMacros};
+use compile::CompileReturn;
+use std::path::Path;
+
 /// Used to tokenize and compile Databind source code
 pub struct Compiler {
     /// The characters in a source file
@@ -82,6 +86,44 @@ impl Compiler {
             "error: {}:{}:{} - {}",
             self.path, self.line, self.col, message
         )
+    }
+
+    /// Pass different arguments to `Compiler::compile` depending on whether the source file
+    /// contains global macros or not and return the result
+    ///
+    /// # Arguments
+    ///
+    /// - `tokens` - The vector of tokens to pass
+    /// - `target_filename` - The filename of the tokenized file (used to check for `!` at beginning)
+    /// - `functions_dir` - The functions/ directory containing the tokenized file
+    ///   (used to get namespace & subfolder)
+    /// - `global_macros` - The global macros map to pass and to update if it needs to be
+    pub fn compile_check_macro<P: AsRef<Path>>(
+        &self,
+        tokens: Vec<Token>,
+        target_filename: &str,
+        functions_dir: P,
+        global_macros: &mut GlobalMacros,
+    ) -> CompileReturn {
+        if target_filename.starts_with('!') {
+            let ret = self.compile(
+                tokens,
+                Some(files::get_namespace(&functions_dir).unwrap()),
+                &files::get_subfolder_prefix(&functions_dir),
+                &global_macros,
+                true,
+            );
+            global_macros.extend(ret.global_macros.clone().unwrap());
+            ret.clone()
+        } else {
+            self.compile(
+                tokens,
+                Some(files::get_namespace(&functions_dir).unwrap()),
+                &files::get_subfolder_prefix(&functions_dir),
+                &global_macros,
+                false,
+            )
+        }
     }
 }
 

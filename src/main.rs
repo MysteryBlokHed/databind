@@ -183,25 +183,12 @@ fn main() -> std::io::Result<()> {
                 );
                 let tokens = compile.tokenize();
 
-                let mut compiled = if path.file_name().unwrap().to_str().unwrap().starts_with('!') {
-                    let ret = compile.compile(
-                        tokens,
-                        Some(files::get_namespace(&path).unwrap()),
-                        &files::get_subfolder_prefix(&path),
-                        &global_macros,
-                        true,
-                    );
-                    global_macros.extend(ret.global_macros.clone().unwrap());
-                    ret.clone()
-                } else {
-                    compile.compile(
-                        tokens,
-                        Some(files::get_namespace(&path).unwrap()),
-                        &files::get_subfolder_prefix(&path),
-                        &global_macros,
-                        false,
-                    )
-                };
+                let mut compiled = compile.compile_check_macro(
+                    tokens,
+                    path.file_name().unwrap().to_str().unwrap(),
+                    path,
+                    &mut global_macros,
+                );
 
                 for (key, value) in compiled.filename_map.iter() {
                     let full_path = format!("{}/{}.mcfunction", target_path, key);
