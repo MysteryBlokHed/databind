@@ -21,7 +21,6 @@ use crate::types::TagMap;
 use glob::glob;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap,
     fs,
     path::{Path, PathBuf},
 };
