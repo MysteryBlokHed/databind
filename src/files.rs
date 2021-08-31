@@ -180,6 +180,10 @@ pub fn create_tag_files<P: AsRef<Path>>(
 /// Returns a vector of source files with files beginning with ! appearing first.
 /// This is used to ensure that files with global macros are ordered the same
 /// across platforms
+///
+/// # Arguments
+///
+/// - `src_dir` - The directory that contains the Databind source files
 pub fn prioritize_macro_files<P: AsRef<Path>>(src_dir: P) -> Vec<PathBuf> {
     // Store global macro filepaths
     let mut global_macros: Vec<PathBuf> = Vec::new();
@@ -204,6 +208,7 @@ pub fn prioritize_macro_files<P: AsRef<Path>>(src_dir: P) -> Vec<PathBuf> {
     global_macros
 }
 
+/// Read the vars.toml file into a HashMap of Strings
 pub fn read_vars_toml<P: AsRef<Path>>(vars_toml: P) -> HashMap<String, String> {
     let contents = fs::read_to_string(vars_toml).unwrap();
     // Read toml file into HashMap with multiple types
