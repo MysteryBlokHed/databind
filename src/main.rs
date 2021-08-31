@@ -19,11 +19,9 @@
 
 use same_file::is_same_file;
 use std::{
-    collections::HashMap,
     env, fs,
     path::{Path, PathBuf},
 };
-use toml::Value;
 
 mod cli;
 mod compiler;
@@ -138,32 +136,7 @@ fn main() -> std::io::Result<()> {
             let vars_toml = Path::new(&path);
             // Check if file exists
             if vars_toml.exists() && vars_toml.is_file() {
-                let contents = fs::read_to_string(vars_toml)?;
-                // Read toml file into HashMap with multiple types
-                let vars_multi_type: HashMap<String, Value> = toml::from_str(&contents).unwrap();
-                let mut vars: HashMap<String, String> = HashMap::new();
-                for (k, v) in vars_multi_type.iter() {
-                    // Try to convert the value into a string
-                    let new_v: String = match v {
-                        Value::String(value) => value.clone(),
-                        Value::Boolean(value) => {
-                            if *value {
-                                "1".into()
-                            } else {
-                                "0".into()
-                            }
-                        }
-                        Value::Float(value) => value.to_string(),
-                        Value::Integer(value) => value.to_string(),
-                        Value::Datetime(value) => value.to_string(),
-                        _ => {
-                            println!("error: Unsupported type found in vars.toml file (key: {}, value: {})", k, v);
-                            std::process::exit(1);
-                        }
-                    };
-                    vars.entry(format!("&{}", k)).or_insert(new_v);
-                }
-                Some(vars)
+                Some(files::read_vars_toml(&vars_toml))
             } else {
                 None
             }

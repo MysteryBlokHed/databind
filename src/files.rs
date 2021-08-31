@@ -21,9 +21,11 @@ use crate::types::TagMap;
 use glob::glob;
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::HashMap,
     fs,
     path::{Path, PathBuf},
 };
+use toml::Value;
 use walkdir::WalkDir;
 
 /// Get the prefix of a subfolder before a function call (eg. `"cmd/"` for
@@ -200,4 +202,36 @@ pub fn prioritize_macro_files<P: AsRef<Path>>(src_dir: P) -> Vec<PathBuf> {
 
     global_macros.append(&mut normal);
     global_macros
+}
+
+pub fn read_vars_toml<P: AsRef<Path>>(vars_toml: P) -> HashMap<String, String> {
+    let contents = fs::read_to_string(vars_toml).unwrap();
+    // Read toml file into HashMap with multiple types
+    let vars_multi_type: HashMap<String, Value> = toml::from_str(&contents).unwrap();
+    let mut vars: HashMap<String, String> = HashMap::new();
+    for (k, v) in vars_multi_type.iter() {
+        // Try to convert the value into a string
+        let new_v: String = match v {
+            Value::String(value) => value.clone(),
+            Value::Boolean(value) => {
+                if *value {
+                    "1".into()
+                } else {
+                    "0".into()
+                }
+            }
+            Value::Float(value) => value.to_string(),
+            Value::Integer(value) => value.to_string(),
+            Value::Datetime(value) => value.to_string(),
+            _ => {
+                println!(
+                    "error: Unsupported type found in vars.toml file (key: {}, value: {})",
+                    k, v
+                );
+                std::process::exit(1);
+            }
+        };
+        vars.entry(format!("&{}", k)).or_insert(new_v);
+    }
+    vars
 }
