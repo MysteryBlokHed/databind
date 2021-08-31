@@ -23,13 +23,13 @@ use std::collections::HashMap;
 ///
 /// ```rust
 /// use databind::types::TagMap;
-/// let tag_map: TagMap = TagMap::new();
+/// let tag_map = TagMap::new();
 /// ```
 pub type TagMap = HashMap<String, Vec<String>>;
 /// Maps names of macros to an instance of the macro struct
 ///
 /// ```rust
 /// use databind::types::GlobalMacros;
-/// let global_macros: GlobalMacros = GlobalMacros::new();
+/// let global_macros = GlobalMacros::new();
 /// ```
 pub type GlobalMacros = HashMap<String, compiler::Macro>;

@@ -104,8 +104,8 @@ fn main() -> std::io::Result<()> {
     }
 
     if datapack_is_dir {
-        let mut tag_map: types::TagMap = types::TagMap::new();
-        let mut global_macros: types::GlobalMacros = types::GlobalMacros::new();
+        let mut tag_map = types::TagMap::new();
+        let mut global_macros = types::GlobalMacros::new();
         let target_folder = &compiler_settings.output;
 
         if fs::metadata(target_folder).is_ok() {
