@@ -19,7 +19,7 @@
 
 use same_file::is_same_file;
 use std::{
-    env, fs,
+    fs,
     path::{Path, PathBuf},
 };
 
@@ -35,26 +35,7 @@ mod types;
 ///
 /// Compiles provided files and folders to normal `.mcfunction` files
 fn main() -> std::io::Result<()> {
-    // If databind was run without arguments, check if current directory
-    // is a databind project
-    let args: Vec<_> = env::args().collect();
-    let matches = if args.len() > 1 {
-        cli::get_app().get_matches()
-    } else {
-        let mut args: Vec<String> = vec!["databind".into()];
-        // Find config file
-        let cd = &env::current_dir().unwrap();
-        let config_location = files::find_config_in_parents(&cd, "databind.toml".into());
-        if let Ok(config) = config_location {
-            // Get base directory of project from config file location
-            let base_dir = config.parent().unwrap();
-            args.push(base_dir.to_str().unwrap().into());
-            cli::get_app().get_matches_from(args)
-        } else {
-            // Run with no args to show help menu
-            cli::get_app().get_matches()
-        }
-    };
+    let matches = cli::get_matches();
 
     // Check if create command is used
     if let Some(subcommand) = matches.subcommand {
