@@ -31,6 +31,7 @@ mod create_project;
 mod files;
 mod settings;
 mod token;
+mod types;
 
 /// The main function
 ///
@@ -105,8 +106,8 @@ fn main() -> std::io::Result<()> {
     }
 
     if datapack_is_dir {
-        let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
-        let mut global_macros: HashMap<String, compiler::Macro> = HashMap::new();
+        let mut tag_map: types::TagMap = types::TagMap::new();
+        let mut global_macros: types::GlobalMacros = types::GlobalMacros::new();
         let target_folder = &compiler_settings.output;
 
         if fs::metadata(target_folder).is_ok() {

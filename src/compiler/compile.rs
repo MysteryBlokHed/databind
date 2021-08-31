@@ -16,9 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 use super::Compiler;
-
 use crate::compiler::macros::Macro;
 use crate::token::Token;
+use crate::types::{GlobalMacros, TagMap};
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -33,8 +33,8 @@ use std::collections::HashMap;
 pub struct CompileReturn {
     pub file_contents: Vec<String>,
     pub filename_map: HashMap<String, usize>,
-    pub tag_map: HashMap<String, Vec<String>>,
-    pub global_macros: Option<HashMap<String, Macro>>,
+    pub tag_map: TagMap,
+    pub global_macros: Option<GlobalMacros>,
 }
 
 impl Compiler {
