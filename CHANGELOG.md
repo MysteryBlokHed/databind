@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Filenames and line/column numbers to error messages
-- Added many new functions to the public library
+- Added filenames and line/column numbers to error messages
+- Added new functions to the public library
 
 ### Changed
 
