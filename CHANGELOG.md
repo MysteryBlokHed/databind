@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Converted the project into a Rust library with a binary, allowing Rust devs
   to make their own frontend for Databind
+- Changed cargo commands to use `--locked` flag to make sure the lockfile is enforced
 
 ## [0.6.4] - August 19, 2021
 
