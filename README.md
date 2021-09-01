@@ -35,6 +35,10 @@ To run Databind after building it with `cargo build`, use `cargo run`.
 
 ## Installation
 
+The installation instructions below are to build and install Databind from source.
+If you'd like to download a built binary instead, go to the
+[releases page](https://github.com/MysteryBlokHed/databind/releases).
+
 ### From crates.io
 
 To download Databind from crates.io, run `cargo install databind --locked`. If Rust is

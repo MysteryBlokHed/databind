@@ -12,10 +12,13 @@ then look at the docs hosted on `docs.rs <https://docs.rs/databind/>`_.
 Installation
 ------------
 
-Databind is installed using `cargo <https://www.rust-lang.org/tools/install>`_.
+Databind is build and installed from source using `cargo <https://www.rust-lang.org/tools/install>`_.
 With cargo installed, run ``cargo install databind`` to get the latest version.
 If Rust is in your path, then you should be able to access the CLI by running
 ``databind`` in any command line.
+
+Built binaries are also available on the GitHub
+`releases page <https://github.com/MysteryBlokHed/databind/releases>`_.
 
 Creating a Project
 ------------------
