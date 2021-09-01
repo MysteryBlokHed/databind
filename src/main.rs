@@ -17,6 +17,10 @@
  */
 #![warn(clippy::all)]
 
+use databind::compiler::Compiler;
+use databind::files;
+use databind::types::{GlobalMacros, TagMap};
+use databind::Settings;
 use same_file::is_same_file;
 use std::{
     fs,
@@ -24,12 +28,7 @@ use std::{
 };
 
 mod cli;
-mod compiler;
 mod create_project;
-mod files;
-mod settings;
-mod token;
-mod types;
 
 /// The main function
 ///
@@ -70,7 +69,7 @@ fn main() -> std::io::Result<()> {
         std::process::exit(1);
     }
 
-    let mut compiler_settings: settings::Settings;
+    let mut compiler_settings: Settings;
     if config_path.exists() && !matches.is_present("ignore-config") {
         let config_contents = fs::read_to_string(&config_path)?;
         compiler_settings = toml::from_str(&config_contents[..]).unwrap();
@@ -80,13 +79,13 @@ fn main() -> std::io::Result<()> {
             compiler_settings.output = cli_out.into();
         }
     } else {
-        compiler_settings = settings::Settings::default();
+        compiler_settings = Settings::default();
         compiler_settings.output = matches.value_of("output").unwrap().into();
     }
 
     if datapack_is_dir {
-        let mut tag_map = types::TagMap::new();
-        let mut global_macros = types::GlobalMacros::new();
+        let mut tag_map = TagMap::new();
+        let mut global_macros = GlobalMacros::new();
         let target_folder = &compiler_settings.output;
 
         if fs::metadata(target_folder).is_ok() {
@@ -177,7 +176,7 @@ fn main() -> std::io::Result<()> {
                     }
                     file_contents
                 };
-                let mut compile = compiler::Compiler::new(
+                let mut compile = Compiler::new(
                     contents,
                     Some(path.canonicalize().unwrap().to_str().unwrap().into()),
                 );
