@@ -37,13 +37,13 @@ To run Databind after building it with `cargo build`, use `cargo run`.
 
 ### From crates.io
 
-To download Databind from crates.io, run `cargo install databind`. If Rust is
+To download Databind from crates.io, run `cargo install databind --locked`. If Rust is
 [in your PATH](https://www.rust-lang.org/tools/install#installation-notes),
 then running `databind` from a command line will work.
 
 ### Locally
 
-To install Databind from a cloned repository, run `cargo install --path .` in the root directory.
+To install Databind from a cloned repository, run `cargo install --path . --locked` in the root directory.
 
 ## Documentation
 
