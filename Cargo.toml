@@ -12,6 +12,14 @@ keywords = ["compilers", "datapacks", "minecraft", "transpilers"]
 categories = ["command-line-utilities", "compilers"]
 include = ["/src/", "LICENSE", "README.md", "CHANGELOG.md"]
 
+[lib]
+name = "databind"
+path = "src/lib/lib.rs"
+
+[[bin]]
+name = "databind"
+path = "src/cli/main.rs"
+
 [dependencies]
 clap = "2.33"
 glob = "0.3"
@@ -25,7 +33,3 @@ walkdir = "2.3"
 
 [dev-dependencies]
 tempdir = "0.3"
-
-[[bin]]
-name = "databind"
-path = "src/main.rs"

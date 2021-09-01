@@ -73,6 +73,7 @@ pub mod compiler;
 pub mod files;
 mod settings;
 mod token;
+pub mod types;
 
 pub use settings::Settings;
 pub use token::Token;

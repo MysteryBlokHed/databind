@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use crate::settings::Settings;
+use databind::Settings;
 use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};

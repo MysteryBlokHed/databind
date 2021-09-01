@@ -17,46 +17,26 @@
  */
 #![warn(clippy::all)]
 
+use databind::{
+    compiler::Compiler,
+    files,
+    types::{GlobalMacros, TagMap},
+    Settings,
+};
 use same_file::is_same_file;
 use std::{
-    collections::HashMap,
-    env, fs,
+    fs,
     path::{Path, PathBuf},
 };
-use toml::Value;
-use walkdir::WalkDir;
 
 mod cli;
-mod compiler;
 mod create_project;
-mod files;
-mod settings;
-mod token;
 
 /// The main function
 ///
 /// Compiles provided files and folders to normal `.mcfunction` files
 fn main() -> std::io::Result<()> {
-    // If databind was run without arguments, check if current directory
-    // is a databind project
-    let args: Vec<_> = env::args().collect();
-    let matches = if args.len() > 1 {
-        cli::get_app().get_matches()
-    } else {
-        let mut args: Vec<String> = vec!["databind".into()];
-        // Find config file
-        let cd = &env::current_dir().unwrap();
-        let config_location = files::find_config_in_parents(&cd, "databind.toml".into());
-        if let Ok(config) = config_location {
-            // Get base directory of project from config file location
-            let base_dir = config.parent().unwrap();
-            args.push(base_dir.to_str().unwrap().into());
-            cli::get_app().get_matches_from(args)
-        } else {
-            // Run with no args to show help menu
-            cli::get_app().get_matches()
-        }
-    };
+    let matches = cli::get_matches();
 
     // Check if create command is used
     if let Some(subcommand) = matches.subcommand {
@@ -91,7 +71,7 @@ fn main() -> std::io::Result<()> {
         std::process::exit(1);
     }
 
-    let mut compiler_settings: settings::Settings;
+    let mut compiler_settings: Settings;
     if config_path.exists() && !matches.is_present("ignore-config") {
         let config_contents = fs::read_to_string(&config_path)?;
         compiler_settings = toml::from_str(&config_contents[..]).unwrap();
@@ -101,13 +81,13 @@ fn main() -> std::io::Result<()> {
             compiler_settings.output = cli_out.into();
         }
     } else {
-        compiler_settings = settings::Settings::default();
+        compiler_settings = Settings::default();
         compiler_settings.output = matches.value_of("output").unwrap().into();
     }
 
     if datapack_is_dir {
-        let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
-        let mut global_macros: HashMap<String, compiler::Macro> = HashMap::new();
+        let mut tag_map = TagMap::new();
+        let mut global_macros = GlobalMacros::new();
         let target_folder = &compiler_settings.output;
 
         if fs::metadata(target_folder).is_ok() {
@@ -138,61 +118,14 @@ fn main() -> std::io::Result<()> {
             let vars_toml = Path::new(&path);
             // Check if file exists
             if vars_toml.exists() && vars_toml.is_file() {
-                let contents = fs::read_to_string(vars_toml)?;
-                // Read toml file into HashMap with multiple types
-                let vars_multi_type: HashMap<String, Value> = toml::from_str(&contents).unwrap();
-                let mut vars: HashMap<String, String> = HashMap::new();
-                for (k, v) in vars_multi_type.iter() {
-                    // Try to convert the value into a string
-                    let new_v: String = match v {
-                        Value::String(value) => value.clone(),
-                        Value::Boolean(value) => {
-                            if *value {
-                                "1".into()
-                            } else {
-                                "0".into()
-                            }
-                        }
-                        Value::Float(value) => value.to_string(),
-                        Value::Integer(value) => value.to_string(),
-                        Value::Datetime(value) => value.to_string(),
-                        _ => {
-                            println!("error: Unsupported type found in vars.toml file (key: {}, value: {})", k, v);
-                            std::process::exit(1);
-                        }
-                    };
-                    vars.entry(format!("&{}", k)).or_insert(new_v);
-                }
-                Some(vars)
+                Some(files::read_vars_toml(&vars_toml))
             } else {
                 None
             }
         };
 
         // Get filepaths with global macros appearing first
-        let paths = {
-            // Store global macro filepaths
-            let mut global_macros: Vec<PathBuf> = Vec::new();
-            // Store normal filepaths
-            let mut normal: Vec<PathBuf> = Vec::new();
-            // Sort filepaths into each vector
-            let unsorted_paths = WalkDir::new(&src_dir)
-                .into_iter()
-                .filter_map(|e| e.ok())
-                .filter(|e| e.path().is_file())
-                .map(|e| e.path().to_path_buf());
-
-            for path in unsorted_paths {
-                if path.file_name().unwrap().to_str().unwrap().starts_with('!') {
-                    global_macros.push(path);
-                } else {
-                    normal.push(path);
-                }
-            }
-
-            global_macros.append(&mut normal);
-            global_macros
-        };
+        let paths = files::prioritize_macro_files(src_dir);
 
         for path in paths.iter() {
             // Do not add config file to output folder
@@ -245,31 +178,18 @@ fn main() -> std::io::Result<()> {
                     }
                     file_contents
                 };
-                let mut compile = compiler::Compiler::new(
+                let mut compile = Compiler::new(
                     contents,
                     Some(path.canonicalize().unwrap().to_str().unwrap().into()),
                 );
                 let tokens = compile.tokenize();
 
-                let mut compiled = if path.file_name().unwrap().to_str().unwrap().starts_with('!') {
-                    let ret = compile.compile(
-                        tokens,
-                        Some(files::get_namespace(&path).unwrap()),
-                        &files::get_subfolder_prefix(&path),
-                        &global_macros,
-                        true,
-                    );
-                    global_macros.extend(ret.global_macros.clone().unwrap());
-                    ret.clone()
-                } else {
-                    compile.compile(
-                        tokens,
-                        Some(files::get_namespace(&path).unwrap()),
-                        &files::get_subfolder_prefix(&path),
-                        &global_macros,
-                        false,
-                    )
-                };
+                let mut compiled = compile.compile_check_macro(
+                    tokens,
+                    path.file_name().unwrap().to_str().unwrap(),
+                    path,
+                    &mut global_macros,
+                );
 
                 for (key, value) in compiled.filename_map.iter() {
                     let full_path = format!("{}/{}.mcfunction", target_path, key);

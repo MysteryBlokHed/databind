@@ -1,11 +1,7 @@
 source: src/**
-lib:
-  - any: [src/**, '!src/main.rs', '!src/cli.rs', '!src/create_project.rs']
-cli:
-  - src/main.rs
-  - src/cli.rs
-  - src/create_project.rs
-databind create: src/create_project.rs
+lib: src/lib/**
+cli: src/cli/**
+databind create: src/cli/create_project.rs
 documentation: docs/**
 tests: tests/**
 workflows:

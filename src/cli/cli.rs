@@ -15,7 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use clap::{App, Arg, SubCommand};
+use clap::{App, Arg, ArgMatches, SubCommand};
+use databind::files;
+use std::env;
 
 /// Set up Clap CLI and get arguments
 pub(crate) fn get_app<'a, 'b>() -> App<'a, 'b> {
@@ -86,4 +88,29 @@ pub(crate) fn get_app<'a, 'b>() -> App<'a, 'b> {
                         .value_name("VERSION"),
                 ),
         )
+}
+
+/// Get matches for the CLI. If no arguments are passed, checks if the current
+/// directory is a Databind project and passes arguments directly to Clap
+pub(crate) fn get_matches<'a>() -> ArgMatches<'a> {
+    // If databind was run without arguments, check if current directory
+    // is a databind project
+    let args: Vec<_> = env::args().collect();
+    if args.len() > 1 {
+        get_app().get_matches()
+    } else {
+        let mut args: Vec<String> = vec!["databind".into()];
+        // Find config file
+        let cd = &env::current_dir().unwrap();
+        let config_location = files::find_config_in_parents(&cd, "databind.toml".into());
+        if let Ok(config) = config_location {
+            // Get base directory of project from config file location
+            let base_dir = config.parent().unwrap();
+            args.push(base_dir.to_str().unwrap().into());
+            get_app().get_matches_from(args)
+        } else {
+            // Run with no args to show help menu
+            get_app().get_matches()
+        }
+    }
 }

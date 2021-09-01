@@ -10,12 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Filenames and line/column numbers to error messages
+- Added many new functions to the public library
 
 ### Changed
 
 - Converted the project into a Rust library with a binary, allowing Rust devs
   to make their own frontend for Databind
 - Changed cargo commands to use `--locked` flag to make sure the lockfile is enforced
+- Made the CLI use the public library instead of modules and `use crate::`
+- Changed structure of src/ directory to separate CLI and library files
 
 ## [0.6.4] - August 19, 2021
 

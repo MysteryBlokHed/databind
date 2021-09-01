@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-//! Contains functions used by the CLI to get information from filepaths or to
+//! Contains functions used by the CLI to get information from files or to
 //! create files
+use crate::types::TagMap;
 use glob::glob;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -24,6 +25,8 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
+use toml::Value;
+use walkdir::WalkDir;
 
 /// Get the prefix of a subfolder before a function call (eg. `"cmd/"` for
 /// a subfolder called `cmd`)
@@ -129,7 +132,7 @@ pub fn find_config_in_parents(
 pub fn create_tag_files<P: AsRef<Path>>(
     src_dir: P,
     target_folder: P,
-    tag_map: &HashMap<String, Vec<String>>,
+    tag_map: &TagMap,
 ) -> std::io::Result<()> {
     #[derive(Deserialize, Serialize)]
     struct TagFile {
@@ -172,4 +175,68 @@ pub fn create_tag_files<P: AsRef<Path>>(
     }
 
     Ok(())
+}
+
+/// Returns a vector of source files with files beginning with ! appearing first.
+/// This is used to ensure that files with global macros are ordered the same
+/// across platforms
+///
+/// # Arguments
+///
+/// - `src_dir` - The directory that contains the Databind source files
+pub fn prioritize_macro_files<P: AsRef<Path>>(src_dir: P) -> Vec<PathBuf> {
+    // Store global macro filepaths
+    let mut global_macros: Vec<PathBuf> = Vec::new();
+    // Store normal filepaths
+    let mut normal: Vec<PathBuf> = Vec::new();
+    // Sort filepaths into each vector
+    let unsorted_paths = WalkDir::new(src_dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().is_file())
+        .map(|e| e.path().to_path_buf());
+
+    for path in unsorted_paths {
+        if path.file_name().unwrap().to_str().unwrap().starts_with('!') {
+            global_macros.push(path);
+        } else {
+            normal.push(path);
+        }
+    }
+
+    global_macros.append(&mut normal);
+    global_macros
+}
+
+/// Read the vars.toml file into a HashMap of Strings
+pub fn read_vars_toml<P: AsRef<Path>>(vars_toml: P) -> HashMap<String, String> {
+    let contents = fs::read_to_string(vars_toml).unwrap();
+    // Read toml file into HashMap with multiple types
+    let vars_multi_type: HashMap<String, Value> = toml::from_str(&contents).unwrap();
+    let mut vars: HashMap<String, String> = HashMap::new();
+    for (k, v) in vars_multi_type.iter() {
+        // Try to convert the value into a string
+        let new_v: String = match v {
+            Value::String(value) => value.clone(),
+            Value::Boolean(value) => {
+                if *value {
+                    "1".into()
+                } else {
+                    "0".into()
+                }
+            }
+            Value::Float(value) => value.to_string(),
+            Value::Integer(value) => value.to_string(),
+            Value::Datetime(value) => value.to_string(),
+            _ => {
+                println!(
+                    "error: Unsupported type found in vars.toml file (key: {}, value: {})",
+                    k, v
+                );
+                std::process::exit(1);
+            }
+        };
+        vars.entry(format!("&{}", k)).or_insert(new_v);
+    }
+    vars
 }
