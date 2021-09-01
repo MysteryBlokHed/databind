@@ -1,5 +1,3 @@
-use std::env;
-
 /*
  * Databind - Expand the functionality of Minecraft Datapacks.
  * Copyright (C) 2021  Adam Thompson-Sharpe
@@ -19,6 +17,7 @@ use std::env;
  */
 use crate::files;
 use clap::{App, Arg, ArgMatches, SubCommand};
+use std::env;
 
 /// Set up Clap CLI and get arguments
 pub(crate) fn get_app<'a, 'b>() -> App<'a, 'b> {
