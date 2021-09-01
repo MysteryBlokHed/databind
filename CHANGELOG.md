@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to make their own frontend for Databind
 - Changed cargo commands to use `--locked` flag to make sure the lockfile is enforced
 - Made the CLI use the public library instead of modules and `use crate::`
+- Changed structure of src/ directory to separate CLI and library files
 
 ## [0.6.4] - August 19, 2021
 
