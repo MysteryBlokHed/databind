@@ -17,10 +17,12 @@
  */
 #![warn(clippy::all)]
 
-use databind::compiler::Compiler;
-use databind::files;
-use databind::types::{GlobalMacros, TagMap};
-use databind::Settings;
+use databind::{
+    compiler::Compiler,
+    files,
+    types::{GlobalMacros, TagMap},
+    Settings,
+};
 use same_file::is_same_file;
 use std::{
     fs,
