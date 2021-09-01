@@ -40,10 +40,10 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build
-        run: cargo build --release --all-features
+        run: cargo build --release --all-features --locked
 
       - name: Test
-        run: cargo test --release --all-features
+        run: cargo test --release --all-features --locked
 
       - name: Upload release binary
         if: ${{ github.ref == 'refs/heads/master' }}
@@ -77,10 +77,10 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build
-        run: cargo build --release --all-features
+        run: cargo build --release --all-features --locked
 
       - name: Test
-        run: cargo test --release --all-features
+        run: cargo test --release --all-features --locked
 
       - name: Upload release binary
         if: ${{ github.ref == 'refs/heads/master' }}
@@ -114,10 +114,10 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build
-        run: cargo build --release --all-features
+        run: cargo build --release --all-features --locked
 
       - name: Test
-        run: cargo test --release --all-features
+        run: cargo test --release --all-features --locked
 
       - name: Upload release binary
         if: ${{ github.ref == 'refs/heads/master' }}
