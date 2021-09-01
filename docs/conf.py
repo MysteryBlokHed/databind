@@ -21,7 +21,7 @@ copyright = '2021 Adam Thompson-Sharpe. Licensed under GPL-3.0.'
 author = 'Adam Thompson-Sharpe'
 
 # The full version, including alpha/beta/rc tags
-release = '0.7.0'
+release = '0.7.1'
 
 # -- General configuration ---------------------------------------------------
 
