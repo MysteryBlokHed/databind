@@ -14,7 +14,7 @@ include = ["/src/", "LICENSE", "README.md", "CHANGELOG.md"]
 
 [lib]
 name = "databind"
-path = "src/lib.rs"
+path = "src/lib/lib.rs"
 
 [[bin]]
 name = "databind"
