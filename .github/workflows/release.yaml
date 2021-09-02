@@ -28,7 +28,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: ./binaries/windows-build/databind.exe
+          asset_path: ./binaries/windows-latest-build/databind.exe
           asset_name: databind-win.exe
           asset_content_type: application/octet-stream
 
@@ -38,7 +38,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: ./binaries/macos-build/databind
+          asset_path: ./binaries/macos-latest-build/databind
           asset_name: databind-mac
           asset_content_type: application/octet-stream
 
@@ -48,6 +48,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: ./binaries/linux-build/databind
+          asset_path: ./binaries/ubuntu-latest-build/databind
           asset_name: databind-linux
           asset_content_type: application/octet-stream

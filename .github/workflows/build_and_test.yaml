@@ -18,21 +18,13 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-          - os: windows
-            name: win
-            bin: databind.exe
-
-          - os: macos
-            name: mac
-            bin: databind
-
-          - os: ubuntu
-            name: linux
-            bin: databind
+        os:
+          - windows-latest
+          - macos-latest
+          - ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -63,6 +55,6 @@ jobs:
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.name }}-build
-          path: ./target/release/${{ matrix.bin }}
+          name: ${{ matrix.os }}-build
+          path: target/release/
           if-no-files-found: error
