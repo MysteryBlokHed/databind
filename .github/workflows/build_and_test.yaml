@@ -23,12 +23,15 @@ jobs:
       matrix:
         include:
           - os: windows
+            name: win
             bin: databind.exe
 
           - os: macos
+            name: mac
             bin: databind
 
-          - os: linux
+          - os: ubuntu
+            name: linux
             bin: databind
     steps:
       - name: Checkout
@@ -48,7 +51,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build
         run: cargo build --release --all-features --locked
@@ -60,6 +63,6 @@ jobs:
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.os }}-build
+          name: ${{ matrix.name }}-build
           path: ./target/release/${{ matrix.bin }}
           if-no-files-found: error
