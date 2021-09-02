@@ -1,4 +1,4 @@
-name: Build And Test
+name: Build, Test & Upload
 on:
   pull_request:
     branches:
@@ -16,9 +16,20 @@ on:
       - Cargo.*
 
 jobs:
-  windows_build:
-    name: Windows Build
-    runs-on: windows-latest
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows
+            bin: databind.exe
+
+          - os: macos
+            bin: databind
+
+          - os: linux
+            bin: databind
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -49,80 +60,6 @@ jobs:
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: actions/upload-artifact@v2
         with:
-          name: windows-build
-          path: ./target/release/databind.exe
-          if-no-files-found: error
-
-  macos_build:
-    name: macOS Build
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-
-      - name: Cargo cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build
-        run: cargo build --release --all-features --locked
-
-      - name: Test
-        run: cargo test --release --all-features --locked
-
-      - name: Upload release binary
-        if: ${{ github.ref == 'refs/heads/master' }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: macos-build
-          path: ./target/release/databind
-          if-no-files-found: error
-
-  ubuntu_build:
-    name: Ubuntu Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-
-      - name: Cargo cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build
-        run: cargo build --release --all-features --locked
-
-      - name: Test
-        run: cargo test --release --all-features --locked
-
-      - name: Upload release binary
-        if: ${{ github.ref == 'refs/heads/master' }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: linux-build
-          path: ./target/release/databind
+          name: ${{ matrix.os }}-build
+          path: ./target/release/${{ matrix.bin }}
           if-no-files-found: error
