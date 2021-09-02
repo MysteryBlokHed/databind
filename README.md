@@ -1,4 +1,4 @@
-# Databind [![Crates.io Badge]](https://crates.io/crates/databind) [![License Badge]](#license) [![Documentation]](https://databind.readthedocs.io/en/stable/)
+# Databind [![Crates.io Badge]](https://crates.io/crates/databind) [![License Badge]](#license) [![Docs Badge]](https://databind.readthedocs.io/en/stable/) [![Build & Test Badge]](https://github.com/MysteryBlokHed/databind/actions/workflows/build_and_test.yaml)
 
 Expand the functionality of Minecraft Datapacks.
 
@@ -83,4 +83,5 @@ Databind is licensed under the GNU General Public License, Version 3.0
 
 [crates.io badge]: https://img.shields.io/crates/v/databind
 [license badge]: https://img.shields.io/github/license/MysteryBlokHed/databind
-[documentation]: https://readthedocs.org/projects/databind/badge/?version=latest
+[docs badge]: https://readthedocs.org/projects/databind/badge/?version=latest
+[build & test badge]: https://github.com/MysteryBlokHed/databind/actions/workflows/build_and_test.yaml/badge.svg
