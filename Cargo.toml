@@ -12,20 +12,12 @@ keywords = ["compilers", "datapacks", "minecraft", "transpilers"]
 categories = ["command-line-utilities", "compilers"]
 include = ["/src/", "LICENSE", "README.md", "CHANGELOG.md"]
 
-[lib]
-name = "databind"
-path = "src/lib/lib.rs"
-
-[[bin]]
-name = "databind"
-path = "src/cli/main.rs"
-
 [dependencies]
-clap = "2.33"
+clap = { version = "2.33", optional = true }
 glob = "0.3"
 rand = "0.8"
 regex = "1.5"
-same-file = "1.0"
+same-file = { version = "1.0", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 toml = "0.5"
@@ -33,3 +25,15 @@ walkdir = "2.3"
 
 [dev-dependencies]
 tempdir = "0.3"
+
+[features]
+cli = ["clap", "same-file"]
+
+[lib]
+name = "databind"
+path = "src/lib/lib.rs"
+
+[[bin]]
+name = "databind"
+path = "src/cli/main.rs"
+required-features = ["cli"]
