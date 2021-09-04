@@ -58,7 +58,7 @@ jobs:
         run: cargo test --release --all-features --locked
 
       - if: ${{ matrix.os == 'windows-latest' }}
-        name: Set Binary Path
+        name: (Windows) Fix Binary Path
         run: Write-Output 'BIN_PATH=target/release/databind.exe' >> $env:GITHUB_ENV
 
       - name: Upload release binary
