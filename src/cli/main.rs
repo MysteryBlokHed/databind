@@ -192,9 +192,11 @@ fn main() -> std::io::Result<()> {
                 );
 
                 for (key, value) in compiled.filename_map.iter() {
-                    let full_path = format!("{}/{}.mcfunction", target_path, key);
+                    let full_path_string = format!("{}/{}.mcfunction", target_path, key);
+                    let full_path = Path::new(&full_path_string);
 
-                    fs::write(full_path, &compiled.file_contents[*value])?;
+                    fs::create_dir_all(&full_path.parent().unwrap())?;
+                    fs::write(&full_path, &compiled.file_contents[*value])?;
 
                     // Add namespace prefix to function in tag map
                     for (_, funcs) in compiled.tag_map.iter_mut() {
