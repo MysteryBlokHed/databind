@@ -19,6 +19,7 @@ jobs:
   build:
     name: Build
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -26,6 +27,10 @@ jobs:
           - windows-latest
           - macos-latest
           - ubuntu-latest
+
+    env:
+      BIN_PATH: target/release/databind
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -52,10 +57,14 @@ jobs:
       - name: Test
         run: cargo test --release --all-features --locked
 
+      - if: ${{ matrix.os == 'windows-latest' }}
+        name: Set Binary Path
+        run: Write-Output 'BIN_PATH=target/release/databind.exe' >> $env:GITHUB_ENV
+
       - name: Upload release binary
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.os }}-build
-          path: target/release/
+          path: ${{ env.BIN_PATH }}
           if-no-files-found: error
