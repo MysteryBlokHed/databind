@@ -341,3 +341,23 @@ fn test_if_structure() {
         }
     }
 }
+
+/// Test that functions with slashes in the name (eg. `func cmd/run`) are
+/// generated in the right places.
+/// Also tests that they work properly when they're placed in subfolders of
+/// `functions/`
+#[test]
+fn test_slash_functions() {
+    let out = tests::run_in_tempdir("test_slash_functions").0;
+    let mut path = PathBuf::from(out.path());
+    path.push("data/test/functions");
+
+    let expected_funcs = [
+        "func_sub1/test.mcfunction",
+        "func_sub1/func_sub2/test.mcfunction",
+        "project_sub1/func_sub1/test.mcfunction",
+        "project_sub1/func_sub1/func_sub2/test.mcfunction",
+    ];
+
+    tests::check_files_exist(&path, &expected_funcs, "test_slash_functions");
+}
