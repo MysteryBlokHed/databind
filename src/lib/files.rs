@@ -58,24 +58,30 @@ pub fn get_subfolder_prefix<P: AsRef<Path>>(functions_path: &P) -> String {
 }
 
 /// Get namespace (name of folder containing the main /functions)
-pub fn get_namespace<P: AsRef<Path>>(functions_path: &P) -> Result<&str, &str> {
-    let namespace_folder = functions_path
-        .as_ref()
-        .to_str()
-        .unwrap()
-        .split("functions")
-        .next()
-        .unwrap();
+pub fn get_namespace<P: AsRef<Path>>(functions_path: &P) -> Result<String, &str> {
+    let namespace_str = {
+        let mut namespace_buf = functions_path.as_ref().to_path_buf();
+        while namespace_buf.is_file()
+            && namespace_buf.file_name().unwrap().to_str().unwrap() != "functions"
+        {
+            namespace_buf.pop();
+        }
+        namespace_buf.pop();
+
+        namespace_buf.to_str().unwrap().to_string()
+    };
 
     let namespace_folder =
-        if let Some(new) = namespace_folder.strip_suffix(|x: char| ['\\', '/'].contains(&x)) {
-            new
+        if let Some(new) = namespace_str.strip_suffix(|x: char| ['\\', '/'].contains(&x)) {
+            new.to_string()
         } else {
-            namespace_folder
+            namespace_str
         };
 
     let folders = namespace_folder.split(|x: char| ['\\', '/'].contains(&x));
-    Ok(folders.last().unwrap())
+    let last = folders.last().unwrap().to_string();
+
+    Ok(last)
 }
 
 /// Convert multiple globs into a `Vec<PathBuf>`

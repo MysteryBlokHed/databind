@@ -108,7 +108,7 @@ impl Compiler {
         if target_filename.starts_with('!') {
             let ret = self.compile(
                 tokens,
-                Some(files::get_namespace(&functions_dir).unwrap()),
+                Some(&files::get_namespace(&functions_dir).unwrap()),
                 &files::get_subfolder_prefix(&functions_dir),
                 &global_macros,
                 true,
@@ -118,7 +118,7 @@ impl Compiler {
         } else {
             self.compile(
                 tokens,
-                Some(files::get_namespace(&functions_dir).unwrap()),
+                Some(&files::get_namespace(&functions_dir).unwrap()),
                 &files::get_subfolder_prefix(&functions_dir),
                 &global_macros,
                 false,
