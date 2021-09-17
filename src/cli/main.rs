@@ -210,7 +210,12 @@ fn main() -> std::io::Result<()> {
                     }
                 }
 
-                tag_map.extend(compiled.tag_map);
+                for (key, value) in compiled.tag_map {
+                    tag_map
+                        .entry(key)
+                        .or_insert(Vec::new())
+                        .append(&mut value.clone());
+                }
             } else {
                 let filename = relative_path.file_name().unwrap().to_str().unwrap();
                 let full_path = format!("{}/{}", target_path, filename);
