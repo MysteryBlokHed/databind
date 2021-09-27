@@ -53,13 +53,16 @@ pub fn check_files_exist<P: AsRef<Path>>(base_path: &PathBuf, files: &[P], print
 
     for file in files.iter() {
         base.push(file);
+        let pops = file.as_ref().to_str().unwrap().matches('/').count() + 1;
         assert!(fs::metadata(&base).is_ok());
         println!(
             "{} File {} exists (and should)",
             print_prefix,
             file.as_ref().display()
         );
-        base.pop();
+        for _ in 0..pops {
+            base.pop();
+        }
     }
 }
 

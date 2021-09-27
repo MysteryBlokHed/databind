@@ -1,0 +1,7 @@
+func func_sub1/test
+    say Hello, World!
+end
+
+func func_sub1/func_sub2/test
+    say Hello, World!
+end
