@@ -50,7 +50,6 @@ pub enum Node {
         operator: AssignmentOp,
         value: i32,
     },
-    Sbop,
     GetVar(String),
     Function {
         name: String,

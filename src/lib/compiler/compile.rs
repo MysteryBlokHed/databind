@@ -177,7 +177,6 @@ impl Compiler {
                         action, target, name, value,
                     ));
                 }
-                Node::Sbop => current_file!().push_str("scoreboard players operation "),
                 Node::GetVar(name) => current_file!().push_str(&format!("--databind {} ", name)),
                 Node::Function { name, contents } => {
                     nested_funcs.push(name.clone());
