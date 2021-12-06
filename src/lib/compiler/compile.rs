@@ -186,9 +186,9 @@ impl Compiler {
                     nested_funcs.pop();
                 }
                 Node::Tag(tag) => tag_map
-                    .entry(current_func!().clone())
+                    .entry(tag.clone())
                     .or_insert(Vec::new())
-                    .push(tag.clone()),
+                    .push(current_func!().clone()),
                 Node::CallFunction(name) => {
                     // Function contains namespace
                     let has_namespace = name.contains(':');
