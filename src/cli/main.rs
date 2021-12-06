@@ -178,33 +178,33 @@ fn main() -> std::io::Result<()> {
                     }
                     file_contents
                 };
-                let mut compile = Compiler::new(
-                    contents,
-                    Some(path.canonicalize().unwrap().to_str().unwrap().into()),
-                );
-                let tokens = compile.tokenize();
+                let compile =
+                    Compiler::new(Some(path.canonicalize().unwrap().to_str().unwrap().into()));
+                let mut nodes = compile.parse(&contents).expect("failed to parse file");
+
+                println!("main: nodes from compile.parse: {:#?}", nodes);
 
                 let mut compiled = compile.compile_check_macro(
-                    tokens,
+                    &mut nodes,
                     path.file_name().unwrap().to_str().unwrap(),
                     path,
                     &mut global_macros,
                 );
 
-                for (key, value) in compiled.filename_map.iter() {
-                    let full_path = format!("{}/{}.mcfunction", target_path, key);
+                for (name, contents) in compiled.files.iter() {
+                    let full_path = format!("{}/{}.mcfunction", target_path, name);
 
-                    fs::write(full_path, &compiled.file_contents[*value])?;
+                    fs::write(full_path, contents)?;
 
                     // Add namespace prefix to function in tag map
                     for (_, funcs) in compiled.tag_map.iter_mut() {
-                        if funcs.contains(key) {
-                            let i = funcs.iter().position(|x| x == key).unwrap();
+                        if funcs.contains(name) {
+                            let i = funcs.iter().position(|x| x == name).unwrap();
                             funcs[i] = format!(
                                 "{}:{}{}",
                                 files::get_namespace(&path).unwrap(),
                                 files::get_subfolder_prefix(&path),
-                                key
+                                name
                             );
                         }
                     }

@@ -34,16 +34,16 @@
 //!
 //! // Source file
 //! let source_file = "
-//! func main\n\
-//!     say Hello, World!\n\
-//! end\n\
-//! func second_func\n\
-//!     say Second function\n\
+//! func main
+//!     say Hello, World!
+//! end
+//! func second_func
+//!     say Second function
 //! end"
 //! .to_string();
 //! // Create compiler and tokenize source file
 //! let mut compiler = Compiler::new(source_file, None);
-//! let tokens = compiler.tokenize();
+//! let tokens = compiler.parse();
 //! // Compile tokens to files
 //! let compiled = compiler.compile(tokens, None, "", &HashMap::new(), false);
 //! // Print the contents of each file
@@ -68,12 +68,15 @@
 //! say Second function
 //! ----------
 //! ```
+#![warn(clippy::all)]
+#[macro_use]
+extern crate pest_derive;
 
+mod ast;
 pub mod compiler;
 pub mod files;
 mod settings;
-mod token;
 pub mod types;
 
+pub use ast::Node;
 pub use settings::Settings;
-pub use token::Token;

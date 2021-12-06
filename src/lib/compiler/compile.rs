@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 use super::Compiler;
+use crate::ast::{AssignmentOp, Node};
 use crate::compiler::macros::Macro;
-use crate::token::Token;
 use crate::types::{GlobalMacros, TagMap};
 use regex::Regex;
 use std::collections::HashMap;
@@ -26,243 +26,266 @@ use std::collections::HashMap;
 ///
 /// # Arguments
 ///
-/// - `file_contents` - A list of file contents
-/// - `filename_map` - A map of filenames to indexes in the file_contents Vec
+/// - `filename_map` - A map of filenames and file contents
 /// - `tag_map` - A map of tags to functions
 #[derive(Debug, Clone)]
 pub struct CompileReturn {
-    pub file_contents: Vec<String>,
-    pub filename_map: HashMap<String, usize>,
+    pub files: HashMap<String, String>,
     pub tag_map: TagMap,
     pub global_macros: Option<GlobalMacros>,
 }
 
 impl Compiler {
-    /// Convert tokens to a compiled file or files
+    /// Calls a function for every node in the AST containing a list of other nodes,
+    /// such as functions
+    ///
+    /// ## Arguments
+    ///
+    /// * `ast` - The AST to modify
+    /// * `to_run` - The function to pass the lists of nodes. Should return a potentially modified version
+    ///   of the original argument passed
+    pub fn update_node_lists(
+        &self,
+        ast: &mut Vec<Node>,
+        to_run: &mut dyn FnMut(&Vec<Node>) -> Vec<Node>,
+    ) {
+        *ast = to_run(ast);
+
+        for node in ast {
+            match node {
+                Node::Function { name, contents } => *contents = to_run(&contents),
+                Node::IfStatement {
+                    condition,
+                    if_block,
+                    else_block,
+                } => {
+                    *condition = to_run(&condition);
+                    *if_block = to_run(&if_block);
+                    *else_block = to_run(&else_block);
+                }
+                Node::WhileLoop {
+                    condition,
+                    contents,
+                } => {
+                    *condition = to_run(&condition);
+                    *contents = to_run(&contents);
+                }
+                Node::MinecraftCommand { name, args } => *args = to_run(&args),
+                _ => {}
+            }
+        }
+    }
+
+    /// Convert an AST to text. Called recursively for nodes containing other nodes
+    ///
+    /// ## Arguments
+    ///
+    /// * `ast` - The AST to compile to text
+    /// * `tag_map` - A map of function names to their tags
+    /// * `files` - A map of files and their contents
+    /// * `nested_funcs` - A list with the current nesting of functions
+    fn ast_to_text<'a>(
+        &self,
+        ast: &Vec<Node>,
+        tag_map: &mut HashMap<String, Vec<String>>,
+        files: &'a mut HashMap<String, String>,
+        nested_funcs: &mut Vec<String>,
+        namespace: Option<&str>,
+    ) -> &'a mut HashMap<String, String> {
+        println!("RUNNING WITH AST {:#?}", ast);
+
+        if files.is_empty() {
+            files.insert(String::new(), String::new());
+        }
+
+        /// Get the name of the current function
+        macro_rules! current_func {
+            () => {
+                &nested_funcs[nested_funcs.len() - 1]
+            };
+        }
+
+        /// Get the contents of the current file
+        macro_rules! current_file {
+            () => {
+                files.get_mut(current_func!()).unwrap()
+            };
+        }
+
+        /// Get text instead of a list of files from ast_to_text
+        macro_rules! nodes_to_single_text {
+            ($nodes: expr) => {
+                self.ast_to_text(
+                    $nodes,
+                    &mut HashMap::new(),
+                    &mut HashMap::new(),
+                    &mut vec!["".into()],
+                    namespace,
+                )["".into()]
+            };
+        }
+
+        for node in ast {
+            match node {
+                #[rustfmt::skip]
+                Node::NewVar { name, value } => {
+                    current_file!().push_str( &format!("scoreboard objectives add {} dummy\n", name));
+                    current_file!() .push_str( &format!("scoreboard players set --databind {} {}\n", name, value));
+                }
+                Node::SetVar {
+                    name,
+                    operator,
+                    value,
+                } => {
+                    let action = match operator {
+                        AssignmentOp::Add => "add",
+                        AssignmentOp::Subtract => "remove",
+                        AssignmentOp::Set => "set",
+                    };
+
+                    current_file!().push_str(&format!(
+                        "scoreboard players {} --databind {} {}\n",
+                        action, name, value
+                    ));
+                }
+                Node::TestVar { name, test } => {
+                    current_file!().push_str(&format!("score --databind {} {} ", name, test));
+                }
+                Node::DeleteVar(name) => {
+                    current_file!().push_str(&format!("scoreboard objectives remove {}\n", name));
+                }
+                Node::NewObjective { name, objective } => {
+                    current_file!().push_str(&format!(
+                        "scoreboard objectives add {} {}\n",
+                        name, objective
+                    ));
+                }
+                Node::SetObjective {
+                    target,
+                    name,
+                    operator,
+                    value,
+                } => {
+                    let action = match operator {
+                        AssignmentOp::Add => "add",
+                        AssignmentOp::Subtract => "remove",
+                        AssignmentOp::Set => "set",
+                    };
+
+                    current_file!().push_str(&format!(
+                        "scoreboard players {} {} {} {}\n",
+                        action, target, name, value,
+                    ));
+                }
+                Node::Sbop => current_file!().push_str("scoreboard players operation "),
+                Node::GetVar(name) => current_file!().push_str(&format!("--databind {} ", name)),
+                Node::Function { name, contents } => {
+                    nested_funcs.push(name.clone());
+                    files.insert(name.clone(), String::new());
+                    self.ast_to_text(contents, tag_map, files, nested_funcs, namespace);
+                    nested_funcs.pop();
+                }
+                Node::Tag(tag) => tag_map
+                    .entry(current_func!().clone())
+                    .or_insert(Vec::new())
+                    .push(tag.clone()),
+                Node::CallFunction(name) => {
+                    // Function contains namespace
+                    let has_namespace = name.contains(':');
+
+                    if has_namespace {
+                        current_file!().push_str(&format!("function {}\n", name));
+                    } else if let Some(ns) = namespace {
+                        current_file!().push_str(&format!("function {}:{}\n", ns, name));
+                    } else {
+                        panic!("internal: no namespace provided for function call");
+                    }
+                }
+                Node::IfStatement { .. }
+                | Node::WhileLoop { .. }
+                | Node::MacroDefinition { .. }
+                | Node::MacroCall { .. } => unimplemented!(),
+                Node::MinecraftCommand { name, args } => {
+                    current_file!().push_str(&format!("{}{}\n", name, nodes_to_single_text!(args)));
+                }
+                Node::CommandArg(arg) => current_file!().push_str(&format!(" {}", arg)),
+            }
+        }
+
+        files
+    }
+
+    /// Convert an AST to a compiled file or files
     ///
     /// # Arguments
     ///
-    /// - `tokens` - A list of tokens
+    /// - `ast` - The AST to compile
     /// - `namespace` - The namespace to use for functions, if relevant
     pub fn compile(
         &self,
-        tokens: Vec<Token>,
+        ast: &mut Vec<Node>,
         namespace: Option<&str>,
         subfolder: &str,
         global_macros: &HashMap<String, Macro>,
         return_macros: bool,
     ) -> CompileReturn {
-        let returned_macros;
+        let mut returned_macros = HashMap::new();
 
-        // Parse macros if there are any calls
-        let tokens = if tokens.contains(&Token::CallMacro) || return_macros {
-            let ret = self.parse_macros(tokens, return_macros, global_macros);
-            returned_macros = if return_macros { ret.1 } else { None };
+        println!("COMPILE START: {:#?}", ast);
+
+        // Replace all while loops/if statements with functions
+        self.update_node_lists(ast, &mut |nodes| {
+            self.replace_if_and_while(nodes, subfolder)
+        });
+
+        println!("WHILES REPLACED: {:#?}", ast);
+
+        // Replace all macros with expanded versions
+        self.update_node_lists(ast, &mut |nodes| {
+            let ret = self
+                .parse_macros(nodes, return_macros, global_macros)
+                .unwrap();
+            if let Some(macros) = ret.1 {
+                returned_macros.extend(macros);
+            }
             ret.0
-        } else {
-            returned_macros = None;
-            tokens
-        };
-        // Parse while loops if there are any
-        let tokens = if tokens.contains(&Token::IfStatement) || tokens.contains(&Token::WhileLoop) {
-            self.parse_shorthand(tokens, subfolder)
-        } else {
-            tokens
-        };
+        });
 
-        let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
+        // // Parse macros if there are any calls
+        // let tokens = if ast.contains(&Node::CallMacro) || return_macros {
+        //     let ret = self.parse_macros(ast, return_macros, global_macros);
+        //     returned_macros = if return_macros { ret.1 } else { None };
+        //     ret.0
+        // } else {
+        //     returned_macros = None;
+        //     ast
+        // };
 
-        // A vector of file contents
-        let mut files: Vec<String> = vec![String::new()];
-        // A map of filenames to indexes in the files vector
-        let mut filename_to_index: HashMap<String, usize> = HashMap::new();
+        let mut tag_map = HashMap::new();
+        let mut files = HashMap::new();
+        let mut nested_funcs = vec![];
 
-        let mut active_token = Token::None;
-
-        // For variable-related tokens
-        let mut current_var = String::new();
-        let mut assignment_operator = Token::None;
-        // For functions
-        let mut func_depth = 0;
-        let mut current_functions: Vec<String> = Vec::new();
-        let mut calling_function = false;
-        // For objective-related tokens
-        let mut current_objective = String::new();
-        let mut objective_target = String::new();
-
-        macro_rules! current_file {
-            () => {
-                files[filename_to_index[&current_functions[func_depth - 1]]];
-            };
-        }
-
-        for token in tokens.iter() {
-            // Don't compile contents outside of a function
-            match token {
-                Token::DefineFunc => {}
-                _ => {
-                    if func_depth == 0 {
-                        continue;
-                    }
-                }
-            }
-
-            match token {
-                Token::Var => active_token = Token::Var,
-                Token::TestVar => active_token = Token::TestVar,
-                Token::Objective => active_token = Token::Objective,
-                Token::SetObjective => active_token = Token::SetObjective,
-                Token::Target(target) => objective_target = target.clone(),
-                Token::ModVarName(var) => current_var = var.clone(),
-                Token::DelVarName(var) => {
-                    let to_add = format!("scoreboard objectives remove {}", var);
-                    current_file!().push_str(&to_add[..]);
-                }
-                Token::TestVarName(var) | Token::OpVarName(var) => {
-                    current_var = var.clone();
-                    let to_front = if let Token::TestVarName(_) = token {
-                        "score "
-                    } else {
-                        ""
-                    };
-
-                    let to_add = format!("{}--databind {} ", to_front, var);
-                    current_file!().push_str(&to_add[..]);
-                }
-                Token::InitialSet => assignment_operator = Token::InitialSet,
-                Token::VarSet => assignment_operator = Token::VarSet,
-                Token::VarAdd => assignment_operator = Token::VarAdd,
-                Token::VarSub => assignment_operator = Token::VarSub,
-                Token::FuncName(name) => {
-                    // Function definition
-                    if !calling_function {
-                        files.push("# Compiled with MysteryBlokHed/databind\n".into());
-                        filename_to_index.insert(name.clone(), files.len() - 1);
-                        current_functions.push(name.clone());
-                    // Function call
-                    } else {
-                        // Function contains namespace
-                        let has_namespace = name.contains(':');
-
-                        if has_namespace {
-                            let to_add = format!("function {}\n", name);
-
-                            current_file!().push_str(&to_add[..]);
-                        } else if let Some(ns) = namespace {
-                            let to_add = format!("function {}:{}\n", ns, name);
-
-                            current_file!().push_str(&to_add[..]);
-                        } else {
-                            panic!("internal: No namespace provided for function call");
-                        }
-
-                        calling_function = false;
-                    }
-                }
-                Token::CallFunc => calling_function = true,
-                Token::DefineFunc => func_depth += 1,
-                Token::EndFunc => {
-                    func_depth -= 1;
-                    current_functions.pop();
-                }
-                Token::TagName(tag) => {
-                    if func_depth == 0 {
-                        panic!("internal: Tag found outside function. This token should have been ignored");
-                    }
-
-                    tag_map
-                        .entry(tag.clone())
-                        .or_insert_with(Vec::new)
-                        .push(current_functions[func_depth - 1].clone());
-                }
-                Token::ObjectiveName(name) => current_objective = name.clone(),
-                // An objective type will always be the last part of a new objective
-                Token::ObjectiveType(objective) => {
-                    let to_add = format!(
-                        "scoreboard objectives add {} {}\n",
-                        current_objective, objective
-                    );
-
-                    current_file!().push_str(&to_add[..]);
-                    active_token = Token::None;
-                }
-                // An int will always be the last part of a variable or objective assignment
-                Token::Int(int) => {
-                    if active_token == Token::Var {
-                        match assignment_operator {
-                            Token::InitialSet => {
-                                let to_add =
-                                    format!("scoreboard objectives add {} dummy\n", current_var);
-
-                                current_file!().push_str(&to_add[..]);
-
-                                let to_add = format!(
-                                    "scoreboard players set --databind {} {}\n",
-                                    current_var, int
-                                );
-
-                                current_file!().push_str(&to_add[..]);
-                            }
-                            Token::VarAdd | Token::VarSub | Token::VarSet => {
-                                let action = match assignment_operator {
-                                    Token::VarAdd => "add",
-                                    Token::VarSub => "remove",
-                                    _ => "set",
-                                };
-
-                                let to_add = format!(
-                                    "scoreboard players {} --databind {} {}\n",
-                                    action, &current_var, int
-                                );
-
-                                current_file!().push_str(&to_add[..]);
-                            }
-                            _ => {}
-                        }
-                    } else if active_token == Token::SetObjective {
-                        match assignment_operator {
-                            Token::VarSet | Token::VarAdd | Token::VarSub => {
-                                let action = match assignment_operator {
-                                    Token::VarAdd => "add",
-                                    Token::VarSub => "remove",
-                                    _ => "set",
-                                };
-
-                                let to_add = format!(
-                                    "scoreboard players {} {} {} {}\n",
-                                    action, objective_target, &current_objective, int
-                                );
-
-                                current_file!().push_str(&to_add[..]);
-                            }
-                            _ => {
-                                panic!("internal: := operator was tokenized for objective");
-                            }
-                        }
-                    }
-                    active_token = Token::None;
-                    assignment_operator = Token::None;
-                }
-                Token::NonDatabind(string) => current_file!().push_str(string),
-                Token::NewLine => current_file!().push('\n'),
-                _ => {}
-            }
-        }
+        self.ast_to_text(&ast, &mut tag_map, &mut files, &mut nested_funcs, namespace);
 
         // Remove leading/trailing whitespace from files as well as empty lines
         let re = Regex::new(r"\n{2,}").unwrap();
-        for file in files.iter_mut() {
-            *file = file.trim().to_string();
-            if file.contains("\n\n") {
-                *file = re.replace_all(file, "\n").into();
+        for (_, contents) in files.iter_mut() {
+            *contents = contents.trim().to_string();
+            if contents.contains("\n\n") {
+                *contents = re.replace_all(contents, "\n").into();
             }
         }
 
+        files.remove("".into());
+
         CompileReturn {
-            file_contents: files,
-            filename_map: filename_to_index,
+            files,
             tag_map,
-            global_macros: returned_macros,
+            global_macros: if return_macros {
+                Some(returned_macros)
+            } else {
+                None
+            },
         }
     }
 }

@@ -2,6 +2,8 @@ WHITESPACE = _{ " " | "\t" }
 COMMENT = _{ (SOI | NEWLINE) ~ "#" ~ ANY* ~ NEWLINE }
 
 any_but_newline = { (!NEWLINE ~ ANY)+ }
+token_group = { (token ~ NEWLINE*)+ }
+tokens_then_newline = { token+ ~ NEWLINE+ }
 
 name = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 integer = @{ "-"? ~ ASCII_DIGIT+ }
@@ -23,11 +25,11 @@ tag = { "tag" ~ name }
 call_function = { "call" ~ name }
 
 if_statement = {
-    "runif" ~ (token ~ NEWLINE*)+ ~ ("else" ~ (token ~ NEWLINE*)+)? ~ "end"
+    "runif" ~ tokens_then_newline ~ token_group ~ ("else" ~ token_group)? ~ "end"
 }
 
 while_loop = {
-    "while" ~ (token ~ NEWLINE*)+ ~ "end"
+    "while" ~ tokens_then_newline ~ (token ~ NEWLINE*)+ ~ "end"
 }
 
 string = ${ "\"" ~ inner ~ "\"" }
@@ -145,10 +147,10 @@ valid_command = {
     | "remove"
     | "replaceitem"
     | "ride"
-    | "save"
     | "save-all"
     | "save-off"
     | "save-on"
+    | "save"
     | "say"
     | "schedule"
     | "scoreboard"
@@ -168,11 +170,11 @@ valid_command = {
     | "team"
     | "teammsg"
     | "teleport"
-    | "tell"
     | "tellraw"
-    | "testfor"
-    | "testforblock"
+    | "tell"
     | "testforblocks"
+    | "testforblock"
+    | "testfor"
     | "tickingarea"
     | "time"
     | "title"

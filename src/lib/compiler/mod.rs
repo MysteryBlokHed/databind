@@ -17,22 +17,12 @@
  */
 //! Contains functions and structs used to tokenize and compile Databind
 //! source code
-use crate::{files, token::Token, types::GlobalMacros};
+use crate::{ast::Node, files, types::GlobalMacros};
 use compile::CompileReturn;
 use std::path::Path;
 
 /// Used to tokenize and compile Databind source code
 pub struct Compiler {
-    /// The characters in a source file
-    chars: Vec<char>,
-    /// The current index in the characters vector
-    position: usize,
-    /// The current character
-    current_char: char,
-    /// The current line number (Used for errors)
-    line: usize,
-    /// The current column number (Used for errors)
-    col: usize,
     /// The path of the file being compiled (Used for errors)
     path: String,
 }
@@ -44,19 +34,8 @@ impl Compiler {
     ///
     /// - `text` - The contents of the file to compile
     /// - `path` - The path of the file being compiled. Used for error messages
-    pub fn new(text: String, path: Option<String>) -> Compiler {
-        let first_char = if !text.is_empty() {
-            text.chars().next().unwrap()
-        } else {
-            '\u{0}'
-        };
-
+    pub fn new(path: Option<String>) -> Compiler {
         Compiler {
-            chars: text.chars().filter(|x| *x != '\r').collect(),
-            position: 0,
-            current_char: first_char,
-            line: 1,
-            col: 1,
             path: if let Some(p) = path {
                 p
             } else {
@@ -65,27 +44,8 @@ impl Compiler {
         }
     }
 
-    /// Go to the next character in the char list
-    fn next_char(&mut self) {
-        self.position += 1;
-        if self.position < self.chars.len() {
-            self.current_char = self.chars[self.position];
-            if self.current_char == '\n' {
-                self.line += 1;
-                self.col = 0;
-            } else {
-                self.col += 1;
-            }
-        } else {
-            self.current_char = '\u{0}'
-        }
-    }
-
-    pub fn make_syntax_error(&self, message: &str) -> String {
-        format!(
-            "error: {}:{}:{} - {}",
-            self.path, self.line, self.col, message
-        )
+    pub fn make_syntax_error(&self, message: &str, line: usize, col: usize) -> String {
+        format!("error: {}:{}:{} - {}", self.path, line, col, message)
     }
 
     /// Pass different arguments to `Compiler::compile` depending on whether the source file
@@ -100,14 +60,14 @@ impl Compiler {
     /// - `global_macros` - The global macros map to pass and to update if it needs to be
     pub fn compile_check_macro<P: AsRef<Path>>(
         &self,
-        tokens: Vec<Token>,
+        nodes: &mut Vec<Node>,
         target_filename: &str,
         functions_dir: P,
         global_macros: &mut GlobalMacros,
     ) -> CompileReturn {
         if target_filename.starts_with('!') {
             let ret = self.compile(
-                tokens,
+                nodes,
                 Some(files::get_namespace(&functions_dir).unwrap()),
                 &files::get_subfolder_prefix(&functions_dir),
                 &global_macros,
@@ -117,7 +77,7 @@ impl Compiler {
             ret.clone()
         } else {
             self.compile(
-                tokens,
+                nodes,
                 Some(files::get_namespace(&functions_dir).unwrap()),
                 &files::get_subfolder_prefix(&functions_dir),
                 &global_macros,
@@ -129,6 +89,6 @@ impl Compiler {
 
 mod compile;
 mod macros;
+mod parse;
 mod preprocess;
-mod tokenize;
 pub use macros::Macro;
