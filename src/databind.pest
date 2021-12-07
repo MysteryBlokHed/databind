@@ -1,5 +1,5 @@
 WHITESPACE = _{ " " | "\t" }
-COMMENT = _{ (SOI | NEWLINE) ~ "#" ~ ANY* ~ NEWLINE }
+COMMENT = _{ (SOI | NEWLINE) ~ WHITESPACE* ~ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
 
 any_but_newline = { (!NEWLINE ~ ANY)+ }
 token_group = { (token ~ NEWLINE*)+ }
@@ -8,7 +8,13 @@ tokens_then_newline = { token+ ~ NEWLINE+ }
 name = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 integer = @{ "-"? ~ ASCII_DIGIT+ }
 
-target = { ("@" ~ ("p" | "r" | "a" | "e" | "s")) | name }
+target = {
+    (
+        ("@" ~ ("p" | "r" | "a" | "e" | "s"))
+        ~ ("[" ~ (!"]" ~ ANY)* ~ "]")?
+    )
+    | name
+}
 
 assignment_op = { "=" | "+=" | "-=" }
 new_var = { "var" ~ name ~ ":=" ~ integer }
