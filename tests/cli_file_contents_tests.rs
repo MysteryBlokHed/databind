@@ -120,11 +120,7 @@ fn test_tags_and_comments() {
 fn test_escape() {
     let (out, mut path) = tests::run_in_tempdir("test_escape");
 
-    let expected_funcs = [
-        "main.mcfunction",
-        "func.mcfunction",
-        "%percent_prefix.mcfunction",
-    ];
+    let expected_funcs = ["main.mcfunction", "func.mcfunction"];
 
     // Check if function files are correctly placed
     path.push(format!("{}/data/test/functions", out.path().display()));
@@ -135,8 +131,8 @@ fn test_escape() {
     let main_contents = fs::read_to_string(&path).unwrap();
     println!("{}", main_contents);
     assert!(main_contents.contains("say call"));
+    assert!(main_contents.contains("say %escaped_percent"));
     assert!(main_contents.contains("function test:func"));
-    assert!(main_contents.contains("function test:%percent_prefix"));
 }
 
 struct WhileFiles {

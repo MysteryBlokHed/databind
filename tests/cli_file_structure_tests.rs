@@ -107,7 +107,7 @@ fn test_config() {
     let expected_funcs = ["func1.mcfunction", "func2.mcfunction", "func3.mcfunction"];
 
     path.push(format!("{}/data/test/functions", out.path().display()));
-    tests::check_files_exist(&path, &expected_funcs, "test_config:");
+    tests::check_files_exist(&path, &expected_funcs, "test_config");
     path.pop();
     path.pop();
 }
@@ -152,7 +152,7 @@ fn test_no_config_out() {
     let unexpected_toml = ["should_not_be_made.toml"];
 
     path.push(format!("{}/data/test/functions", out.path().display()));
-    tests::check_files_exist(&path, &expected_funcs, "test_no_config_out:");
+    tests::check_files_exist(&path, &expected_funcs, "test_no_config_out");
     path.pop();
     path.pop();
     path.pop();

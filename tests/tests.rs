@@ -53,9 +53,14 @@ pub fn check_files_exist<P: AsRef<Path>>(base_path: &PathBuf, files: &[P], print
 
     for file in files.iter() {
         base.push(file);
+        println!(
+            "{}: Testing for file {}",
+            print_prefix,
+            file.as_ref().display()
+        );
         assert!(fs::metadata(&base).is_ok());
         println!(
-            "{} File {} exists (and should)",
+            "{}: File {} exists (and should)",
             print_prefix,
             file.as_ref().display()
         );
@@ -79,9 +84,14 @@ pub fn check_files_dont_exist<P: AsRef<Path>>(
 
     for file in files.iter() {
         base.push(file);
+        println!(
+            "{}: Testing for file {}",
+            print_prefix,
+            file.as_ref().display()
+        );
         assert!(fs::metadata(&file).is_err());
         println!(
-            "{} File {} does not exist (and shouldn't)",
+            "{}: File {} does not exist (and shouldn't)",
             print_prefix,
             file.as_ref().display()
         );

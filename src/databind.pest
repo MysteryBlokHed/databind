@@ -5,7 +5,7 @@ any_but_newline = { (!NEWLINE ~ ANY)+ }
 token_group = { (token ~ NEWLINE*)+ }
 tokens_then_newline = { token+ ~ NEWLINE+ }
 
-name = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+name = @{ "%"? ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 integer = @{ "-"? ~ ASCII_DIGIT+ }
 
 target = {
