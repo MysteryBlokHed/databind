@@ -57,6 +57,17 @@ impl Compiler {
             }};
         }
 
+        macro_rules! fix_escapes {
+            ($str: expr) => {
+                $str.replace("\\\\", "\\")
+                    .replace("\\/", "/")
+                    .replace("\\\"", "\"")
+                    .replace("\\n", "\n")
+                    .replace("\\r", "\r")
+                    .replace("\\t", "\t")
+            };
+        }
+
         for token in tokens {
             println!("active token: {}", token);
 
@@ -215,7 +226,9 @@ impl Compiler {
                 Rule::macro_call => {
                     let mut inner = token.into_inner();
                     let name = unwrap_name!(inner);
-                    let args = inner.map(|x| x.into_inner().as_str().into()).collect();
+                    let args = inner
+                        .map(|x| fix_escapes!(x.into_inner().as_str()).into())
+                        .collect();
                     ast.push(Node::MacroCall { name, args });
                 }
                 Rule::EOI => break,
