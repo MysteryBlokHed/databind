@@ -43,6 +43,8 @@ impl Compiler {
         let mut new_ast = Vec::new();
         let mut macros = existing_macros.clone();
 
+        println!("new call to parse macros");
+
         for node in ast {
             match node {
                 Node::MacroDefinition {
@@ -50,11 +52,19 @@ impl Compiler {
                     args,
                     contents,
                 } => {
+                    println!("adding macro {}", name);
                     macros.insert(name.clone(), Macro::new(args.clone(), contents.clone()));
                 }
                 Node::MacroCall { name, args } => {
+                    println!("available macros: {:#?}", macros);
                     let text = macros[name].replace(args);
+                    println!("parsing text: {}", text);
                     let mut macro_ast = self.parse(&text)?;
+                    // let mut macro_ast = {
+                    //     let compiler = Compiler::new(None);
+                    //     compiler.parse(&text)?
+                    // };
+                    println!("did it work?");
                     new_ast.append(&mut macro_ast);
                 }
                 _ => new_ast.push(node.clone()),
@@ -102,7 +112,6 @@ impl Compiler {
                     let loop_main_args = {
                         let mut vec = vec![command_arg!("if")];
                         vec.append(&mut condition.clone());
-                        vec.push(command_arg!("if"));
                         vec.push(Node::CallFunction(format!(
                             "{}condition_{}",
                             subfolder, chars

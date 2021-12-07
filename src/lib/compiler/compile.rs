@@ -149,7 +149,7 @@ impl Compiler {
                     ));
                 }
                 Node::TestVar { name, test } => {
-                    current_file!().push_str(&format!("score --databind {} {} ", name, test));
+                    current_file!().push_str(&format!(" score --databind {} {} ", name, test));
                 }
                 Node::DeleteVar(name) => {
                     current_file!().push_str(&format!("scoreboard objectives remove {}\n", name));
@@ -229,6 +229,7 @@ impl Compiler {
         return_macros: bool,
     ) -> CompileReturn {
         let mut returned_macros = HashMap::new();
+        let mut active_macros = global_macros.clone();
 
         println!("COMPILE START: {:#?}", ast);
 
@@ -241,11 +242,10 @@ impl Compiler {
 
         // Replace all macros with expanded versions
         self.update_node_lists(ast, &mut |nodes| {
-            let ret = self
-                .parse_macros(nodes, return_macros, global_macros)
-                .unwrap();
+            let ret = self.parse_macros(nodes, true, &active_macros).unwrap();
             if let Some(macros) = ret.1 {
                 returned_macros.extend(macros);
+                active_macros.extend(returned_macros.clone());
             }
             ret.0
         });

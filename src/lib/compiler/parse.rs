@@ -38,15 +38,101 @@ impl Compiler {
     pub fn parse_tokens(&self, tokens: &mut Pairs<Rule>) -> ParseReturn {
         let mut ast = vec![];
 
-        println!("{:?}", tokens);
+        // println!("{:?}", tokens);
 
         for token in tokens {
+            println!("active token: {}", token);
+
             match token.as_rule() {
-                Rule::mc_command => {
+                /* Variables and objectives */
+                Rule::new_var => {
                     let mut inner = token.into_inner();
                     let name = inner.next().unwrap().as_str().into();
-                    let args = self.parse_tokens(&mut inner)?;
+                    let value: i32 = inner.next().unwrap().as_str().parse().unwrap();
+                    ast.push(Node::NewVar { name, value });
+                }
+                Rule::set_var => {
+                    let mut inner = token.into_inner();
+                    let name = inner.next().unwrap().as_str().into();
+                    let operator = match inner.next().unwrap().as_str() {
+                        "=" => AssignmentOp::Set,
+                        "+=" => AssignmentOp::Add,
+                        "-=" => AssignmentOp::Subtract,
+                        _ => unimplemented!(),
+                    };
+                    let value: i32 = inner.next().unwrap().as_str().parse().unwrap();
+                    ast.push(Node::SetVar {
+                        name,
+                        operator,
+                        value,
+                    });
+                }
+                Rule::test_var => {
+                    let mut inner = token.into_inner();
+                    let name = inner.next().unwrap().as_str().into();
+                    let test = inner.next().unwrap().as_str().into();
+                    ast.push(Node::TestVar { name, test });
+                }
+                Rule::delete_var => {
+                    let mut inner = token.into_inner();
+                    let name = inner.next().unwrap().as_str().into();
+                    ast.push(Node::DeleteVar(name));
+                }
+                Rule::new_obj => {
+                    let mut inner = token.into_inner();
+                    let name = inner.next().unwrap().as_str().into();
+                    let objective = inner.next().unwrap().as_str().into();
+                    ast.push(Node::NewObjective { name, objective });
+                }
+                Rule::set_obj => {
+                    let mut inner = token.into_inner();
+                    let target = inner.next().unwrap().as_str().into();
+                    let name = inner.next().unwrap().as_str().into();
+                    let operator = match inner.next().unwrap().as_str() {
+                        "=" => AssignmentOp::Set,
+                        "+=" => AssignmentOp::Add,
+                        "-=" => AssignmentOp::Subtract,
+                        _ => unimplemented!(),
+                    };
+                    let value: i32 = inner.next().unwrap().as_str().parse().unwrap();
+                    ast.push(Node::SetObjective {
+                        target,
+                        name,
+                        operator,
+                        value,
+                    });
+                }
+                Rule::get_var => {
+                    let mut inner = token.into_inner();
+                    let name = inner.next().unwrap().as_str().into();
+                    ast.push(Node::GetVar(name));
+                }
+                /* Commands and functions */
+                Rule::sbop | Rule::mc_command => {
+                    let rule = token.as_rule();
+                    let mut inner = token.into_inner();
+                    let name = if let Rule::mc_command = rule {
+                        inner.next().unwrap().as_str().into()
+                    } else {
+                        "scoreboard".into()
+                    };
+                    let args = {
+                        let mut args = if let Rule::sbop = rule {
+                            vec![
+                                Node::CommandArg("players".into()),
+                                Node::CommandArg("operation".into()),
+                            ]
+                        } else {
+                            vec![]
+                        };
+                        args.append(&mut self.parse_tokens(&mut inner)?);
+                        args
+                    };
                     ast.push(Node::MinecraftCommand { name, args });
+                    println!("COMMAND ADDED JUST NOW: {:#?}", ast[ast.len() - 1]);
+                }
+                Rule::command_arg => {
+                    ast.push(Node::CommandArg(token.as_str().into()));
                 }
                 Rule::function => {
                     let mut inner = token.into_inner();
@@ -62,6 +148,7 @@ impl Compiler {
                     let mut inner = token.into_inner();
                     ast.push(Node::CallFunction(inner.next().unwrap().as_str().into()));
                 }
+                /* Statements/loops */
                 Rule::if_statement => {
                     let mut inner = token.into_inner();
                     let condition = self.parse_tokens(&mut inner.next().unwrap().into_inner())?;
@@ -86,9 +173,27 @@ impl Compiler {
                         contents,
                     });
                 }
-                Rule::command_arg => {
-                    // let mut inner = token.into_inner();
-                    ast.push(Node::CommandArg(token.as_str().into()));
+                Rule::macro_def => {
+                    let mut inner = token.into_inner();
+                    let name = inner.next().unwrap().as_str().into();
+                    let args = inner
+                        .next()
+                        .unwrap()
+                        .into_inner()
+                        .map(|x| x.as_str().into())
+                        .collect();
+                    let contents = inner.next().unwrap().as_str().into();
+                    ast.push(Node::MacroDefinition {
+                        name,
+                        args,
+                        contents,
+                    });
+                }
+                Rule::macro_call => {
+                    let mut inner = token.into_inner();
+                    let name = inner.next().unwrap().as_str().into();
+                    let args = inner.map(|x| x.into_inner().as_str().into()).collect();
+                    ast.push(Node::MacroCall { name, args });
                 }
                 Rule::EOI => break,
                 _ => todo!(),

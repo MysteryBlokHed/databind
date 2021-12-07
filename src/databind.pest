@@ -16,8 +16,8 @@ set_var = { "var" ~ name ~ assignment_op ~ integer }
 test_var = { "tvar" ~ name ~ any_but_newline }
 delete_var = { ("delvar" | "delobj") ~ name }
 new_obj = { "obj" ~ name ~ name }
-set_obj = { "sobj" ~ target ~ name ~ name ~ integer }
-sbop = { "sbop" }
+set_obj = { "sobj" ~ target ~ name ~ assignment_op ~ integer }
+sbop = { "sbop" ~ (token | command_arg)* }
 get_var = { "gvar" ~ name }
 
 function = { "func" ~ name ~ NEWLINE* ~ (token ~ NEWLINE*)* ~ NEWLINE* ~ "end" }
@@ -43,20 +43,21 @@ macro_def = {
     // Matches something like !def macro_name($arg1, $arg2)
     // as well as !def macro_name()
     // Should also be fine with trailing commas
-    "!def" ~ name ~ "(" ~ ("$" ~ name)? ~ ("," ~ "$" ~ name)* ~ ","? ~ ")" ~
+    "!def" ~ name ~ macro_args ~
     macro_contents ~
     "!end"
 }
+macro_args = { "(" ~ ("$" ~ name)? ~ ("," ~ "$" ~ name)* ~ ","? ~ ")" }
 macro_contents = @{ ((!"!end" ~ ANY)+)* }
 
 macro_call = {
     "?" ~ name ~ "(" ~ string? ~ ("," ~ string)* ~ ","? ~ ")"
 }
 
-mc_command = { valid_command ~ (token | command_arg)* }
+mc_command = { valid_command ~ (tokens_no_command | command_arg)* }
 command_arg = @{ (!(" " | NEWLINE) ~ ANY)+ }
 
-token = _{
+tokens_no_command = _{
     function
     | tag
     | call_function
@@ -72,11 +73,13 @@ token = _{
     | get_var
     | macro_call
     | macro_def
-    | mc_command
 }
+
+token = _{ tokens_no_command | mc_command }
 
 file = {
     SOI ~
+    NEWLINE* ~
     (token ~ NEWLINE+)* ~
     (token ~ NEWLINE*)? ~
     EOI
@@ -125,17 +128,17 @@ valid_command = {
     | "kick"
     | "kill"
     | "list"
-    | "locate"
     | "locatebiome"
+    | "locate"
     | "loot"
     | "me"
     | "mobevent"
     | "msg"
     | "music"
-    | "op"
     | "ops"
-    | "pardon"
+    | "op"
     | "pardon-ip"
+    | "pardon"
     | "particle"
     | "perf"
     | "permission"
@@ -162,13 +165,13 @@ valid_command = {
     | "spawnpoint"
     | "spectate"
     | "spreadplayers"
-    | "stop"
     | "stopsound"
+    | "stop"
     | "structure"
     | "summon"
     | "tag"
-    | "team"
     | "teammsg"
+    | "team"
     | "teleport"
     | "tellraw"
     | "tell"
@@ -177,14 +180,14 @@ valid_command = {
     | "testfor"
     | "tickingarea"
     | "time"
-    | "title"
     | "titleraw"
+    | "title"
     | "tm"
     | "toggledownfall"
     | "tp"
     | "trigger"
-    | "w"
     | "wb"
+    | "w"
     | "weather"
     | "whitelist"
     | "worldborder"
