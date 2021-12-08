@@ -36,6 +36,19 @@ pub struct CompileReturn {
 }
 
 impl Compiler {
+    fn contains_block_node(&self, nodes: &Vec<Node>) -> bool {
+        for node in nodes {
+            match node {
+                Node::Function { .. }
+                | Node::IfStatement { .. }
+                | Node::WhileLoop { .. }
+                | Node::MinecraftCommand { .. } => return true,
+                _ => {}
+            }
+        }
+        false
+    }
+
     /// Calls a function for every node in the AST containing a list of other nodes,
     /// such as functions
     ///
@@ -44,35 +57,52 @@ impl Compiler {
     /// * `ast` - The AST to modify
     /// * `to_run` - The function to pass the lists of nodes. Should return a potentially modified version
     ///   of the original argument passed
-    pub fn update_node_lists(
+    pub fn update_node_lists<'a>(
         &self,
-        ast: &mut Vec<Node>,
+        ast: &'a mut Vec<Node>,
         to_run: &mut dyn FnMut(&Vec<Node>) -> Vec<Node>,
-    ) {
+    ) -> &'a mut Vec<Node> {
+        let old_ast = ast.clone();
         *ast = to_run(ast);
 
-        for node in ast {
+        macro_rules! recurse_if_whatever {
+            ($contents: expr) => {
+                if self.contains_block_node($contents) {
+                    self.update_node_lists($contents, to_run);
+                } else {
+                    *$contents = to_run($contents);
+                }
+            };
+        }
+
+        for node in ast.iter_mut() {
             match node {
-                Node::Function { name, contents } => *contents = to_run(&contents),
+                Node::Function { contents, .. } => recurse_if_whatever!(contents),
                 Node::IfStatement {
                     condition,
                     if_block,
                     else_block,
                 } => {
-                    *condition = to_run(&condition);
-                    *if_block = to_run(&if_block);
-                    *else_block = to_run(&else_block);
+                    recurse_if_whatever!(condition);
+                    recurse_if_whatever!(if_block);
+                    recurse_if_whatever!(else_block);
                 }
                 Node::WhileLoop {
                     condition,
                     contents,
                 } => {
-                    *condition = to_run(&condition);
-                    *contents = to_run(&contents);
+                    recurse_if_whatever!(condition);
+                    recurse_if_whatever!(contents);
                 }
-                Node::MinecraftCommand { name, args } => *args = to_run(&args),
+                Node::MinecraftCommand { args, .. } => recurse_if_whatever!(args),
                 _ => {}
             }
+        }
+
+        if &old_ast != ast {
+            self.update_node_lists(ast, to_run)
+        } else {
+            ast
         }
     }
 
@@ -130,7 +160,7 @@ impl Compiler {
                 #[rustfmt::skip]
                 Node::NewVar { name, value } => {
                     current_file!().push_str( &format!("scoreboard objectives add {} dummy\n", name));
-                    current_file!() .push_str( &format!("scoreboard players set --databind {} {}\n", name, value));
+                    current_file!().push_str( &format!("scoreboard players set --databind {} {}\n", name, value));
                 }
                 Node::SetVar {
                     name,
@@ -208,6 +238,7 @@ impl Compiler {
                     current_file!().push_str(&format!("{}{}\n", name, nodes_to_single_text!(args)));
                 }
                 Node::CommandArg(arg) => current_file!().push_str(&format!(" {}", arg)),
+                Node::TrustMe(content) => current_file!().push_str(content),
             }
         }
 
@@ -234,9 +265,10 @@ impl Compiler {
         println!("COMPILE START: {:#?}", ast);
 
         // Replace all while loops/if statements with functions
-        self.update_node_lists(ast, &mut |nodes| {
-            self.replace_if_and_while(nodes, subfolder)
-        });
+        *ast = self.replace_if_and_while(ast, subfolder);
+        // self.update_node_lists(ast, &mut |nodes| {
+        //     self.replace_if_and_while(nodes, subfolder)
+        // });
 
         println!("WHILES REPLACED: {:#?}", ast);
 
@@ -249,6 +281,8 @@ impl Compiler {
             }
             ret.0
         });
+
+        println!("MACROS REPLACED: {:#?}", ast);
 
         // // Parse macros if there are any calls
         // let tokens = if ast.contains(&Node::CallMacro) || return_macros {

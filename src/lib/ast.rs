@@ -80,4 +80,95 @@ pub enum Node {
         args: Vec<Node>,
     },
     CommandArg(String),
+    TrustMe(String),
+}
+
+impl Node {
+    /// Runs a given function on all lists of nodes in the AST
+    ///
+    /// ## Arguments
+    ///
+    /// * `ast` - The AST to run the function on
+    /// * `target_fn` - The function to pass the node lists to
+    pub fn run_all_nodes(ast: &mut Vec<Self>, target_fn: &mut dyn FnMut(&mut Vec<Self>) -> ()) {
+        // target_fn(ast);
+
+        macro_rules! run {
+            ($ast: expr) => {
+                Self::run_all_nodes($ast, target_fn)
+            };
+        }
+
+        for node in ast {
+            match node {
+                Node::Function { contents, .. } => run!(contents),
+                Node::IfStatement {
+                    condition,
+                    if_block,
+                    else_block,
+                } => {
+                    run!(condition);
+                    run!(if_block);
+                    run!(else_block);
+                }
+                Node::WhileLoop {
+                    condition,
+                    contents,
+                } => {
+                    run!(condition);
+                    run!(contents);
+                }
+                Node::MinecraftCommand { args, .. } => run!(args),
+                _ => {}
+            }
+        }
+    }
+
+    /// Checks all nodes in an AST
+    ///
+    /// ## Arguments
+    ///
+    /// * `ast` - The AST to check
+    /// * `check_fn` - A function you must implement, probably with a `match` or `if let` statement.
+    ///   Should check the passed Node and return true if it is a Node you're looking for,
+    ///   and false otherwise
+    pub fn check_for_node(ast: &Vec<Self>, check_fn: &dyn Fn(&Self) -> bool) -> bool {
+        if ast.iter().any(check_fn) {
+            return true;
+        }
+
+        macro_rules! check {
+            ($ast: expr) => {
+                if Self::check_for_node($ast, check_fn) {
+                    return true;
+                }
+            };
+        }
+
+        for node in ast {
+            match node {
+                Node::Function { contents, .. } => check!(contents),
+                Node::IfStatement {
+                    condition,
+                    if_block,
+                    else_block,
+                } => {
+                    check!(condition);
+                    check!(if_block);
+                    check!(else_block);
+                }
+                Node::WhileLoop {
+                    condition,
+                    contents,
+                } => {
+                    check!(condition);
+                    check!(contents);
+                }
+                Node::MinecraftCommand { args, .. } => check!(args),
+                _ => {}
+            }
+        }
+
+        false
+    }
 }

@@ -54,7 +54,12 @@ macro_def = {
     "!end"
 }
 macro_args = { "(" ~ ("$" ~ name)? ~ ("," ~ "$" ~ name)* ~ ","? ~ ")" }
-macro_contents = @{ ((!"!end" ~ ANY)+)* }
+macro_contents = @{
+    // Match anything but macro keywords
+    (((!("!def" | "!end") ~ ANY)+) |
+    // Match a macro definition including its end to allow for nested macros
+    ("!def" ~ macro_contents ~ "!end"))*
+}
 
 macro_call = {
     "?" ~ name ~ "(" ~ string? ~ ("," ~ string)* ~ ","? ~ ")"
@@ -62,6 +67,9 @@ macro_call = {
 
 mc_command = { valid_command ~ (tokens_no_command | command_arg)* }
 command_arg = @{ (!(" " | NEWLINE) ~ ANY)+ }
+
+// Useful in macros
+trustme = ${ "!!" ~ any_but_newline }
 
 tokens_no_command = _{
     function
@@ -79,6 +87,7 @@ tokens_no_command = _{
     | get_var
     | macro_call
     | macro_def
+    | trustme
 }
 
 token = _{ tokens_no_command | mc_command }

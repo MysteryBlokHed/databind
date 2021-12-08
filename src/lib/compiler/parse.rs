@@ -231,6 +231,11 @@ impl Compiler {
                         .collect();
                     ast.push(Node::MacroCall { name, args });
                 }
+                Rule::trustme => {
+                    let mut inner = token.into_inner();
+                    let content = unwrap_name!(inner);
+                    ast.push(Node::TrustMe(content));
+                }
                 Rule::EOI => break,
                 _ => todo!(),
             }

@@ -43,9 +43,11 @@ impl Compiler {
         let mut new_ast = Vec::new();
         let mut macros = existing_macros.clone();
 
-        println!("new call to parse macros");
+        println!("new call to parse macros with ast: {:#?}", ast);
 
         for node in ast {
+            println!("node: {:#?}", node);
+
             match node {
                 Node::MacroDefinition {
                     name,
@@ -56,6 +58,37 @@ impl Compiler {
                     macros.insert(name.clone(), Macro::new(args.clone(), contents.clone()));
                 }
                 Node::MacroCall { name, args } => {
+                    println!("macro call");
+                    if !macros.contains_key(name) {
+                        println!("{} does not exist yet", name);
+                        println!("passed ast: {:#?}", ast);
+                        println!("new ast: {:#?}", new_ast);
+
+                        let node_call_check = |x: &Node| {
+                            if let Node::MacroDefinition { name: def_name, .. } = x {
+                                println!("definition!");
+                                if def_name == name {
+                                    true
+                                } else {
+                                    false
+                                }
+                            } else {
+                                println!("not a definition...");
+                                false
+                            }
+                        };
+
+                        if Node::check_for_node(&new_ast, &node_call_check)
+                            || Node::check_for_node(ast, &node_call_check)
+                        {
+                            println!("moving to next ast");
+                            new_ast.push(node.clone());
+                            continue;
+                        } else {
+                            panic!("no macro found with name {}", name);
+                        }
+                    }
+
                     println!("available macros: {:#?}", macros);
                     let text = macros[name].replace(args);
                     println!("parsing text: {}", text);
@@ -65,22 +98,27 @@ impl Compiler {
                     //     compiler.parse(&text)?
                     // };
                     println!("did it work?");
+                    println!("ADDING TO NEW AST: {:#?}", macro_ast);
                     new_ast.append(&mut macro_ast);
                 }
                 _ => new_ast.push(node.clone()),
             }
         }
 
-        let contains_macros = new_ast.iter().any(|x| match x {
-            Node::MacroCall { .. } | Node::MacroDefinition { .. } => true,
+        let contains_macros = Node::check_for_node(&new_ast, &|x| match x {
+            Node::MacroDefinition { .. } | Node::MacroCall { .. } => true,
             _ => false,
         });
 
         if contains_macros {
-            self.parse_macros(&new_ast, return_macros, &macros)
-        } else {
-            Ok((new_ast, if return_macros { Some(macros) } else { None }))
+            Node::run_all_nodes(&mut new_ast, &mut |nodes| {
+                let (new_nodes, new_macros) = self.parse_macros(nodes, true, &macros).unwrap();
+                *nodes = new_nodes;
+                macros.extend(new_macros.unwrap());
+            });
         }
+
+        Ok((new_ast, if return_macros { Some(macros) } else { None }))
     }
 
     /// Replace while loops and if statements. Called recursively until none are left
