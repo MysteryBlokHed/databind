@@ -105,6 +105,19 @@ impl Compiler {
             }
         }
 
+        let contains_macros = Node::check_for_node(&new_ast, &|x| match x {
+            Node::MacroDefinition { .. } | Node::MacroCall { .. } => true,
+            _ => false,
+        });
+
+        if contains_macros {
+            Node::run_all_nodes(&mut new_ast, &mut |nodes| {
+                let (new_nodes, new_macros) = self.parse_macros(nodes, true, &macros).unwrap();
+                *nodes = new_nodes;
+                macros.extend(new_macros.unwrap());
+            });
+        }
+
         Ok((new_ast, if return_macros { Some(macros) } else { None }))
     }
 
