@@ -25,7 +25,7 @@ pub struct Macro {
     /// The names of the macro arguments
     arg_names: Vec<String>,
     /// The contents of the macro
-    content: String,
+    contents: String,
 }
 
 impl Macro {
@@ -37,8 +37,11 @@ impl Macro {
     /// definition. Should be prefixed by `$` in the definition,
     /// but not in this argument (eg. `$arg1` should be just `arg1`)
     /// - `content` - The content of the macro definition
-    pub fn new(arg_names: Vec<String>, content: String) -> Macro {
-        Macro { arg_names, content }
+    pub fn new(arg_names: Vec<String>, contents: String) -> Macro {
+        Macro {
+            arg_names,
+            contents,
+        }
     }
 
     /// Returns the text to replace a macro call with
@@ -48,12 +51,12 @@ impl Macro {
             replacements.insert(format!("${}", self.arg_names[i].clone()), value.clone());
         }
 
-        let mut replaced_content = self.content.clone();
+        let mut replaced_contents = self.contents.clone();
 
         for (arg, value) in replacements.iter() {
-            replaced_content = replaced_content.replace(arg, value);
+            replaced_contents = replaced_contents.replace(arg, value);
         }
 
-        replaced_content
+        replaced_contents
     }
 }

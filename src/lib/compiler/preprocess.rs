@@ -46,8 +46,6 @@ impl Compiler {
         println!("new call to parse macros with ast: {:#?}", ast);
 
         for node in ast {
-            println!("node: {:#?}", node);
-
             match node {
                 Node::MacroDefinition {
                     name,
@@ -93,10 +91,6 @@ impl Compiler {
                     let text = macros[name].replace(args);
                     println!("parsing text: {}", text);
                     let mut macro_ast = self.parse(&text)?;
-                    // let mut macro_ast = {
-                    //     let compiler = Compiler::new(None);
-                    //     compiler.parse(&text)?
-                    // };
                     println!("did it work?");
                     println!("ADDING TO NEW AST: {:#?}", macro_ast);
                     new_ast.append(&mut macro_ast);
@@ -111,14 +105,28 @@ impl Compiler {
         });
 
         if contains_macros {
-            Node::run_all_nodes(&mut new_ast, &mut |nodes| {
-                let (new_nodes, new_macros) = self.parse_macros(nodes, true, &macros).unwrap();
-                *nodes = new_nodes;
-                macros.extend(new_macros.unwrap());
-            });
-        }
+            println!("still macros");
+            // Node::run_all_nodes(ast, &mut |x| {
+            //     let new_macros = Self::parse_macro_definitions(x);
+            //     println!("it was called");
+            //     macros.extend(new_macros);
+            // });
+            println!("!!! ABT TO RECALL !!!");
+            println!("MACROS: {:#?}", macros);
+            // self.parse_macros(ast, return_macros, &macros)
 
-        Ok((new_ast, if return_macros { Some(macros) } else { None }))
+            Node::run_all_nodes_mut(&mut new_ast, &mut |x| {
+                println!("START OF RUNALL FN");
+                let result = self.parse_macros(x, true, &macros).unwrap();
+                println!("PARSE DONE IN RUNALL");
+                *x = result.0;
+                macros.extend(result.1.unwrap());
+            });
+
+            Ok((new_ast, if return_macros { Some(macros) } else { None }))
+        } else {
+            Ok((new_ast, if return_macros { Some(macros) } else { None }))
+        }
     }
 
     /// Replace while loops and if statements. Called recursively until none are left

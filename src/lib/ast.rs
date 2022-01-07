@@ -84,19 +84,12 @@ pub enum Node {
 }
 
 impl Node {
-    /// Runs a given function on all lists of nodes in the AST
-    ///
-    /// ## Arguments
-    ///
-    /// * `ast` - The AST to run the function on
-    /// * `target_fn` - The function to pass the node lists to
-    pub fn run_all_nodes(ast: &mut Vec<Self>, target_fn: &mut dyn FnMut(&mut Vec<Self>) -> ()) {
-        // target_fn(ast);
-
+    pub fn run_all_nodes(ast: &Vec<Self>, target_fn: &mut dyn FnMut(&Vec<Self>)) {
         macro_rules! run {
-            ($ast: expr) => {
-                Self::run_all_nodes($ast, target_fn)
-            };
+            ($ast: expr) => {{
+                target_fn($ast);
+                Self::run_all_nodes($ast, target_fn);
+            }};
         }
 
         for node in ast {
@@ -122,6 +115,93 @@ impl Node {
                 _ => {}
             }
         }
+    }
+
+    /// Mutably runs a given function on all lists of nodes in the AST
+    ///
+    /// ## Arguments
+    ///
+    /// * `ast` - The AST to run the function on
+    /// * `target_fn` - The function to pass the node lists to
+    pub fn run_all_nodes_mut(ast: &mut Vec<Self>, target_fn: &mut dyn FnMut(&mut Vec<Self>)) {
+        for node in ast {
+            macro_rules! run {
+                ($target_ast: expr) => {{
+                    println!("CALLING WITH AST {:#?}", $target_ast);
+                    target_fn($target_ast);
+                    Self::run_all_nodes_mut($target_ast, target_fn);
+                }};
+            }
+
+            println!("ON NODE {:#?}", &node);
+            match node {
+                Node::Function { contents, .. } => run!(contents),
+                Node::IfStatement {
+                    condition,
+                    if_block,
+                    else_block,
+                } => {
+                    run!(condition);
+                    run!(if_block);
+                    run!(else_block);
+                }
+                Node::WhileLoop {
+                    condition,
+                    contents,
+                } => {
+                    run!(condition);
+                    run!(contents);
+                }
+                Node::MinecraftCommand { args, .. } => run!(args),
+                _ => {}
+            }
+        }
+    }
+
+    /// Removes all instances of a node in an AST
+    ///
+    /// ## Arguments
+    ///
+    /// * `ast` - The AST to remove from
+    /// * `check_fn` - A function you must implement, probably with a `match` or `if let` statement.
+    ///   Should check the passed Node and return true if it is a Node you're looking for,
+    ///   and false otherwise
+    pub fn remove_nodes(ast: &Vec<Self>, check_fn: &dyn Fn(&Self) -> bool) -> Vec<Self> {
+        let mut new_ast: Vec<_> = ast.iter().filter(|&x| check_fn(x)).cloned().collect();
+
+        macro_rules! add_removed {
+            ($ast: expr) => {
+                new_ast.append(&mut Self::remove_nodes($ast, check_fn))
+            };
+        }
+
+        for node in ast.iter() {
+            match node {
+                Node::Function { contents, .. } => {
+                    add_removed!(contents);
+                }
+                Node::IfStatement {
+                    condition,
+                    if_block,
+                    else_block,
+                } => {
+                    add_removed!(condition);
+                    add_removed!(if_block);
+                    add_removed!(else_block);
+                }
+                Node::WhileLoop {
+                    condition,
+                    contents,
+                } => {
+                    add_removed!(condition);
+                    add_removed!(contents);
+                }
+                Node::MinecraftCommand { args, .. } => add_removed!(args),
+                _ => {}
+            }
+        }
+
+        new_ast
     }
 
     /// Checks all nodes in an AST
