@@ -49,11 +49,11 @@ macro_def = {
     // Matches something like !def macro_name($arg1, $arg2)
     // as well as !def macro_name()
     // Should also be fine with trailing commas
-    "!def" ~ name ~ macro_args ~
+    "!def" ~ NEWLINE* ~ name ~ NEWLINE* ~ macro_args ~ NEWLINE* ~
     macro_contents ~
     "!end"
 }
-macro_args = { "(" ~ ("$" ~ name)? ~ ("," ~ "$" ~ name)* ~ ","? ~ ")" }
+macro_args = { "(" ~ NEWLINE* ~ ("$" ~ name)? ~ ("," ~ NEWLINE* ~ "$" ~ name)* ~ ","? ~ NEWLINE* ~ ")" }
 macro_contents = @{
     // Match anything but macro keywords
     (((!("!def" | "!end") ~ ANY)+) |
@@ -62,7 +62,7 @@ macro_contents = @{
 }
 
 macro_call = {
-    "?" ~ name ~ "(" ~ string? ~ ("," ~ string)* ~ ","? ~ ")"
+    "?" ~ name ~ NEWLINE* ~ "(" ~ NEWLINE* ~ string? ~ ("," ~ NEWLINE* ~ string)* ~ ","? ~ NEWLINE* ~ ")"
 }
 
 mc_command = { valid_command ~ (tokens_no_command | command_arg)* }
