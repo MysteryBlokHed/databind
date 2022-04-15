@@ -68,12 +68,9 @@
 //! say Second function
 //! ----------
 //! ```
+#![warn(clippy::all)]
+#[macro_use]
+extern crate pest_derive;
 
+pub mod ast;
 pub mod compiler;
-pub mod files;
-mod settings;
-mod token;
-pub mod types;
-
-pub use settings::Settings;
-pub use token::Token;

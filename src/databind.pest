@@ -1,0 +1,212 @@
+WHITESPACE = _{ " " | "\t" }
+COMMENT = _{ (SOI | NEWLINE) ~ WHITESPACE* ~ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
+
+any_but_newline = { (!NEWLINE ~ ANY)+ }
+token_group = { (token ~ NEWLINE*)+ }
+tokens_then_newline = { token+ ~ NEWLINE+ }
+
+name = @{ "%"? ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+integer = @{ "-"? ~ ASCII_DIGIT+ }
+
+target = {
+    (
+        ("@" ~ ("p" | "r" | "a" | "e" | "s"))
+        ~ ("[" ~ (!"]" ~ ANY)* ~ "]")?
+    )
+    | name
+}
+
+assignment_op = { "=" | "+=" | "-=" }
+new_var = { "var" ~ name ~ ":=" ~ integer }
+set_var = { "var" ~ name ~ assignment_op ~ integer }
+test_var = { "tvar" ~ name ~ any_but_newline }
+delete_var = { ("delvar" | "delobj") ~ name }
+new_obj = { "obj" ~ name ~ name }
+set_obj = { "sobj" ~ target ~ name ~ assignment_op ~ integer }
+sbop = { "sbop" ~ (token | command_arg)* }
+get_var = { "gvar" ~ name }
+
+function = { "func" ~ name ~ NEWLINE* ~ (token ~ NEWLINE*)* ~ NEWLINE* ~ "end" }
+tag = { "tag" ~ name }
+call_function = { "call" ~ name }
+
+if_statement = {
+    "runif" ~ tokens_then_newline ~ token_group ~ ("else" ~ token_group)? ~ "end"
+}
+
+while_loop = {
+    "while" ~ tokens_then_newline ~ (token ~ NEWLINE*)+ ~ "end"
+}
+
+string = ${ "\"" ~ inner ~ "\"" }
+inner = @{ char* }
+char = {
+    !("\"" | "\\") ~ ANY
+    | "\\" ~ ("\"" | "\\" | "/" | "n" | "r" | "t")
+}
+
+macro_def = {
+    // Matches something like !def macro_name($arg1, $arg2)
+    // as well as !def macro_name()
+    // Should also be fine with trailing commas
+    "!def" ~ NEWLINE* ~ name ~ NEWLINE* ~ macro_args ~ NEWLINE* ~
+    macro_contents ~
+    "!end"
+}
+macro_args = { "(" ~ NEWLINE* ~ ("$" ~ name)? ~ ("," ~ NEWLINE* ~ "$" ~ name)* ~ ","? ~ NEWLINE* ~ ")" }
+macro_contents = @{
+    // Match anything but macro keywords
+    (((!("!def" | "!end") ~ ANY)+) |
+    // Match a macro definition including its end to allow for nested macros
+    ("!def" ~ macro_contents ~ "!end"))*
+}
+
+macro_call = {
+    "?" ~ name ~ NEWLINE* ~ "(" ~ NEWLINE* ~ string? ~ ("," ~ NEWLINE* ~ string)* ~ ","? ~ NEWLINE* ~ ")"
+}
+
+mc_command = { valid_command ~ (tokens_no_command | command_arg)* }
+command_arg = @{ (!(" " | NEWLINE) ~ ANY)+ }
+
+// Useful in macros
+trustme = ${ "!!" ~ any_but_newline }
+
+tokens_no_command = _{
+    function
+    | tag
+    | call_function
+    | if_statement
+    | while_loop
+    | new_var
+    | set_var
+    | test_var
+    | delete_var
+    | new_obj
+    | set_obj
+    | sbop
+    | get_var
+    | macro_call
+    | macro_def
+    | trustme
+}
+
+token = _{ tokens_no_command | mc_command }
+
+file = {
+    SOI ~
+    NEWLINE* ~
+    (token ~ NEWLINE+)* ~
+    (token ~ NEWLINE*)? ~
+    EOI
+}
+
+valid_command = {
+    "ability"
+    | "advancement"
+    | "alwaysday"
+    | "attribute"
+    | "ban"
+    | "ban-ip"
+    | "banlist"
+    | "bossbar"
+    | "camerashake"
+    | "changesetting"
+    | "clear"
+    | "clearspawnpoint"
+    | "clone"
+    | "connect"
+    | "data"
+    | "datapack"
+    | "daylock"
+    | "debug"
+    | "dedicatedwsserver"
+    | "defaultgamemode"
+    | "deop"
+    | "dialogue"
+    | "difficulty"
+    | "effect"
+    | "enchant"
+    | "event"
+    | "execute"
+    | "experience"
+    | "fill"
+    | "fog"
+    | "forceload"
+    | "function"
+    | "gamemode"
+    | "gamerule"
+    | "gametest"
+    | "give"
+    | "help"
+    | "immutableworld"
+    | "item"
+    | "kick"
+    | "kill"
+    | "list"
+    | "locatebiome"
+    | "locate"
+    | "loot"
+    | "me"
+    | "mobevent"
+    | "msg"
+    | "music"
+    | "ops"
+    | "op"
+    | "pardon-ip"
+    | "pardon"
+    | "particle"
+    | "perf"
+    | "permission"
+    | "playanimation"
+    | "playsound"
+    | "publish"
+    | "recipe"
+    | "reload"
+    | "remove"
+    | "replaceitem"
+    | "ride"
+    | "save-all"
+    | "save-off"
+    | "save-on"
+    | "save"
+    | "say"
+    | "schedule"
+    | "scoreboard"
+    | "seed"
+    | "setblock"
+    | "setidletimeout"
+    | "setmaxplayers"
+    | "setworldspawn"
+    | "spawnpoint"
+    | "spectate"
+    | "spreadplayers"
+    | "stopsound"
+    | "stop"
+    | "structure"
+    | "summon"
+    | "tag"
+    | "teammsg"
+    | "team"
+    | "teleport"
+    | "tellraw"
+    | "tell"
+    | "testforblocks"
+    | "testforblock"
+    | "testfor"
+    | "tickingarea"
+    | "time"
+    | "titleraw"
+    | "title"
+    | "tm"
+    | "toggledownfall"
+    | "tp"
+    | "trigger"
+    | "wb"
+    | "w"
+    | "weather"
+    | "whitelist"
+    | "worldborder"
+    | "worldbuilder"
+    | "wsserver"
+    | "xp"
+}
