@@ -157,7 +157,7 @@ impl Compiler {
         let mut tags: HashMap<String, Vec<String>> = HashMap::new();
 
         let parsed = Compiler::parse(raw_file)?;
-        let compiled = Compiler::compile_ast(&parsed, &mut files, &mut tags, &mut Vec::new(), None);
+        Compiler::compile_ast(&parsed, &mut files, &mut tags, &mut Vec::new(), None);
 
         Ok(Compiled { files, tags })
     }
