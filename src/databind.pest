@@ -30,13 +30,11 @@ function = { "func" ~ name ~ NEWLINE* ~ (token ~ NEWLINE*)* ~ NEWLINE* ~ "end" }
 tag = { "tag" ~ name }
 call_function = { "call" ~ name }
 
-if_statement = {
-    "runif" ~ tokens_then_newline ~ token_group ~ ("else" ~ token_group)? ~ "end"
-}
+condition = { (tokens_no_command | command_arg)+ ~ NEWLINE+ }
 
-while_loop = {
-    "while" ~ tokens_then_newline ~ (token ~ NEWLINE*)+ ~ "end"
-}
+if_statement = { "runif" ~ condition ~ token_group ~ ("else" ~ NEWLINE+ ~ token_group)? ~ "end" }
+
+while_loop = { "while" ~ condition ~ token_group ~ "end" }
 
 string = ${ "\"" ~ inner ~ "\"" }
 inner = @{ char* }
