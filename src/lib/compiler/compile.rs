@@ -15,6 +15,7 @@ impl Compiler {
             &mut HashMap::new(),
             &mut HashMap::new(),
             &mut vec![String::new()],
+            "",
             namespace,
         )["".into()]
         .clone()
@@ -25,6 +26,7 @@ impl Compiler {
         files: &'a mut HashMap<String, String>,
         tag_map: &'a mut HashMap<String, Vec<String>>,
         nested_funcs: &mut Vec<String>,
+        subfolder: &str,
         namespace: Option<&str>,
     ) -> &'a mut HashMap<String, String> {
         if files.is_empty() {
@@ -44,6 +46,8 @@ impl Compiler {
                 files.get_mut(current_func!()).unwrap()
             };
         }
+
+        let ast = Compiler::replace_if_while(ast, "");
 
         for node in ast {
             match node {
@@ -108,7 +112,7 @@ impl Compiler {
                 Node::Function { name, contents } => {
                     nested_funcs.push(name.clone());
                     files.insert(name.clone(), String::new());
-                    Compiler::compile_ast(contents, files, tag_map, nested_funcs, namespace);
+                    Compiler::compile_ast(&contents, files, tag_map, nested_funcs, "", namespace);
                     nested_funcs.pop();
                 }
 
@@ -134,30 +138,39 @@ impl Compiler {
                     current_file!().push_str(&format!(
                         "{}{}\n",
                         name,
-                        Compiler::nodes_to_text(args, namespace)
+                        Compiler::nodes_to_text(&args, namespace)
                     ));
                 }
 
                 Node::CommandArg(arg) => current_file!().push_str(&format!(" {}", arg)),
 
-                Node::TrustMe(content) => current_file!().push_str(content),
+                Node::TrustMe(content) => current_file!().push_str(&content),
 
                 Node::IfStatement { .. }
                 | Node::WhileLoop { .. }
                 | Node::MacroDefinition { .. }
-                | Node::MacroCall { .. } => unimplemented!(),
+                | Node::MacroCall { .. } => {
+                    panic!("An if statement, while loop, or macro definition/call was accidentally passed directly to compile");
+                }
             }
         }
 
         files
     }
 
-    pub fn compile(raw_file: &str) -> ParseResult<Compiled> {
+    pub fn compile(raw_file: &str, subfolder: &str) -> ParseResult<Compiled> {
         let mut files: HashMap<String, String> = HashMap::new();
         let mut tags: HashMap<String, Vec<String>> = HashMap::new();
 
         let parsed = Compiler::parse(raw_file)?;
-        Compiler::compile_ast(&parsed, &mut files, &mut tags, &mut Vec::new(), None);
+        Compiler::compile_ast(
+            &parsed,
+            &mut files,
+            &mut tags,
+            &mut Vec::new(),
+            subfolder,
+            None,
+        );
 
         Ok(Compiled { files, tags })
     }

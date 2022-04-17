@@ -33,7 +33,10 @@ fn main() -> io::Result<()> {
 
     println!("Parsed: {:#?}", ast);
 
-    println!("Compiled: {:#?}", Compiler::compile(&contents));
+    println!(
+        "Compiled: {:#?}",
+        Compiler::compile(&contents, "").expect("Compile failed")
+    );
 
     Ok(())
 }
