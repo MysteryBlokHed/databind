@@ -1,11 +1,13 @@
-use super::Compiler;
+use std::collections::HashMap;
+
+use super::{macros::Macro, Compiler};
 use crate::ast::{AssignmentOp, Node};
 use pest::{iterators::Pairs, Parser};
 
 #[derive(Parser)]
 #[grammar = "databind.pest"]
 /// Pest's parser
-struct DatabindParser;
+pub(crate) struct DatabindParser;
 
 pub type ParseResult<T> = Result<T, pest::error::Error<Rule>>;
 
@@ -15,11 +17,14 @@ impl Compiler {
         let tokens = DatabindParser::parse(Rule::file, &raw_file)?
             .next()
             .unwrap();
-        Compiler::parse_tokens(&mut tokens.into_inner())
+        Compiler::parse_tokens(&mut tokens.into_inner(), &mut HashMap::new())
     }
 
     /// Convert the provided tokens into an AST
-    pub fn parse_tokens(tokens: &mut Pairs<Rule>) -> ParseResult<Vec<Node>> {
+    pub(crate) fn parse_tokens(
+        tokens: &mut Pairs<Rule>,
+        macros: &mut HashMap<String, Macro>,
+    ) -> ParseResult<Vec<Node>> {
         let mut ast = vec![];
 
         macro_rules! percent_escape {
@@ -137,7 +142,7 @@ impl Compiler {
                         } else {
                             vec![]
                         };
-                        args.append(&mut Compiler::parse_tokens(&mut inner)?);
+                        args.append(&mut Compiler::parse_tokens(&mut inner, macros)?);
                         args
                     };
                     ast.push(Node::MinecraftCommand { name, args });
@@ -155,7 +160,7 @@ impl Compiler {
                 Rule::function => {
                     let mut inner = token.into_inner();
                     let name = unwrap_name!(inner);
-                    let contents = Compiler::parse_tokens(&mut inner)?;
+                    let contents = Compiler::parse_tokens(&mut inner, macros)?;
                     ast.push(Node::Function { name, contents });
                 }
                 Rule::tag => {
@@ -170,10 +175,11 @@ impl Compiler {
                 Rule::if_statement => {
                     let mut inner = token.into_inner();
                     let condition =
-                        Compiler::parse_tokens(&mut inner.next().unwrap().into_inner())?;
-                    let if_block = Compiler::parse_tokens(&mut inner.next().unwrap().into_inner())?;
+                        Compiler::parse_tokens(&mut inner.next().unwrap().into_inner(), macros)?;
+                    let if_block =
+                        Compiler::parse_tokens(&mut inner.next().unwrap().into_inner(), macros)?;
                     let else_block = if let Some(tokens) = inner.next() {
-                        Compiler::parse_tokens(&mut tokens.into_inner())?
+                        Compiler::parse_tokens(&mut tokens.into_inner(), macros)?
                     } else {
                         vec![]
                     };
@@ -186,8 +192,8 @@ impl Compiler {
                 Rule::while_loop => {
                     let mut inner = token.into_inner();
                     let condition =
-                        Compiler::parse_tokens(&mut inner.next().unwrap().into_inner())?;
-                    let contents = Compiler::parse_tokens(&mut inner)?;
+                        Compiler::parse_tokens(&mut inner.next().unwrap().into_inner(), macros)?;
+                    let contents = Compiler::parse_tokens(&mut inner, macros)?;
                     ast.push(Node::WhileLoop {
                         condition,
                         contents,
@@ -203,19 +209,31 @@ impl Compiler {
                         .map(|x| x.as_str().into())
                         .collect();
                     let contents = unwrap_name!(inner);
-                    ast.push(Node::MacroDefinition {
-                        name,
-                        args,
-                        contents,
-                    });
+
+                    // Add def to list of macros
+                    macros.insert(name, Macro::new(args, contents));
                 }
                 Rule::macro_call => {
                     let mut inner = token.into_inner();
-                    let name = unwrap_name!(inner);
-                    let args = inner
+                    let name: String = unwrap_name!(inner);
+                    let args: Vec<String> = inner
                         .map(|x| fix_escapes!(x.into_inner().as_str()).into())
                         .collect();
-                    ast.push(Node::MacroCall { name, args });
+
+                    let macro_def = macros
+                        .get(&name)
+                        .clone()
+                        .expect(&format!("No macro definition found for call of {}", name))
+                        .clone();
+
+                    // Expand macro call
+                    // This ends up happening recursively since parse_tokens is recalled for every new nested call
+                    // Also, we don't have to worry about adding definitions since we pass the reference to
+                    // the HashMap of macro definitions!
+                    println!("expanding call");
+                    let mut expanded = macro_def.expand_to_ast(&args, macros)?;
+                    println!("expanded: {:#?}", expanded);
+                    ast.append(&mut expanded);
                 }
                 Rule::trustme => {
                     let mut inner = token.into_inner();

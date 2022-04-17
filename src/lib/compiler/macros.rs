@@ -1,8 +1,14 @@
+use std::collections::HashMap;
+
+use super::{
+    parse::{DatabindParser, ParseResult, Rule},
+    Compiler,
+};
 use crate::ast::Node;
+use pest::Parser;
 
-use super::{parse::ParseResult, Compiler};
-
-pub struct Macro {
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct Macro {
     args: Vec<String>,
     contents: String,
 }
@@ -12,7 +18,7 @@ impl Macro {
         Self { args, contents }
     }
 
-    pub fn expand_to_string(&self, args: &Vec<&str>) -> String {
+    pub fn expand_to_string(&self, args: &Vec<String>) -> String {
         let mut expanded = self.contents.clone();
 
         for i in 0..self.args.len() {
@@ -22,9 +28,16 @@ impl Macro {
         expanded
     }
 
-    pub fn expand_to_ast(&self, args: &Vec<&str>) -> ParseResult<Vec<Node>> {
+    pub fn expand_to_ast(
+        &self,
+        args: &Vec<String>,
+        macros: &mut HashMap<String, Self>,
+    ) -> ParseResult<Vec<Node>> {
         let expanded = self.expand_to_string(args);
-        let parsed = Compiler::parse(&expanded)?;
+        let tokens = DatabindParser::parse(Rule::file, &expanded)?
+            .next()
+            .unwrap();
+        let parsed = Compiler::parse_tokens(&mut tokens.into_inner(), macros)?;
         Ok(parsed)
     }
 }
