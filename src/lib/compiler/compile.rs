@@ -47,7 +47,7 @@ impl Compiler {
             };
         }
 
-        let ast = Compiler::replace_if_while(ast, "");
+        let ast = Compiler::replace_if_while(ast, subfolder);
 
         for node in ast {
             match node {
@@ -112,7 +112,14 @@ impl Compiler {
                 Node::Function { name, contents } => {
                     nested_funcs.push(name.clone());
                     files.insert(name.clone(), String::new());
-                    Compiler::compile_ast(&contents, files, tag_map, nested_funcs, "", namespace);
+                    Compiler::compile_ast(
+                        &contents,
+                        files,
+                        tag_map,
+                        nested_funcs,
+                        subfolder,
+                        namespace,
+                    );
                     nested_funcs.pop();
                 }
 

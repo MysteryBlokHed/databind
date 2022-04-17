@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-
 use super::{macros::Macro, Compiler};
 use crate::ast::{AssignmentOp, Node};
 use pest::{iterators::Pairs, Parser};
+use std::collections::HashMap;
 
 #[derive(Parser)]
 #[grammar = "databind.pest"]
