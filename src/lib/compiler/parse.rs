@@ -1,5 +1,8 @@
 use super::{macros::Macro, Compiler};
-use crate::ast::{AssignmentOp, Node};
+use crate::{
+    ast::{AssignmentOp, Node},
+    compiler::if_while::{IfStatement, WhileLoop},
+};
 use pest::{iterators::Pairs, Parser};
 use std::collections::HashMap;
 
@@ -12,17 +15,18 @@ pub type ParseResult<T> = Result<T, pest::error::Error<Rule>>;
 
 impl Compiler {
     /// Convert the provided file contents into an AST
-    pub fn parse(raw_file: &str) -> ParseResult<Vec<Node>> {
+    pub fn parse(raw_file: &str, subfolder: &str) -> ParseResult<Vec<Node>> {
         let tokens = DatabindParser::parse(Rule::file, &raw_file)?
             .next()
             .unwrap();
-        Compiler::parse_tokens(&mut tokens.into_inner(), &mut HashMap::new())
+        Compiler::parse_tokens(&mut tokens.into_inner(), &mut HashMap::new(), subfolder)
     }
 
     /// Convert the provided tokens into an AST
     pub(crate) fn parse_tokens(
         tokens: &mut Pairs<Rule>,
         macros: &mut HashMap<String, Macro>,
+        subfolder: &str,
     ) -> ParseResult<Vec<Node>> {
         let mut ast = vec![];
 
@@ -141,7 +145,7 @@ impl Compiler {
                         } else {
                             vec![]
                         };
-                        args.append(&mut Compiler::parse_tokens(&mut inner, macros)?);
+                        args.append(&mut Compiler::parse_tokens(&mut inner, macros, subfolder)?);
                         args
                     };
                     ast.push(Node::MinecraftCommand { name, args });
@@ -159,7 +163,7 @@ impl Compiler {
                 Rule::function => {
                     let mut inner = token.into_inner();
                     let name = unwrap_name!(inner);
-                    let contents = Compiler::parse_tokens(&mut inner, macros)?;
+                    let contents = Compiler::parse_tokens(&mut inner, macros, subfolder)?;
                     ast.push(Node::Function { name, contents });
                 }
                 Rule::tag => {
@@ -173,31 +177,53 @@ impl Compiler {
                 /* Statements/loops */
                 Rule::if_statement => {
                     let mut inner = token.into_inner();
-                    let condition =
-                        Compiler::parse_tokens(&mut inner.next().unwrap().into_inner(), macros)?;
-                    let if_block =
-                        Compiler::parse_tokens(&mut inner.next().unwrap().into_inner(), macros)?;
+                    let condition = Compiler::parse_tokens(
+                        &mut inner.next().unwrap().into_inner(),
+                        macros,
+                        subfolder,
+                    )?;
+                    let if_block = Compiler::parse_tokens(
+                        &mut inner.next().unwrap().into_inner(),
+                        macros,
+                        subfolder,
+                    )?;
                     let else_block = if let Some(tokens) = inner.next() {
-                        Compiler::parse_tokens(&mut tokens.into_inner(), macros)?
+                        Some(Compiler::parse_tokens(
+                            &mut tokens.into_inner(),
+                            macros,
+                            subfolder,
+                        )?)
                     } else {
-                        vec![]
+                        None
                     };
-                    ast.push(Node::IfStatement {
+
+                    let if_statement = IfStatement {
                         condition,
                         if_block,
                         else_block,
-                    });
+                    };
+
+                    ast.append(&mut Compiler::convert_if(&if_statement, subfolder));
                 }
                 Rule::while_loop => {
                     let mut inner = token.into_inner();
-                    let condition =
-                        Compiler::parse_tokens(&mut inner.next().unwrap().into_inner(), macros)?;
-                    let contents =
-                        Compiler::parse_tokens(&mut inner.next().unwrap().into_inner(), macros)?;
-                    ast.push(Node::WhileLoop {
+                    let condition = Compiler::parse_tokens(
+                        &mut inner.next().unwrap().into_inner(),
+                        macros,
+                        subfolder,
+                    )?;
+                    let contents = Compiler::parse_tokens(
+                        &mut inner.next().unwrap().into_inner(),
+                        macros,
+                        subfolder,
+                    )?;
+
+                    let while_loop = WhileLoop {
                         condition,
                         contents,
-                    });
+                    };
+
+                    ast.append(&mut Compiler::convert_while(&while_loop, subfolder));
                 }
                 Rule::macro_def => {
                     let mut inner = token.into_inner();

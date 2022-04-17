@@ -47,8 +47,6 @@ impl Compiler {
             };
         }
 
-        let ast = Compiler::replace_if_while(ast, subfolder);
-
         for node in ast {
             match node {
                 #[rustfmt::skip]
@@ -169,7 +167,7 @@ impl Compiler {
         let mut files: HashMap<String, String> = HashMap::new();
         let mut tags: HashMap<String, Vec<String>> = HashMap::new();
 
-        let parsed = Compiler::parse(raw_file)?;
+        let parsed = Compiler::parse(raw_file, subfolder)?;
         Compiler::compile_ast(
             &parsed,
             &mut files,
