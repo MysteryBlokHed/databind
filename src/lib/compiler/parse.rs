@@ -192,7 +192,8 @@ impl Compiler {
                     let mut inner = token.into_inner();
                     let condition =
                         Compiler::parse_tokens(&mut inner.next().unwrap().into_inner(), macros)?;
-                    let contents = Compiler::parse_tokens(&mut inner, macros)?;
+                    let contents =
+                        Compiler::parse_tokens(&mut inner.next().unwrap().into_inner(), macros)?;
                     ast.push(Node::WhileLoop {
                         condition,
                         contents,
