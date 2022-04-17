@@ -237,7 +237,7 @@ impl Compiler {
                     let contents = unwrap_name!(inner);
 
                     // Add def to list of macros
-                    macros.insert(name, Macro::new(args, contents));
+                    macros.insert(name, Macro { args, contents });
                 }
                 Rule::macro_call => {
                     let mut inner = token.into_inner();
@@ -257,7 +257,7 @@ impl Compiler {
                     // Also, we don't have to worry about adding definitions since we pass the reference to
                     // the HashMap of macro definitions!
                     println!("expanding call");
-                    let mut expanded = macro_def.expand_to_ast(&args, macros)?;
+                    let mut expanded = macro_def.expand_to_ast(&args, macros, subfolder)?;
                     println!("expanded: {:#?}", expanded);
                     ast.append(&mut expanded);
                 }

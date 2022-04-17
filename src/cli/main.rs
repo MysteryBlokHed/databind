@@ -29,7 +29,7 @@ fn main() -> io::Result<()> {
     let contents = fs::read_to_string(&args[1])?;
     println!("Contents: {}", contents);
 
-    let ast = Compiler::parse(&contents).expect("Failed to parse");
+    let ast = Compiler::parse(&contents, "").expect("Failed to parse");
 
     println!("Parsed: {:#?}", ast);
 

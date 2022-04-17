@@ -9,15 +9,11 @@ use pest::Parser;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Macro {
-    args: Vec<String>,
-    contents: String,
+    pub args: Vec<String>,
+    pub contents: String,
 }
 
 impl Macro {
-    pub fn new(args: Vec<String>, contents: String) -> Self {
-        Self { args, contents }
-    }
-
     pub fn expand_to_string(&self, args: &Vec<String>) -> String {
         let mut expanded = self.contents.clone();
 
@@ -32,12 +28,13 @@ impl Macro {
         &self,
         args: &Vec<String>,
         macros: &mut HashMap<String, Self>,
+        subfolder: &str,
     ) -> ParseResult<Vec<Node>> {
         let expanded = self.expand_to_string(args);
         let tokens = DatabindParser::parse(Rule::file, &expanded)?
             .next()
             .unwrap();
-        let parsed = Compiler::parse_tokens(&mut tokens.into_inner(), macros)?;
+        let parsed = Compiler::parse_tokens(&mut tokens.into_inner(), macros, subfolder)?;
         Ok(parsed)
     }
 }

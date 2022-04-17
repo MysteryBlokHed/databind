@@ -12,22 +12,22 @@ macro_rules! command_arg {
 }
 
 pub(crate) struct IfStatement {
-    condition: Vec<Node>,
-    if_block: Vec<Node>,
-    else_block: Option<Vec<Node>>,
+    pub condition: Vec<Node>,
+    pub if_block: Vec<Node>,
+    pub else_block: Option<Vec<Node>>,
 }
 
 pub(crate) struct WhileLoop {
-    condition: Vec<Node>,
-    contents: Vec<Node>,
+    pub condition: Vec<Node>,
+    pub contents: Vec<Node>,
 }
 
 impl Compiler {
     /// Convert an if statement into a
     pub(crate) fn convert_if(statement: &IfStatement, subfolder: &str) -> Vec<Node> {
-        let condition = statement.condition;
-        let if_block = statement.if_block;
-        let else_block = statement.else_block;
+        let condition = &statement.condition;
+        let if_block = &statement.if_block;
+        let else_block = &statement.else_block;
 
         let mut ast = vec![];
 
@@ -129,8 +129,8 @@ impl Compiler {
     }
 
     pub(crate) fn convert_while(while_loop: &WhileLoop, subfolder: &str) -> Vec<Node> {
-        let condition = while_loop.condition;
-        let contents = while_loop.contents;
+        let condition = &while_loop.condition;
+        let contents = &while_loop.contents;
 
         let mut ast = vec![];
 
