@@ -164,7 +164,7 @@ fn main() -> std::io::Result<()> {
 
             if compile {
                 let subfolder = files::get_subfolder_prefix(&path);
-                let contents = {
+                let file_contents = {
                     let mut file_contents = fs::read_to_string(path)
                         .expect(&format!("Failed to read file {}", path.display())[..]);
                     if let Some(vars_map) = &vars {
@@ -175,23 +175,28 @@ fn main() -> std::io::Result<()> {
                     file_contents
                 };
                 let mut compiled =
-                    Compiler::compile(&contents, &subfolder, files::get_namespace(path).ok())
+                    Compiler::compile(&file_contents, &subfolder, files::get_namespace(path).ok())
                         .expect("Compilation failed");
 
-                for (file, contents) in compiled.files.iter() {
+                for (file, compiled_contents) in compiled.files.iter() {
+                    if file.is_empty() {
+                        continue;
+                    }
+
                     let full_path = format!("{}/{}.mcfunction", target_path, file);
 
-                    fs::write(full_path, &contents)?;
+                    fs::write(full_path, compiled_contents)?;
 
                     // Add namespace prefix to function in tag map
                     for (_, funcs) in compiled.tags.iter_mut() {
-                        if funcs.contains(contents) {
-                            let i = funcs.iter().position(|x| x == contents).unwrap();
+                        println!("!! THE FUCK IS GOING ON !!\nfuncs: {:?}", funcs);
+                        if funcs.contains(file) {
+                            let i = funcs.iter().position(|x| x == file).unwrap();
                             funcs[i] = format!(
                                 "{}:{}{}",
                                 files::get_namespace(&path).unwrap(),
                                 &subfolder,
-                                contents
+                                file
                             );
                         }
                     }
