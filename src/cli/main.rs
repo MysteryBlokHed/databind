@@ -189,7 +189,6 @@ fn main() -> std::io::Result<()> {
 
                     // Add namespace prefix to function in tag map
                     for (_, funcs) in compiled.tags.iter_mut() {
-                        println!("!! THE FUCK IS GOING ON !!\nfuncs: {:?}", funcs);
                         if funcs.contains(file) {
                             let i = funcs.iter().position(|x| x == file).unwrap();
                             funcs[i] = format!(
