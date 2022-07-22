@@ -73,3 +73,6 @@ extern crate pest_derive;
 
 pub mod ast;
 pub mod compiler;
+pub mod files;
+mod settings;
+pub use settings::Settings;

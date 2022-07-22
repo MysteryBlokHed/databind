@@ -21,8 +21,8 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct Compiled {
-    files: HashMap<String, String>,
-    tags: HashMap<String, Vec<String>>,
+    pub files: HashMap<String, String>,
+    pub tags: HashMap<String, Vec<String>>,
 }
 
 impl Compiler {
@@ -180,7 +180,11 @@ impl Compiler {
         files
     }
 
-    pub fn compile(raw_file: &str, subfolder: &str) -> ParseResult<Compiled> {
+    pub fn compile(
+        raw_file: &str,
+        subfolder: &str,
+        namespace: Option<&str>,
+    ) -> ParseResult<Compiled> {
         let mut files: HashMap<String, String> = HashMap::new();
         let mut tags: HashMap<String, Vec<String>> = HashMap::new();
 
@@ -191,7 +195,7 @@ impl Compiler {
             &mut tags,
             &mut Vec::new(),
             subfolder,
-            None,
+            namespace,
         );
 
         Ok(Compiled { files, tags })
