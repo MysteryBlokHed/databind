@@ -29,28 +29,27 @@
 //! for each file:
 //!
 //! ```rust
-//! use databind::compiler::Compiler;
 //! use std::collections::HashMap;
 //!
-//! // Source file
-//! let source_file = "
-//! func main\n\
-//!     say Hello, World!\n\
-//! end\n\
-//! func second_func\n\
-//!     say Second function\n\
-//! end"
-//! .to_string();
-//! // Create compiler and tokenize source file
-//! let mut compiler = Compiler::new(source_file, None);
-//! let tokens = compiler.tokenize();
-//! // Compile tokens to files
-//! let compiled = compiler.compile(tokens, None, "", &HashMap::new(), false);
-//! // Print the contents of each file
-//! for (k, v) in compiled.filename_map.iter() {
-//!     println!("Output File: {}.mcfunction", k);
-//!     println!("Contents:\n{}", compiled.file_contents[*v]);
-//!     println!("----------");
+//! fn main() {
+//!     // Databind ource file
+//!     let source_file = "
+//!     func main\n\
+//!         say Hello, World!\n\
+//!     end\n\
+//!     func second_func\n\
+//!         say Second function\n\
+//!     end"
+//!     .to_string();
+//!
+//!     // Compiled
+//!     let compiled = Compiler::compile(&source_file, "");
+//!     // Print the contents of each file
+//!     for (file, contents) in compiled.files.iter() {
+//!         println!("Output File: {}.mcfunction", file);
+//!         println!("Contents:\n{}", contents);
+//!         println!("----------");
+//!     }
 //! }
 //! ```
 //!
@@ -68,12 +67,12 @@
 //! say Second function
 //! ----------
 //! ```
+#![warn(clippy::all)]
+#[macro_use]
+extern crate pest_derive;
 
+pub mod ast;
 pub mod compiler;
 pub mod files;
 mod settings;
-mod token;
-pub mod types;
-
 pub use settings::Settings;
-pub use token::Token;

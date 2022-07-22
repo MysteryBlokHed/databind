@@ -17,14 +17,10 @@
  */
 #![warn(clippy::all)]
 
-use databind::{
-    compiler::Compiler,
-    files,
-    types::{GlobalMacros, TagMap},
-    Settings,
-};
+use databind::{compiler::Compiler, files, Settings};
 use same_file::is_same_file;
 use std::{
+    collections::HashMap,
     fs,
     path::{Path, PathBuf},
 };
@@ -86,8 +82,7 @@ fn main() -> std::io::Result<()> {
     }
 
     if datapack_is_dir {
-        let mut tag_map = TagMap::new();
-        let mut global_macros = GlobalMacros::new();
+        let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
         let target_folder = &compiler_settings.output;
 
         if fs::metadata(target_folder).is_ok() {
@@ -168,7 +163,8 @@ fn main() -> std::io::Result<()> {
             }
 
             if compile {
-                let contents = {
+                let subfolder = files::get_subfolder_prefix(&path);
+                let file_contents = {
                     let mut file_contents = fs::read_to_string(path)
                         .expect(&format!("Failed to read file {}", path.display())[..]);
                     if let Some(vars_map) = &vars {
@@ -178,39 +174,34 @@ fn main() -> std::io::Result<()> {
                     }
                     file_contents
                 };
-                let mut compile = Compiler::new(
-                    contents,
-                    Some(path.canonicalize().unwrap().to_str().unwrap().into()),
-                );
-                let tokens = compile.tokenize();
+                let mut compiled =
+                    Compiler::compile(&file_contents, &subfolder, files::get_namespace(path).ok())
+                        .expect("Compilation failed");
 
-                let mut compiled = compile.compile_check_macro(
-                    tokens,
-                    path.file_name().unwrap().to_str().unwrap(),
-                    path,
-                    &mut global_macros,
-                );
+                for (file, compiled_contents) in compiled.files.iter() {
+                    if file.is_empty() {
+                        continue;
+                    }
 
-                for (key, value) in compiled.filename_map.iter() {
-                    let full_path = format!("{}/{}.mcfunction", target_path, key);
+                    let full_path = format!("{}/{}.mcfunction", target_path, file);
 
-                    fs::write(full_path, &compiled.file_contents[*value])?;
+                    fs::write(full_path, compiled_contents)?;
 
                     // Add namespace prefix to function in tag map
-                    for (_, funcs) in compiled.tag_map.iter_mut() {
-                        if funcs.contains(key) {
-                            let i = funcs.iter().position(|x| x == key).unwrap();
+                    for (_, funcs) in compiled.tags.iter_mut() {
+                        if funcs.contains(file) {
+                            let i = funcs.iter().position(|x| x == file).unwrap();
                             funcs[i] = format!(
                                 "{}:{}{}",
                                 files::get_namespace(&path).unwrap(),
-                                files::get_subfolder_prefix(&path),
-                                key
+                                &subfolder,
+                                file
                             );
                         }
                     }
                 }
 
-                for (key, value) in compiled.tag_map {
+                for (key, value) in compiled.tags {
                     tag_map
                         .entry(key)
                         .or_insert(Vec::new())
