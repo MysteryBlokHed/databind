@@ -157,6 +157,9 @@ impl Compiler {
         let loop_main_args = {
             let mut vec = vec![command_arg!("if")];
             vec.append(&mut condition.clone());
+            vec.push(command_arg!("run"));
+            // Forces a space to be added between the condition and function call
+            vec.push(command_arg!(""));
             vec.push(Node::CallFunction(format!(
                 "{}condition_{}",
                 subfolder, chars
