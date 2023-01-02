@@ -29,21 +29,27 @@
 //! for each file:
 //!
 //! ```rust
+//! use databind::compiler::{Compiler, macros::Macro};
 //! use std::collections::HashMap;
 //!
 //! fn main() {
-//!     // Databind ource file
+//!     // Databind source file
 //!     let source_file = "
 //!     func main\n\
 //!         say Hello, World!\n\
 //!     end\n\
 //!     func second_func\n\
-//!         say Second function\n\
+//!         say Second %function\n\
 //!     end"
 //!     .to_string();
 //!
+//!     // Keep track of global macros
+//!     let mut macros: HashMap<String, Macro> = HashMap::new();
+//!
 //!     // Compiled
-//!     let compiled = Compiler::compile(&source_file, "");
+//!     let compiled = Compiler::compile(&source_file, "", None, &mut macros)
+//!         .expect("Compilation failed");
+//!
 //!     // Print the contents of each file
 //!     for (file, contents) in compiled.files.iter() {
 //!         println!("Output File: {}.mcfunction", file);

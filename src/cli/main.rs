@@ -17,7 +17,10 @@
  */
 #![warn(clippy::all)]
 
-use databind::{compiler::Compiler, files, Settings};
+use databind::{
+    compiler::{macros::Macro, Compiler},
+    files, Settings,
+};
 use same_file::is_same_file;
 use std::{
     collections::HashMap,
@@ -83,6 +86,7 @@ fn main() -> std::io::Result<()> {
 
     if datapack_is_dir {
         let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
+        let mut macros: HashMap<String, Macro> = HashMap::new();
         let target_folder = &compiler_settings.output;
 
         if fs::metadata(target_folder).is_ok() {
@@ -174,9 +178,14 @@ fn main() -> std::io::Result<()> {
                     }
                     file_contents
                 };
-                let mut compiled =
-                    Compiler::compile(&file_contents, &subfolder, files::get_namespace(path).ok())
-                        .expect("Compilation failed");
+
+                let mut compiled = Compiler::compile(
+                    &file_contents,
+                    &subfolder,
+                    files::get_namespace(path).ok(),
+                    &mut macros,
+                )
+                .expect("Compilation failed");
 
                 for (file, compiled_contents) in compiled.files.iter() {
                     if file.is_empty() {

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use super::{parse::ParseResult, Compiler};
+use super::{macros::Macro, parse::ParseResult, Compiler};
 use crate::ast::{AssignmentOp, Node};
 use std::collections::HashMap;
 
@@ -184,11 +184,13 @@ impl Compiler {
         raw_file: &str,
         subfolder: &str,
         namespace: Option<&str>,
+        macros: &mut HashMap<String, Macro>,
     ) -> ParseResult<Compiled> {
         let mut files: HashMap<String, String> = HashMap::new();
         let mut tags: HashMap<String, Vec<String>> = HashMap::new();
+        // let mut macros: HashMap<String,Macro> = HashMap::new();
 
-        let parsed = Compiler::parse(raw_file, subfolder)?;
+        let parsed = Compiler::parse(raw_file, subfolder, macros)?;
         Compiler::compile_ast(
             &parsed,
             &mut files,

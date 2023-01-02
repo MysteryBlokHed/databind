@@ -24,7 +24,7 @@ use pest::Parser;
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) struct Macro {
+pub struct Macro {
     pub args: Vec<String>,
     pub contents: String,
 }

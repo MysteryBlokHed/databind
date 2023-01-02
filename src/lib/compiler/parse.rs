@@ -32,11 +32,15 @@ pub type ParseResult<T> = Result<T, pest::error::Error<Rule>>;
 
 impl Compiler {
     /// Convert the provided file contents into an AST
-    pub fn parse(raw_file: &str, subfolder: &str) -> ParseResult<Vec<Node>> {
+    pub fn parse(
+        raw_file: &str,
+        subfolder: &str,
+        macros: &mut HashMap<String, Macro>,
+    ) -> ParseResult<Vec<Node>> {
         let tokens = DatabindParser::parse(Rule::file, &raw_file)?
             .next()
             .unwrap();
-        Compiler::parse_tokens(&mut tokens.into_inner(), &mut HashMap::new(), subfolder)
+        Compiler::parse_tokens(&mut tokens.into_inner(), macros, subfolder)
     }
 
     /// Convert the provided tokens into an AST
