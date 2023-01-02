@@ -39,7 +39,7 @@
 //!         say Hello, World!\n\
 //!     end\n\
 //!     func second_func\n\
-//!         say Second %function\n\
+//!         say Second function\n\
 //!     end"
 //!     .to_string();
 //!
