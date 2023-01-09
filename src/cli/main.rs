@@ -193,10 +193,11 @@ fn main() -> std::io::Result<()> {
                     match compile_error.line_col {
                         LineColLocation::Pos((row, col)) | LineColLocation::Span((row, col), _) => {
                             eprintln!(
-                                "error: Unknown parsing error at {}:{}:{}\nMaybe there's a missing `end`?",
+                                "error: Unknown parsing error at {}:{}:{}\nMaybe there's a missing `end`?\nProblem line: {}",
                                 canonical_path.display(),
                                 row,
                                 col,
+                                compile_error.line(),
                             );
                             std::process::exit(1);
                         }
