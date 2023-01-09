@@ -21,6 +21,7 @@ use databind::{
     compiler::{macros::Macro, Compiler},
     files, Settings,
 };
+use pest::error::LineColLocation;
 use same_file::is_same_file;
 use std::{
     collections::HashMap,
@@ -179,13 +180,30 @@ fn main() -> std::io::Result<()> {
                     file_contents
                 };
 
-                let mut compiled = Compiler::compile(
+                let compiled = Compiler::compile(
                     &file_contents,
                     &subfolder,
                     files::get_namespace(path).ok(),
                     &mut macros,
-                )
-                .expect("Compilation failed");
+                );
+
+                if let Err(compile_error) = compiled {
+                    let canonical_path = path.canonicalize().unwrap();
+
+                    match compile_error.line_col {
+                        LineColLocation::Pos((row, col)) | LineColLocation::Span((row, col), _) => {
+                            eprintln!(
+                                "error: Unknown parsing error at {}:{}:{}\nMaybe there's a missing `end`?",
+                                canonical_path.display(),
+                                row,
+                                col,
+                            );
+                            std::process::exit(1);
+                        }
+                    }
+                };
+
+                let mut compiled = compiled.unwrap();
 
                 for (file, compiled_contents) in compiled.files.iter() {
                     if file.is_empty() {

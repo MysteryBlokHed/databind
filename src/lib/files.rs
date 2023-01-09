@@ -228,7 +228,7 @@ pub fn read_vars_toml<P: AsRef<Path>>(vars_toml: P) -> HashMap<String, String> {
             Value::Integer(value) => value.to_string(),
             Value::Datetime(value) => value.to_string(),
             _ => {
-                println!(
+                eprintln!(
                     "error: Unsupported type found in vars.toml file (key: {}, value: {})",
                     k, v
                 );
