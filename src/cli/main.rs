@@ -93,7 +93,7 @@ fn main() -> std::io::Result<()> {
         if fs::metadata(target_folder).is_ok() {
             println!("Deleting old databind folder...");
             fs::remove_dir_all(&target_folder)?;
-            println!("Deleted.");
+            println!("Deleted.\n");
         }
 
         let mut inclusions = files::merge_globs(&compiler_settings.inclusions, datapack);

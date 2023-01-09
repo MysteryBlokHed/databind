@@ -82,8 +82,6 @@ impl Compiler {
         }
 
         for token in tokens {
-            println!("active token: {}", token);
-
             match token.as_rule() {
                 /* Variables and objectives */
                 Rule::new_var => {
@@ -170,11 +168,9 @@ impl Compiler {
                         args
                     };
                     ast.push(Node::MinecraftCommand { name, args });
-                    println!("COMMAND ADDED JUST NOW: {:#?}", ast[ast.len() - 1]);
                 }
                 Rule::command_arg => {
                     let as_str = token.as_str();
-                    println!("DA ARGY: {}", as_str);
                     ast.push(Node::CommandArg(if as_str == "%=" {
                         as_str.into()
                     } else {
@@ -277,9 +273,7 @@ impl Compiler {
                     // This ends up happening recursively since parse_tokens is recalled for every new nested call
                     // Also, we don't have to worry about adding definitions since we pass the reference to
                     // the HashMap of macro definitions!
-                    println!("expanding call");
                     let mut expanded = macro_def.expand_to_ast(&args, macros, subfolder)?;
-                    println!("expanded: {:#?}", expanded);
                     ast.append(&mut expanded);
                 }
                 Rule::trustme => {
