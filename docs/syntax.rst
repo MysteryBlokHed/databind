@@ -23,6 +23,9 @@ Syntax
 | ``!end``                                                                | Ends a macro definition. See the :ref:`macros page <macros:Macros>`                    |
 |                                                                         | for more information                                                                   |
 +-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
+| ``!!``                                                                  | Tells the compiler to directly copy the following text on the line as-is               |
+|                                                                         | (eg. ``!! abcd`` -> ``abcd``)                                                          |
++-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
 | ``call <function>``                                                     | Call a function. Can infer namespace based on directory (see function calling example) |
 +-------------------------------------------------------------------------+----------------------------------------------------------------------------------------+
 | ``runif <condition>``                                                   | Starts an if statement                                                                 |
