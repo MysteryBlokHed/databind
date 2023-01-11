@@ -189,19 +189,50 @@ fn main() -> std::io::Result<()> {
 
                 if let Err(compile_error) = compiled {
                     let canonical_path = path.canonicalize().unwrap();
+                    let line = compile_error.line();
 
-                    match compile_error.line_col {
+                    let (row, col) = match compile_error.line_col {
                         LineColLocation::Pos((row, col)) | LineColLocation::Span((row, col), _) => {
-                            eprintln!(
-                                "error: Unknown parsing error at {}:{}:{}\nMaybe there's a missing `end`?\nProblem line: {}",
-                                canonical_path.display(),
-                                row,
-                                col,
-                                compile_error.line(),
-                            );
-                            std::process::exit(1);
+                            (row, col)
                         }
+                    };
+
+                    let line_highlighted = if !line.is_empty() {
+                        let problem = &line[col..].split(' ').next().unwrap();
+                        let mut highlight_text = String::new();
+
+                        for _ in 0..(col - 1) {
+                            highlight_text += " ";
+                        }
+
+                        for _ in 0..(problem.len() + 1) {
+                            highlight_text += "^";
+                        }
+
+                        Some(highlight_text)
+                    } else {
+                        None
+                    };
+
+                    let base_error = format!(
+                        "error: Unknown parsing error at {}:{}:{}",
+                        canonical_path.display(),
+                        row,
+                        col,
+                    );
+
+                    if let Some(line_highlighted) = line_highlighted {
+                        eprintln!(
+                            "{}\nProblem line:\n{}\n{}",
+                            base_error,
+                            compile_error.line(),
+                            line_highlighted,
+                        );
+                    } else {
+                        eprintln!("{}\nMaybe there's a missing `end`?", base_error);
                     }
+
+                    std::process::exit(1);
                 };
 
                 let mut compiled = compiled.unwrap();
