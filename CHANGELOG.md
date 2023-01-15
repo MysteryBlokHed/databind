@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added a `!!` operator to tell the compiler to skip compilation for a line
+
 ### Changed
 
+- **Complete rewrite of the parsing system and major changes to the internal API**
 - Made the Build & Test workflow use a matrix
 
 ### Fixed
