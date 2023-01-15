@@ -52,7 +52,7 @@ fn main() -> std::io::Result<()> {
         config_path_str = matches.value_of("config").unwrap().to_string();
 
         if fs::metadata(&config_path_str).is_err() {
-            println!("Non-existant config file specified.");
+            eprintln!("Non-existant config file specified.");
             std::process::exit(1);
         }
     } else {
@@ -67,7 +67,7 @@ fn main() -> std::io::Result<()> {
 
     let config_path = Path::new(&config_path_str);
     if config_path.is_dir() {
-        println!("Directory provided for config file.");
+        eprintln!("Directory provided for config file.");
         std::process::exit(1);
     }
 
@@ -277,7 +277,7 @@ fn main() -> std::io::Result<()> {
 
         files::create_tag_files(src_dir, Path::new(&target_folder), &tag_map)?;
     } else {
-        println!("Databind does not support single-file compilation.");
+        eprintln!("Databind does not support single-file compilation.");
         std::process::exit(1);
     }
 
