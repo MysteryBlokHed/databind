@@ -18,13 +18,13 @@
 #![warn(clippy::all)]
 
 use databind::{
-    compiler::Compiler,
-    files,
-    types::{GlobalMacros, TagMap},
-    Settings,
+    compiler::{macros::Macro, Compiler},
+    files, Settings,
 };
+use pest::error::LineColLocation;
 use same_file::is_same_file;
 use std::{
+    collections::HashMap,
     fs,
     path::{Path, PathBuf},
 };
@@ -52,7 +52,7 @@ fn main() -> std::io::Result<()> {
         config_path_str = matches.value_of("config").unwrap().to_string();
 
         if fs::metadata(&config_path_str).is_err() {
-            println!("Non-existant config file specified.");
+            eprintln!("Non-existant config file specified.");
             std::process::exit(1);
         }
     } else {
@@ -67,7 +67,7 @@ fn main() -> std::io::Result<()> {
 
     let config_path = Path::new(&config_path_str);
     if config_path.is_dir() {
-        println!("Directory provided for config file.");
+        eprintln!("Directory provided for config file.");
         std::process::exit(1);
     }
 
@@ -86,14 +86,12 @@ fn main() -> std::io::Result<()> {
     }
 
     if datapack_is_dir {
-        let mut tag_map = TagMap::new();
-        let mut global_macros = GlobalMacros::new();
+        let mut tag_map: HashMap<String, Vec<String>> = HashMap::new();
+        let mut macros: HashMap<String, Macro> = HashMap::new();
         let target_folder = &compiler_settings.output;
 
         if fs::metadata(target_folder).is_ok() {
-            println!("Deleting old databind folder...");
             fs::remove_dir_all(&target_folder)?;
-            println!("Deleted.");
         }
 
         let mut inclusions = files::merge_globs(&compiler_settings.inclusions, datapack);
@@ -168,7 +166,8 @@ fn main() -> std::io::Result<()> {
             }
 
             if compile {
-                let contents = {
+                let subfolder = files::get_subfolder_prefix(&path);
+                let file_contents = {
                     let mut file_contents = fs::read_to_string(path)
                         .expect(&format!("Failed to read file {}", path.display())[..]);
                     if let Some(vars_map) = &vars {
@@ -178,39 +177,88 @@ fn main() -> std::io::Result<()> {
                     }
                     file_contents
                 };
-                let mut compile = Compiler::new(
-                    contents,
-                    Some(path.canonicalize().unwrap().to_str().unwrap().into()),
-                );
-                let tokens = compile.tokenize();
 
-                let mut compiled = compile.compile_check_macro(
-                    tokens,
-                    path.file_name().unwrap().to_str().unwrap(),
-                    path,
-                    &mut global_macros,
+                let compiled = Compiler::compile(
+                    &file_contents,
+                    &subfolder,
+                    files::get_namespace(path).ok(),
+                    &mut macros,
                 );
 
-                for (key, value) in compiled.filename_map.iter() {
-                    let full_path = format!("{}/{}.mcfunction", target_path, key);
+                if let Err(compile_error) = compiled {
+                    let canonical_path = path.canonicalize().unwrap();
+                    let line = compile_error.line();
 
-                    fs::write(full_path, &compiled.file_contents[*value])?;
+                    let (row, col) = match compile_error.line_col {
+                        LineColLocation::Pos((row, col)) | LineColLocation::Span((row, col), _) => {
+                            (row, col)
+                        }
+                    };
+
+                    let line_highlighted = if !line.is_empty() {
+                        let problem = &line[col..].split(' ').next().unwrap();
+                        let mut highlight_text = String::new();
+
+                        for _ in 0..(col - 1) {
+                            highlight_text += " ";
+                        }
+
+                        for _ in 0..(problem.len() + 1) {
+                            highlight_text += "^";
+                        }
+
+                        Some(highlight_text)
+                    } else {
+                        None
+                    };
+
+                    let base_error = format!(
+                        "error: Unknown parsing error at {}:{}:{}",
+                        canonical_path.display(),
+                        row,
+                        col,
+                    );
+
+                    if let Some(line_highlighted) = line_highlighted {
+                        eprintln!(
+                            "{}\nProblem line:\n{}\n{}",
+                            base_error,
+                            compile_error.line(),
+                            line_highlighted,
+                        );
+                    } else {
+                        eprintln!("{}\nMaybe there's a missing `end`?", base_error);
+                    }
+
+                    std::process::exit(1);
+                };
+
+                let mut compiled = compiled.unwrap();
+
+                for (file, compiled_contents) in compiled.files.iter() {
+                    if file.is_empty() {
+                        continue;
+                    }
+
+                    let full_path = format!("{}/{}.mcfunction", target_path, file);
+
+                    fs::write(full_path, compiled_contents)?;
 
                     // Add namespace prefix to function in tag map
-                    for (_, funcs) in compiled.tag_map.iter_mut() {
-                        if funcs.contains(key) {
-                            let i = funcs.iter().position(|x| x == key).unwrap();
+                    for (_, funcs) in compiled.tags.iter_mut() {
+                        if funcs.contains(file) {
+                            let i = funcs.iter().position(|x| x == file).unwrap();
                             funcs[i] = format!(
                                 "{}:{}{}",
                                 files::get_namespace(&path).unwrap(),
-                                files::get_subfolder_prefix(&path),
-                                key
+                                &subfolder,
+                                file
                             );
                         }
                     }
                 }
 
-                for (key, value) in compiled.tag_map {
+                for (key, value) in compiled.tags {
                     tag_map
                         .entry(key)
                         .or_insert(Vec::new())
@@ -229,7 +277,7 @@ fn main() -> std::io::Result<()> {
 
         files::create_tag_files(src_dir, Path::new(&target_folder), &tag_map)?;
     } else {
-        println!("Databind does not support single-file compilation.");
+        eprintln!("Databind does not support single-file compilation.");
         std::process::exit(1);
     }
 

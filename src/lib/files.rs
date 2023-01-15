@@ -17,7 +17,6 @@
  */
 //! Contains functions used by the CLI to get information from files or to
 //! create files
-use crate::types::TagMap;
 use glob::glob;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -132,7 +131,7 @@ pub fn find_config_in_parents(
 pub fn create_tag_files<P: AsRef<Path>>(
     src_dir: P,
     target_folder: P,
-    tag_map: &TagMap,
+    tag_map: &HashMap<String, Vec<String>>,
 ) -> std::io::Result<()> {
     #[derive(Deserialize, Serialize)]
     struct TagFile {
@@ -229,7 +228,7 @@ pub fn read_vars_toml<P: AsRef<Path>>(vars_toml: P) -> HashMap<String, String> {
             Value::Integer(value) => value.to_string(),
             Value::Datetime(value) => value.to_string(),
             _ => {
-                println!(
+                eprintln!(
                     "error: Unsupported type found in vars.toml file (key: {}, value: {})",
                     k, v
                 );

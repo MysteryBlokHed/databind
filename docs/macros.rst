@@ -26,6 +26,28 @@ The macro call above would become the following when compiled:
 As you can see, the ``$name`` in the body of the macro was replaced
 with the ``"World"`` string that was passed to it.
 
+Macros that produce invalid code
+--------------------------------
+
+In some cases, you may want a macro that returns a value not meant to be parsed by Databind directly.
+For example, you may want a macro to generate a simple string of text without being attached to a command.
+You can use the ``!!`` syntax for this:
+
+.. code-block:: databind
+   
+   !def name_text($name)
+       !! Hello, $name!
+   !end
+
+The ``!!`` tells the compiler to insert the line as-is into the outputted code.
+The macro can now be used in ways such as:
+
+.. code-block:: databind
+   
+   say ?name_text("World")
+
+**Note that macro variables (such as ``$name``) will still be replaced.**
+
 Macros that use Databind code
 -----------------------------
 

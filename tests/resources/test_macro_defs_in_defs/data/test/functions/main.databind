@@ -1,6 +1,6 @@
 !def create_macro($name)
     !def macro_$name()
-        Hello from new macro
+        !! Hello from new macro
     !end
 !end
 

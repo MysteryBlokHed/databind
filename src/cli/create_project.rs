@@ -57,7 +57,7 @@ pub(crate) fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
     let name = args.value_of("name").unwrap();
 
     if name.chars().any(|x| !allowed_chars.contains(x)) {
-        println!("Project name contains disallowed characters");
+        eprintln!("Project name contains disallowed characters");
         std::process::exit(1);
     }
 
@@ -75,7 +75,7 @@ pub(crate) fn create_project(args: clap::ArgMatches) -> std::io::Result<()> {
 
     if let Ok(meta) = metadata {
         if meta.is_file() || meta.is_dir() && !dir_empty(&path)? {
-            println!(
+            eprintln!(
                 "Path {} is an already existant file or non-empty folder",
                 base_path
             );
