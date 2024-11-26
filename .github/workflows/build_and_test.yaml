@@ -63,7 +63,7 @@ jobs:
 
       - name: Upload release binary
         if: ${{ github.ref == 'refs/heads/master' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-build
           path: ${{ env.BIN_PATH }}
